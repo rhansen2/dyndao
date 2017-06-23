@@ -12,8 +12,10 @@ type Table struct {
 
 	Primaries []string `json:"Primaries"`
 
-	Fields          map[string]*Field `json:"Fields"`
-	EssentialFields []string          `json:"EssentialFields"`
+	// Fields is the column definitions for the SQL table
+	Fields map[string]*Field `json:"Fields"`
+
+	EssentialFields []string `json:"EssentialFields"`
 
 	Children map[string]*ChildTable `json:"Children"`
 
@@ -31,6 +33,8 @@ type Field struct {
 	IsIdentity   bool   `json:"IsIdentity"`
 	DBType       string `json:"DBType"`
 	Length       int    `json:"Length"`
+
+	// TODO: IsUnique bool `json:"IsUnique"` // probably necessary because of say, GUID..
 }
 
 // ChildTable represents a relationship between a parent table

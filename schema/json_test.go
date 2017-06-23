@@ -12,7 +12,7 @@ func TestJSONMarshalUnmarshal(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println("Marshalled, buf=", string(buf))
+	fmt.Println("Marshalled buf=", string(buf))
 
 	err = json.Unmarshal(buf, &sch)
 	if err != nil {

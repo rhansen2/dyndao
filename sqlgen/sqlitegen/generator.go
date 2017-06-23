@@ -1,18 +1,17 @@
-// Package sqlgen helps with generating SQL statements based on a given schema and additional parameters
-package sqlgen
+// Package sqlitegen helps with generating SQL statements based on a given schema and additional parameters
+package sqlitegen
 
 import (
 	"fmt"
-
-	"strings"
-
 	"github.com/rbastic/dyndao/schema"
+	"strings"
 )
 
 // Generator is an empty struct for encapsulating whatever we need for our sql generator ...
 type Generator struct {
-	Name   string
-	Schema *schema.Schema
+	Database string
+	Name     string
+	Schema   *schema.Schema
 }
 
 func bindingParam(v string) string {

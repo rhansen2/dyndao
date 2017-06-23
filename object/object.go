@@ -11,13 +11,14 @@ type Object struct {
 
 // New is an empty constructor
 func New() *Object {
-	obj := &Object{KV: makeEmptyMap(), ChangedFields: makeEmptyMap()}
-	return obj
+	return &Object{KV: makeEmptyMap(), ChangedFields: makeEmptyMap()}
 }
 
 func makeEmptyMap() map[string]interface{} {
 	return make(map[string]interface{})
 }
+
+// TODO: ForEach method for the KV? ...
 
 // Get is our accessor
 func (o Object) Get(k string) interface{} {

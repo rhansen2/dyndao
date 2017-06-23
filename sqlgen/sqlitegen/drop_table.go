@@ -1,4 +1,4 @@
-package sqlgen
+package sqlitegen
 
 // DropTable renders a SQL drop table statement for us
 func (g Generator) DropTable() string {
