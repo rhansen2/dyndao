@@ -32,7 +32,6 @@ func fieldID(name string) *Field {
 	return fld
 }
 
-
 func jobTable() *Table {
 	tbl := DefaultTable()
 	tbl.MultiKey = false

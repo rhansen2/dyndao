@@ -11,6 +11,16 @@ func fieldName() *Field {
 	return fld
 }
 
+func fieldAddress(n string) *Field {
+	fld := DefaultField()
+	fld.Source = n
+	fld.IsNumber = false
+	fld.Name = n
+	fld.DBType = "text"
+	fld.AllowNull = true // TODO: Should this be used to accept empty keys?
+	return fld
+}
+
 func primaryField(name string) *Field {
 	fld := DefaultField()
 	fld.Name = name
@@ -31,9 +41,42 @@ func peopleTable() *Table {
 	return tbl
 }
 
-// Basic mock  one table
+// Very simple address table initially
+func addressTable() *Table {
+	tbl := DefaultTable()
+	tbl.Fields["AddressID"] = primaryField("AddressID")
+	tbl.Fields["Address1"] = fieldAddress("Address1")
+	tbl.Fields["Address2"] = fieldAddress("Address2")
+	tbl.Fields["City"] = fieldAddress("City")
+	tbl.Fields["State"] = fieldAddress("State")
+
+	zip := fieldAddress("Zip")
+	zip.AllowNull = true // TODO: Is this what we want to use to disable validation?
+	tbl.Fields["Zip"] = zip
+	return tbl
+}
+
+// MockBasicSchema is the basic mock for one table
 func MockBasicSchema() *Schema {
 	sch := DefaultSchema()
-	sch.Tables["people"] = peopleTable()
+	personTable := peopleTable()
+
+	sch.Tables["people"] = personTable
+	return sch
+}
+
+// MockNestedSchema is the basic mock for two tables (one table that references a foreign table)
+func MockNestedSchema() *Schema {
+	sch := MockBasicSchema()
+	personTable := sch.Tables["people"]
+
+	childTable := DefaultChildTable()
+	childTable.ParentTable = "people"
+	childTable.LocalField = ""           // TODO: Not needed here?
+	childTable.ForeignField = "PersonID" // Field to store our ParentTable record's primary key into
+
+	personTable.Children["addresses"] = childTable
+
+	sch.Tables["addresses"] = addressTable()
 	return sch
 }

@@ -1,6 +1,6 @@
 // Package object is an abstract data record which tracks state changes.
-// The state change tracking can be useful for resetting the values of primary keys
-// when working with composite key structures (RDBMS, for ex.)
+// The state change tracking can be useful when the values of primary keys
+// need to change.
 package object
 
 // Object struct encapsulates our key-value pairs and a single-item per-key history
@@ -44,8 +44,8 @@ func (o Object) Set(k string, v interface{}) {
 		}
 		o.FieldChanged(k, oldVal)
 	}
-	o.rawSet(k, v)
 
+	o.rawSet(k, v)
 }
 
 // FieldChanged records the previous value for something that is about to be set
