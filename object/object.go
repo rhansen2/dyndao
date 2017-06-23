@@ -1,5 +1,6 @@
-// Package object is a simple implementation of an abstract black box for data
-// TODO: Work on the explanation..
+// Package object is an abstract data record which tracks state changes.
+// The state change tracking can be useful for resetting the values of primary keys
+// when working with composite key structures (RDBMS, for ex.)
 package object
 
 // Object struct encapsulates our key-value pairs and a single-item per-key history
