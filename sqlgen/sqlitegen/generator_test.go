@@ -3,13 +3,13 @@ package sqlitegen
 import (
 	"fmt"
 	"testing"
+	"github.com/rbastic/dyndao/schema"
 
-	"github.com/rbastic/dyndao/tests"
 	/*"github.com/rbastic/dyndao/mapper"
 	"github.com/rbastic/dyndao/object"*/)
 
 func TestGeneratorBasic(t *testing.T) {
-	sch := tests.MockBasicSchema()
+	sch := schema.MockBasicSchema()
 
 	// Basic generator initialization
 	basic := New("sqlite", "testDB", sch)
