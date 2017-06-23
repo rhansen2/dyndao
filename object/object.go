@@ -6,17 +6,24 @@ package object
 // Object struct encapsulates our key-value pairs and a single-item per-key history
 // of the previous value stored for a given key.
 type Object struct {
+	Type          string
 	KV            map[string]interface{} `json:"KV"`
 	ChangedFields map[string]interface{} `json:"ChangedFields"`
+	Children      map[string]*Object
+	saved         bool
 }
 
 // New is an empty constructor
 func New() *Object {
-	return &Object{KV: makeEmptyMap(), ChangedFields: makeEmptyMap()}
+	return &Object{KV: makeEmptyMap(), ChangedFields: makeEmptyMap(), Children: makeEmptyChildrenMap()}
 }
 
 func makeEmptyMap() map[string]interface{} {
 	return make(map[string]interface{})
+}
+
+func makeEmptyChildrenMap() map[string]*Object {
+	return make(map[string]*Object)
 }
 
 // TODO: ForEach method for the KV? ...
@@ -54,4 +61,14 @@ func (o Object) rawSet(k string, v interface{}) {
 // once a Save() method is invoked
 func (o Object) ResetChangedFields() {
 	o.ChangedFields = make(map[string]interface{})
+}
+
+// SetSaved is our setter for the 'object is saved' status field
+func (o Object) SetSaved(status bool) {
+	o.saved = status
+}
+
+// GetSaved is our getter for the 'object is saved' bool field
+func (o Object) GetSaved() bool {
+	return o.saved
 }

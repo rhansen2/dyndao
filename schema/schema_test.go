@@ -25,29 +25,13 @@ func TestDefaultChildTable(t *testing.T) {
 	fmt.Println(chld)
 }
 
-func fieldName() *Field {
-	fld := DefaultField()
-	fld.IsNumber = false
-	fld.Name = "Name"
-	fld.DBType = "varchar"
-	fld.Length = 36
-	return fld
-}
-
 func fieldID(name string) *Field {
 	fld := DefaultField()
 	fld.Name = name
-	fld.IsNumber = true return fld
+	fld.IsNumber = true
+	return fld
 }
 
-func peopleTable() *Table {
-	tbl := DefaultTable()
-	tbl.MultiKey = false
-	tbl.Primary = "PersonID"
-	tbl.Fields["PersonID"] = fieldID("PersonID")
-	tbl.Fields["Name"] = fieldName()
-	return tbl
-}
 
 func jobTable() *Table {
 	tbl := DefaultTable()
@@ -67,7 +51,7 @@ func permissionsTable() *Table {
 }
 
 func TestSchemaBasic(t *testing.T) {
-	_ = basicSchema()
+	_ = MockBasicSchema()
 }
 
 func BasicSchema() *Schema {

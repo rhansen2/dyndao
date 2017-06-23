@@ -34,6 +34,7 @@ type Field struct {
 	DBType       string `json:"DBType"`
 	Length       int    `json:"Length"`
 	IsUnique     bool   `json:"IsUnique"`
+	Source       string `json:"Source"` // Could be JSON source, could be something else...
 }
 
 // ChildTable represents a relationship between a parent table

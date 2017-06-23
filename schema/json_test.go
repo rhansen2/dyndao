@@ -7,7 +7,7 @@ import (
 )
 
 func TestJSONMarshalUnmarshal(t *testing.T) {
-	sch := basicSchema()
+	sch := MockBasicSchema()
 	buf, err := json.Marshal(sch)
 	if err != nil {
 		t.Fatal(err)
