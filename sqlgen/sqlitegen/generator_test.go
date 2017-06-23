@@ -62,6 +62,14 @@ func TestGeneratorBasic(t *testing.T) {
 
 	fmt.Println(basic.Begin(""))
 
+	fmt.Println(basic.Insert(
+		"people",
+		map[string]interface{}{
+			"PersonID": 1,
+			"Name":     "Sam",
+		},
+	))
+
 	fmt.Println(basic.Commit())
 
 	fmt.Println(basic.DropTable("people"))
