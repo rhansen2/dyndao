@@ -18,6 +18,10 @@ func bindingParam(v string) string {
 	return ":" + v
 }
 
+func New( db string, name string, sch * schema.Schema ) *Generator {
+	return &Generator{ Database: db, Name: name, Schema: sch }
+}
+
 // Retrieve is the generic retrieve function to retrieve a single or multiple records
 // It could be combined with a prepared statement for speed, or used individually (on an
 // ad-hoc basis)

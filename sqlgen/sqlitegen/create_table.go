@@ -5,6 +5,7 @@ package sqlitegen
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/rbastic/dyndao/schema"
 )
@@ -27,13 +28,46 @@ func (g Generator) CreateTable(table string) (string, error) {
 		i++
 	}
 
-	return "", nil
+	sql := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+	%s
+)
+`, table, strings.Join(sqlFields, ",\n"))
+
+	return sql, nil
 }
 
 func renderCreateField(f *schema.Field) string {
 	dataType := ""
+	notNull := ""
 	identity := ""
-	nullsAndDefaults := ""
-
-	return fmt.Sprintf("%s %s %s %s", f.Name, dataType, identity, nullsAndDefaults)
+	unique := ""
+	if f.IsIdentity {
+		identity = " PRIMARY KEY "
+	}
+	if !f.AllowNull {
+		notNull = " NOT NULL "
+	}
+	if f.IsNumber {
+		dataType = f.DBType // not relevant here?
+	} else {
+		if f.Length > 0 {
+			// TODO: Needed?
+		}
+		dataType = f.DBType
+	}
+	if f.IsUnique {
+		unique = " UNIQUE "
+	}
+	return strings.Join([]string{f.Name, dataType, identity, notNull, unique}, " ")
 }
+
+/*
+
+TODO:
+PRIMARY KEY (contact_id, group_id),
+ FOREIGN KEY (contact_id) REFERENCES contacts (contact_id)
+ ON DELETE CASCADE ON UPDATE NO ACTION,
+ FOREIGN KEY ([ group_id ]) REFERENCES groups (group_id)
+ ON DELETE CASCADE ON UPDATE NO ACTION
+
+*/

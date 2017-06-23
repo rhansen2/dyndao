@@ -28,11 +28,16 @@ func (o Object) Get(k string) interface{} {
 // Set is our setter
 func (o Object) Set(k string, v interface{}) {
 	oldVal := o.Get(k)
-	o.rawSet(k, v)
 
 	if oldVal != nil {
+		// Avoid redundant Set()s
+		if oldVal == v {
+			return
+		}
 		o.FieldChanged(k, oldVal)
 	}
+	o.rawSet(k, v)
+
 }
 
 // FieldChanged records the previous value for something that is about to be set

@@ -37,8 +37,7 @@ func fieldName() *Field {
 func fieldID(name string) *Field {
 	fld := DefaultField()
 	fld.Name = name
-	fld.IsNumber = true
-	return fld
+	fld.IsNumber = true return fld
 }
 
 func peopleTable() *Table {
@@ -71,7 +70,7 @@ func TestSchemaBasic(t *testing.T) {
 	_ = basicSchema()
 }
 
-func basicSchema() *Schema {
+func BasicSchema() *Schema {
 	sch := DefaultSchema()
 
 	sch.Tables["people"] = peopleTable()
@@ -83,8 +82,7 @@ func basicSchema() *Schema {
 /*
 func usersTable() *Schema {
 	tbl := DefaultTable()
-	tbl.MultiKey = false
-	tbl.Primary = "id"
+	tbl.MultiKey = false tbl.Primary = "id"
 	tbl.Fields[""]
 }
 

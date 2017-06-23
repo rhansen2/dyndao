@@ -33,8 +33,7 @@ type Field struct {
 	IsIdentity   bool   `json:"IsIdentity"`
 	DBType       string `json:"DBType"`
 	Length       int    `json:"Length"`
-
-	// TODO: IsUnique bool `json:"IsUnique"` // probably necessary because of say, GUID..
+	IsUnique     bool   `json:"IsUnique"`
 }
 
 // ChildTable represents a relationship between a parent table
