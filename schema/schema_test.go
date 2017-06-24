@@ -40,6 +40,7 @@ func jobTable() *Table {
 	tbl.Fields["Name"] = fieldName()
 	return tbl
 }
+
 func permissionsTable() *Table {
 	tbl := DefaultTable()
 	tbl.MultiKey = false

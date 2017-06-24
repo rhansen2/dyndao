@@ -11,9 +11,7 @@ import (
 
 func TestGeneratorBasic(t *testing.T) {
 	sch := schema.MockBasicSchema()
-
-	// Basic generator initialization
-	basic := New("sqlite", "testDB", sch)
+	basic := New("sqlite", "testDB", sch) // Basic generator initialization
 
 	sql, err := basic.CreateTable("people")
 	if err != nil {
