@@ -6,7 +6,7 @@ import (
 )
 
 func TestObject(t *testing.T) {
-	obj := New()
+	obj := New("person")
 
 	obj.Set("name", "Ryan")
 	obj.Set("age", 30)

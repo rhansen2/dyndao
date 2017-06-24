@@ -9,6 +9,46 @@ import (
 	"github.com/rbastic/dyndao/schema"
 )
 
+// BindingInsert generates the SQL for a given INSERT statement for SQLite with binding parameter values
+func (g Generator) BindingInsert(table string, data map[string]interface{}) (string, []interface{}, error) {
+	if table == "" {
+		return "", nil, errors.New("BindingInsert: empty table name")
+	}
+	if data == nil {
+		return "", nil, errors.New("BindingInsert: empty data passed")
+	}
+
+	dataLen := len(data)
+	//fmt.Println(dataLen)
+	bindNames := make([]string, dataLen)
+	colNames := make([]string, dataLen)
+	bindArgs := make([]interface{}, dataLen)
+	i := 0
+	schTable, ok := g.Schema.Tables[table]
+	if !ok {
+		return "", nil, errors.New("BindingInsert: Table map unavailable for table " + table)
+	}
+	fieldsMap := schTable.Fields
+	if fieldsMap == nil {
+		return "", nil, errors.New("BindingInsert: Field map unavailable for table " + table)
+	}
+	for k, v := range data {
+		colNames[i] = k
+		//fmt.Println("k=", k, "fieldsMap[k]=", fieldsMap[k], "v=", v)
+		r, err := renderBindingInsertValue(fieldsMap[k], v)
+		if err != nil {
+			return "", nil, err
+		}
+
+		bindNames[i] = r
+		bindArgs[i] = v
+		i++
+	}
+	sqlStr := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", table, strings.Join(colNames, ","), strings.Join(bindNames, ","))
+	return sqlStr, bindArgs, nil
+
+}
+
 // Insert generates the SQL for a given INSERT statement for SQLite
 func (g Generator) Insert(table string, data map[string]interface{}) (string, error) {
 	if table == "" {
@@ -19,21 +59,21 @@ func (g Generator) Insert(table string, data map[string]interface{}) (string, er
 	}
 
 	dataLen := len(data)
-	fmt.Println(dataLen)
+	//fmt.Println(dataLen)
 	dataAry := make([]string, dataLen)
 	keysAry := make([]string, dataLen)
 	i := 0
 	schTable, ok := g.Schema.Tables[table]
 	if !ok {
-		return "", errors.New("Table map unavailable for table " + table)
+		return "", errors.New("Insert: Table map unavailable for table " + table)
 	}
 	fieldsMap := schTable.Fields
 	if fieldsMap == nil {
-		return "", errors.New("Field map unavailable for table " + table)
+		return "", errors.New("Insert: Field map unavailable for table " + table)
 	}
 	for k, v := range data {
 		keysAry[i] = k
-		fmt.Println("k=", k, "fieldsMap[k]=", fieldsMap[k], "v=", v)
+		//fmt.Println("k=", k, "fieldsMap[k]=", fieldsMap[k], "v=", v)
 		r, err := renderInsertValue(fieldsMap[k], v)
 		if err != nil {
 			return "", err
@@ -48,6 +88,10 @@ func (g Generator) Insert(table string, data map[string]interface{}) (string, er
 
 func quotedString(value string) string {
 	return fmt.Sprintf(`"%s"`, string(value))
+}
+
+func renderBindingInsertValue(f *schema.Field, value interface{}) (string, error) {
+	return ":" + f.Name, nil
 }
 
 func renderInsertValue(f *schema.Field, value interface{}) (string, error) {

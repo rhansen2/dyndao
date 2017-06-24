@@ -14,8 +14,8 @@ type Object struct {
 }
 
 // New is an empty constructor
-func New() *Object {
-	return &Object{KV: makeEmptyMap(), ChangedFields: makeEmptyMap(), Children: makeEmptyChildrenMap()}
+func New(objType string) *Object {
+	return &Object{Type: objType, KV: makeEmptyMap(), ChangedFields: makeEmptyMap(), Children: makeEmptyChildrenMap()}
 }
 
 func makeEmptyMap() map[string]interface{} {

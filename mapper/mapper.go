@@ -48,8 +48,7 @@ func ToJSONFromObject(sch *schema.Schema, obj *object.Object, jsonStr string) (s
 
 // ToObjectFromJSON maps a JSON string into a DynDAO object
 func ToObjectFromJSON(sch *schema.Schema, tbl string, json string) (*object.Object, error) {
-	obj := object.New()
-	obj.Type = tbl // NOTE: we use the database table as the object type. this links us to the schema
+	obj := object.New(tbl)
 
 	table := sch.Tables[tbl]
 	fieldsMap := table.Fields

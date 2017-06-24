@@ -50,20 +50,18 @@ func getNestedJSONData() string {
 }
 
 func getNestedObj() *object.Object {
-	o := object.New()
+	o := object.New("people")
 
 	// TODO: use constants for object Types instead of hard-coded strings
-	o.Type = "people"
 	o.KV = map[string]interface{}{
 		"PersonID": 1,
 		"Name":     "Sam",
 	}
 	o.Children = make(map[string]*object.Object)
 
-	addr := object.New()
+	addr := object.New("addresses")
 
 	// TODO: use constants for object Types instead of hard-coded strings
-	addr.Type = "addresses"
 	addr.Set("Address1", "Test")
 	addr.Set("Address2", "Test2")
 	addr.Set("City", "Nowhere")
