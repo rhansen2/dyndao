@@ -93,23 +93,4 @@ func TestNestedMapper(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(json)
-	/*
-		TODO: Why doesn't this work?
-		if !reflect.DeepEqual(obj, testObj) {
-			t.Fatal("created object structure differs from expected object structure")
-		}
-	*/
-	/*
-		ToJSONFromObject(sch, obj)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			fmt.Println(getJsonData())
-			fmt.Println(json)
-			if json != getJsonData() {
-				t.Fatal("json data doesn't match")
-			}
-	*/
-
 }
