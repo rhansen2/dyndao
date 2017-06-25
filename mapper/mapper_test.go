@@ -45,6 +45,8 @@ func getJSONData() string {
 	return `{"Name":"Sam","PersonID":1}`
 }
 
+// TODO: Woops, this is not actually a 'nested object structure'...
+// This would be 'flat json to nested object'...
 func getNestedJSONData() string {
 	return `{"Name":"Sam","PersonID":1,"Address1":"Test","Address2":"Test2","City":"Nowhere","State":"AZ" }`
 }

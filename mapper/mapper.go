@@ -40,7 +40,6 @@ func ToJSONFromObject(sch *schema.Schema, obj *object.Object, jsonStr string) (s
 			if err != nil {
 				return "", fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)
 			}
-			//			obj.Children[k] = child
 		}
 	}
 	return jsonStr, nil
@@ -71,7 +70,7 @@ func ToObjectFromJSON(sch *schema.Schema, tbl string, json string) (*object.Obje
 	for i, v := range values {
 		if v.Exists() {
 			obj.Set(keys[i], v.Value())
-		} /* else {		return nil, errors.New("ToObjectFromJSON: missing value for field " + keys[i])}*/
+		}
 	}
 
 	err := walkChildrenFromJSON(sch, table, obj, json)
