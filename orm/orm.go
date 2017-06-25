@@ -11,6 +11,9 @@ import (
 	"github.com/rbastic/dyndao/sqlgen/sqlitegen"
 )
 
+// TODO: For foreign key filling, we do not check to see if there are conflicts
+// with regards to the uniqueness of primary key names.
+
 func recurseAndSave(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema, obj *object.Object) (int64, error) {
 	// TODO: Implement transactions. Implement 'foreign key fill'
 	// in children objects
@@ -19,9 +22,25 @@ func recurseAndSave(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Sch
 		return 0, err
 	}
 
+	table := sch.Tables[obj.Type]
+	pkVal := obj.Get(table.Primary)
+
 	// TODO: ChildrenOrder going to happen here?
 	for _, v := range obj.Children {
-		//fmt.Println("attempting to save k=", k, "v=", v)
+		// set the primary key in the child object, if it exists in the child object's table
+		childTable, ok := sch.Tables[v.Type]
+		if !ok {
+			return 0, errors.New("recurseAndSave: Unknown child object type " + v.Type + " for parent type " + obj.Type)
+		}
+		// check if the child schema table contains
+		// the parent's primary key field as a name
+
+		_, ok = childTable.Fields[table.Primary]
+		if ok {
+			// ensure it's set if so
+			v.Set(table.Primary, pkVal)
+		}
+
 		rowsAff, err := recurseAndSave(ctx, db, tx, sch, v)
 		if err != nil {
 			return rowsAff, err
@@ -33,8 +52,7 @@ func recurseAndSave(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Sch
 
 // Save will attempt to save an entire nested object structure inside of a single transaction.
 func Save(ctx context.Context, db *sql.DB, sch *schema.Schema, obj *object.Object) (int64, error) {
-	// TODO: Implement transactions. Implement 'foreign key fill'
-	// in children objects
+
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, err
@@ -84,8 +102,6 @@ func SaveObject(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema,
 		return Insert(ctx, db, tx, sch, obj)
 	}
 	return Update(ctx, db, tx, sch, obj)
-
-	//	return 0, nil
 }
 
 // RetrieveObject function will fleshen an object structure, given some primary keys
@@ -129,7 +145,6 @@ func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table s
 
 		columnPointers := make([]interface{}, len(columnNames))
 		for i := 0; i < len(columnNames); i++ {
-
 			ct := columnTypes[i]
 			// TODO: Improve database type support.
 			if ct.DatabaseTypeName() == "text" {
@@ -139,7 +154,7 @@ func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table s
 				var j int64
 				columnPointers[i] = &j
 			}
-			//			columnPointers[i] = &columns[i]
+			// columnPointers[i] = &columns[i]
 		}
 
 		if err := res.Scan(columnPointers...); err != nil {
@@ -166,7 +181,8 @@ func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table s
 	return obj, nil
 }
 
-// TODO: Read this post for more info on the above... https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
+// TODO: Read this post for more info on the above...
+// https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
 
 // Insert function will INSERT a record depending on various values
 func Insert(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema, obj *object.Object) (int64, error) {

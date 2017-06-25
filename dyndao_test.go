@@ -151,7 +151,7 @@ func TestSaveNestedObject(t *testing.T) {
 
 }
 
-// TODO: use contexts down here also
+// TODO: use contexts down here also?
 
 func createTables(db *sql.DB, sch *schema.Schema) error {
 	gen := sqlitegen.New("sqlite", "test", sch)
@@ -183,6 +183,8 @@ func dropTables(db *sql.DB, sch *schema.Schema) error {
 	}
 	return nil
 }
+
+// TODO: Test UPDATE code with an instance of an address that now belongs to a different person in the system...
 
 /*
 	func TestLoadBasicObject(t * testing.T) {

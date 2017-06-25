@@ -31,6 +31,16 @@ func primaryField(name string) *Field {
 	return fld
 }
 
+func fkField(name string) *Field {
+	fld := DefaultField()
+	fld.Name = name
+	fld.DBType = "integer"
+	fld.IsIdentity = false
+	fld.IsNumber = true
+	fld.Source = name
+	return fld
+}
+
 // Very simple person table initially
 func peopleTable() *Table {
 	tbl := DefaultTable()
@@ -55,6 +65,7 @@ func addressTable() *Table {
 	tbl.Fields["Address2"] = fieldAddress("Address2")
 	tbl.Fields["City"] = fieldAddress("City")
 	tbl.Fields["State"] = fieldAddress("State")
+	tbl.Fields["PersonID"] = fkField("PersonID")
 
 	zip := fieldAddress("Zip")
 	zip.AllowNull = true // TODO: Is this what we want to use to disable validation?
