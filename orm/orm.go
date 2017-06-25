@@ -16,8 +16,11 @@ func Save(db *sql.DB, sch *schema.Schema, obj *object.Object) (int64, error) {
 	if objTable == nil {
 		return 0, errors.New("Save: unknown object table " + obj.Type)
 	}
+	if obj.GetSaved() {
+		return 0, nil
+	}
 	if !objTable.MultiKey {
-		_, ok := obj.KV[objTable.Primary]
+		_, ok := obj.KV[objTable.Fields[objTable.Primary].Name]
 		if !ok {
 			return Insert(db, sch, obj)
 		}
@@ -35,51 +38,39 @@ func Insert(db *sql.DB, sch *schema.Schema, obj *object.Object) (int64, error) {
 	if objTable == nil {
 		return 0, errors.New("Insert: unknown object table " + obj.Type)
 	}
-	if !objTable.MultiKey {
-		// TODO: It would be nice to capture the ID back and store it.
+	// NOTE: perhaps the generator should become a part of the schema...
+	// This should work well once we understand OOP in Go a bit better.
+	// We should set the generators prior to running any ORM operations.
+	gen := sqlitegen.New("sqlite", "test", sch)
 
-		// NOTE: perhaps the generator should become a part of the schema...
-		// This should work well once we understand OOP in Go a bit better.
-		// We should set the generators prior to running any ORM operations.
-		gen := sqlitegen.New("sqlite", "test", sch)
-
-		sql, bindArgs, err := gen.BindingInsert(obj.Type, obj.KV)
-		if err != nil {
-			return 0, err
-		}
-
-		//		fmt.Println(sql)
-		//		fmt.Println(bindArgs)
-		stmt, err := db.Prepare(sql)
-		if err != nil {
-			return 0, err
-		}
-		defer stmt.Close()
-
-		res, err := stmt.Exec(bindArgs...)
-		if err != nil {
-			return 0, err
-		}
-
-		newID, err := res.LastInsertId()
-		if err != nil {
-			return 0, err
-		}
-		rowsAff, err := res.RowsAffected()
-		if err != nil {
-			return 0, err
-		}
-		// Set our new primary key in the objcet
-		obj.Set(objTable.Primary, newID)
-		// Note that the object has been saved recently
-		obj.SetSaved(true)
-		// Reset the 'changed fields' if any exist
-		obj.ResetChangedFields()
-
-		return rowsAff, nil
+	sql, bindArgs, err := gen.BindingInsert(obj.Type, obj.KV)
+	if err != nil {
+		return 0, err
 	}
 
-	panic("Insert() does not yet support MultiKey")
+	stmt, err := db.Prepare(sql)
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(bindArgs...)
+	if err != nil {
+		return 0, err
+	}
+	newID, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	rowsAff, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	obj.Set(objTable.Primary, newID) // Set the new primary key in the object
+	obj.SetSaved(true)               // Note that the object has been recently saved
+	obj.ResetChangedFields()         // Reset the 'changed fields', if any
+	return rowsAff, nil
 }
 
 // Update function will UPDATE a record depending on various values
@@ -88,6 +79,36 @@ func Update(db *sql.DB, sch *schema.Schema, obj *object.Object) (int64, error) {
 	if objTable == nil {
 		return 0, errors.New("Update: unknown object table " + obj.Type)
 	}
+	// NOTE: perhaps the generator should become a part of the schema...
+	// This should work well once I grok OOP in Go a bit better w.r.t. how this should
+	// all be structured.
+	// Perhaps I should set the generators prior to running any ORM operations.
+	gen := sqlitegen.New("sqlite", "test", sch)
 
-	panic("Update not yet implemented")
+	sql, bindArgs, err := gen.BindingUpdate(sch, obj)
+	if err != nil {
+		return 0, err
+	}
+
+	stmt, err := db.Prepare(sql)
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(bindArgs...)
+	if err != nil {
+		return 0, err
+	}
+
+	rowsAff, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	obj.SetSaved(true)       // Note that the object has been recently saved
+	obj.ResetChangedFields() // Reset the 'changed fields', if any
+
+	return rowsAff, nil
+
 }

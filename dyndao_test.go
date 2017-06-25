@@ -41,19 +41,49 @@ func TestSaveBasicObject(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	{
+		rowsAff, err := orm.Save(db, sch, obj)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !obj.GetSaved() {
+			t.Fatal("Unknown object error, object not saved")
+		}
+		if rowsAff == 0 {
+			t.Fatal("Rows affected shouldn't be zero initially")
+		}
+	}
+
+	//fmt.Println("PersonID=", obj.Get("PersonID"))
+
+	// Test second save to ensure that we don't save the object twice needlessly...
+	// This caught a silly bug early on.
+	{
+		rowsAff, err := orm.Save(db, sch, obj)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if rowsAff > 0 {
+			t.Fatal("rowsAff should be zero the second time")
+		}
+		//		fmt.Println("rowsAff=", rowsAff)
+	}
+
+	// Now this should force an update
+	obj.Set("Name", "Joe") // name change
+
 	rowsAff, err := orm.Save(db, sch, obj)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println("rowsAff=", rowsAff)
-
-	fmt.Println("PersonID=", obj.Get("PersonID"))
+	if rowsAff == 0 {
+		t.Fatalf("rowsAff should not be zero")
+	}
 
 	err = dropTables(db, sch)
 	if err != nil {
 		t.Fatal(err)
 	}
-
 }
 
 func createTables(db *sql.DB, sch *schema.Schema) error {
@@ -69,7 +99,6 @@ func createTables(db *sql.DB, sch *schema.Schema) error {
 		if err != nil {
 			return err
 		}
-
 	}
 	return nil
 }
@@ -84,7 +113,6 @@ func dropTables(db *sql.DB, sch *schema.Schema) error {
 		if err != nil {
 			return err
 		}
-
 	}
 	return nil
 }

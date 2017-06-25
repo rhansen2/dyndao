@@ -1,6 +1,8 @@
 // Package object is an abstract data record which tracks state changes.
+// It's meant to make it easier to map key-value records into ORM / RDBMS
+// structures.
 // The state change tracking can be useful when the values of primary keys
-// need to change.
+// need to change. (Changing a foreign key on a table with a composite key, for example)
 package object
 
 // Object struct encapsulates our key-value pairs and a single-item per-key history
@@ -15,7 +17,7 @@ type Object struct {
 
 // New is an empty constructor
 func New(objType string) *Object {
-	return &Object{Type: objType, KV: makeEmptyMap(), ChangedFields: makeEmptyMap(), Children: makeEmptyChildrenMap()}
+	return &Object{Type: objType, KV: makeEmptyMap(), ChangedFields: makeEmptyMap(), Children: makeEmptyChildrenMap(), saved: false}
 }
 
 func makeEmptyMap() map[string]interface{} {
@@ -26,15 +28,13 @@ func makeEmptyChildrenMap() map[string]*Object {
 	return make(map[string]*Object)
 }
 
-// TODO: ForEach method for the KV? ...
-
 // Get is our accessor
 func (o Object) Get(k string) interface{} {
 	return o.KV[k]
 }
 
 // Set is our setter
-func (o Object) Set(k string, v interface{}) {
+func (o *Object) Set(k string, v interface{}) {
 	oldVal := o.Get(k)
 
 	if oldVal != nil {
@@ -44,7 +44,9 @@ func (o Object) Set(k string, v interface{}) {
 		}
 		o.FieldChanged(k, oldVal)
 	}
-
+	if o.GetSaved() {
+		o.SetSaved(false)
+	}
 	o.rawSet(k, v)
 }
 
@@ -59,12 +61,12 @@ func (o Object) rawSet(k string, v interface{}) {
 
 // ResetChangedFields can be used in conjunction with an ORM... For instance,
 // once a Save() method is invoked
-func (o Object) ResetChangedFields() {
+func (o *Object) ResetChangedFields() {
 	o.ChangedFields = make(map[string]interface{})
 }
 
 // SetSaved is our setter for the 'object is saved' status field
-func (o Object) SetSaved(status bool) {
+func (o *Object) SetSaved(status bool) {
 	o.saved = status
 }
 
