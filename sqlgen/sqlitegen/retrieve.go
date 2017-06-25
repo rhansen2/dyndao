@@ -58,18 +58,20 @@ func renderWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Fiel
 			foreignKeyLen = len(schTable.ForeignKeys)
 		}
 
-		bindArgsLen := len(schTable.Primaries) + foreignKeyLen
+		bindArgsLen := 1 + foreignKeyLen
 
 		whereKeys := make([]string, bindArgsLen)
 		bindArgs = make([]interface{}, bindArgsLen)
 
 		i := 0
-		for _, pk := range schTable.Primaries {
-			f := fieldsMap[pk]
+		{
+			pk := schTable.Primary
+			f := fieldsMap[schTable.Primary]
 			whereKeys[i] = fmt.Sprintf("%s = %s", f.Name, renderBindingUpdateValue(f))
 			bindArgs[i] = obj.Get(pk)
 			i++
 		}
+
 		if foreignKeyLen > 0 {
 			for _, pk := range schTable.ForeignKeys {
 				f := fieldsMap[pk]

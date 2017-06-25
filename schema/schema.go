@@ -16,7 +16,6 @@ func DefaultTable() *Table {
 	tbl := &Table{
 		MultiKey:        false,
 		Primary:         "",
-		Primaries:       nil,
 		Fields:          fieldsMap,
 		EssentialFields: nil,
 		Children:        childrenMap,

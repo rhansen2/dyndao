@@ -7,10 +7,9 @@ type Schema struct {
 
 // Table is the metadata container for a SQL table definition
 type Table struct {
-	MultiKey bool   `json:"MultiKey"` // Use Primary or Primaries
+	MultiKey bool   `json:"MultiKey"` // Use Primary or Primary + ForeignKeys
 	Primary  string `json:"Primary"`
 
-	Primaries []string `json:"Primaries"`
 	// MultiKey must be set to true if a table has
 	// foreign keys.
 	ForeignKeys []string `json:"ForeignKeys"`

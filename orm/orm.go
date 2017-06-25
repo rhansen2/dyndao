@@ -68,38 +68,22 @@ func SaveObject(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema,
 	if obj.GetSaved() {
 		return 0, nil
 	}
+
 	fieldMap := objTable.Fields
-	if !objTable.MultiKey {
-		pk := objTable.Primary
-		if pk == "" {
-			return 0, errors.New("SaveObject: empty primary key for " + obj.Type)
-		}
-		f := fieldMap[pk]
-		if f == nil {
-			return 0, errors.New("SaveObject: empty field " + pk + " for " + obj.Type)
-		}
-
-		_, ok := obj.KV[f.Name]
-		if !ok {
-			return Insert(ctx, db, tx, sch, obj)
-		}
-		return Update(ctx, db, tx, sch, obj)
+	pk := objTable.Primary
+	if pk == "" {
+		return 0, errors.New("SaveObject: empty primary key for " + obj.Type)
+	}
+	f := fieldMap[pk]
+	if f == nil {
+		return 0, errors.New("SaveObject: empty field " + pk + " for " + obj.Type)
 	}
 
-	// multi key mode
-	for _, pk := range objTable.Primaries {
-		f := fieldMap[pk]
-		if f == nil {
-			return 0, errors.New("SaveObject: empty field " + pk + " for " + obj.Type)
-		}
-		_, ok := obj.KV[f.Name]
-		if !ok {
-			return Insert(ctx, db, tx, sch, obj)
-		}
-		return Update(ctx, db, tx, sch, obj)
+	_, ok := obj.KV[f.Name]
+	if !ok {
+		return Insert(ctx, db, tx, sch, obj)
 	}
-
-	panic("SaveObject() does not yet support MultiKey")
+	return Update(ctx, db, tx, sch, obj)
 
 	//	return 0, nil
 }
