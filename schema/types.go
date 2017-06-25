@@ -11,7 +11,9 @@ type Table struct {
 	Primary  string `json:"Primary"`
 
 	Primaries []string `json:"Primaries"`
-
+	// MultiKey must be set to true if a table has
+	// foreign keys.
+	ForeignKeys []string `json:"ForeignKeys"`
 	// Fields is the column definitions for the SQL table
 	Fields map[string]*Field `json:"Fields"`
 

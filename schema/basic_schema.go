@@ -38,6 +38,8 @@ func peopleTable() *Table {
 	tbl.Primary = "PersonID"
 	tbl.Fields["PersonID"] = primaryField("PersonID") //fieldID("PersonID")
 	tbl.Fields["Name"] = fieldName()
+	tbl.EssentialFields = []string{"PersonID", "Name"}
+
 	return tbl
 }
 

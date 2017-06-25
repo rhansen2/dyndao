@@ -3,6 +3,7 @@
 package tests
 
 import (
+	"context"
 	// These tests are specific to SQLite
 	_ "github.com/mattn/go-sqlite3"
 
@@ -27,9 +28,10 @@ func getDB() *sql.DB {
 
 func TestSaveBasicObject(t *testing.T) {
 	sch := schema.MockBasicSchema()
+	table := "people"
 
 	// NOTE: This should force insert
-	obj := object.New("people")
+	obj := object.New(table)
 	//obj.Set("PersonID", 1)
 	obj.Set("Name", "Ryan")
 
@@ -42,7 +44,7 @@ func TestSaveBasicObject(t *testing.T) {
 	}
 
 	{
-		rowsAff, err := orm.Save(db, sch, obj)
+		rowsAff, err := orm.Save(context.TODO(), db, sch, obj)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -59,7 +61,7 @@ func TestSaveBasicObject(t *testing.T) {
 	// Test second save to ensure that we don't save the object twice needlessly...
 	// This caught a silly bug early on.
 	{
-		rowsAff, err := orm.Save(db, sch, obj)
+		rowsAff, err := orm.Save(context.TODO(), db, sch, obj)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -72,7 +74,7 @@ func TestSaveBasicObject(t *testing.T) {
 	// Now this should force an update
 	obj.Set("Name", "Joe") // name change
 
-	rowsAff, err := orm.Save(db, sch, obj)
+	rowsAff, err := orm.Save(context.TODO(), db, sch, obj)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,11 +82,29 @@ func TestSaveBasicObject(t *testing.T) {
 		t.Fatalf("rowsAff should not be zero")
 	}
 
+	if !obj.GetSaved() {
+		t.Fatal("system is claiming object isn't saved")
+	}
+
+	{
+		// refleshen our object
+		latestJoe, err := orm.Retrieve(context.TODO(), db, sch, table, obj.KV)
+		if err != nil {
+			t.Fatal("retrieve failed: " + err.Error())
+		}
+		if latestJoe.Get("PersonID") != 1 && latestJoe.Get("Name") != "Joe" {
+			t.Fatal("latestJoe does not match expectations")
+		}
+		fmt.Println(latestJoe)
+	}
+
 	err = dropTables(db, sch)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
+
+// TODO: use contexts down here also
 
 func createTables(db *sql.DB, sch *schema.Schema) error {
 	gen := sqlitegen.New("sqlite", "test", sch)
