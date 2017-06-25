@@ -62,23 +62,3 @@ func BasicSchema() *Schema {
 	sch.Tables["permissions"] = permissionsTable()
 	return sch
 }
-
-/*
-func usersTable() *Schema {
-	tbl := DefaultTable()
-	tbl.MultiKey = false tbl.Primary = "id"
-	tbl.Fields[""]
-}
-
-func addressesTable() *Schema {
-
-}
-
-func addressBookSchema() *Schema {
-
-	sch := DefaultSchema()
-	sch.Tables["users"] = usersTable()
-	sch.Tables["addresses"] = addressesTable()
-}
-
-*/

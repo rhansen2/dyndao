@@ -46,6 +46,10 @@ func peopleTable() *Table {
 // Very simple address table initially
 func addressTable() *Table {
 	tbl := DefaultTable()
+	tbl.Primaries = []string{"AddressID"}
+	tbl.MultiKey = true
+	tbl.ForeignKeys = []string{"PersonID"}
+
 	tbl.Fields["AddressID"] = primaryField("AddressID")
 	tbl.Fields["Address1"] = fieldAddress("Address1")
 	tbl.Fields["Address2"] = fieldAddress("Address2")

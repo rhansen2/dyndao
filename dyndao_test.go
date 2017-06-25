@@ -44,7 +44,7 @@ func TestSaveBasicObject(t *testing.T) {
 	}
 
 	{
-		rowsAff, err := orm.Save(context.TODO(), db, sch, obj)
+		rowsAff, err := orm.SaveObject(context.TODO(), db, nil, sch, obj)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -61,7 +61,7 @@ func TestSaveBasicObject(t *testing.T) {
 	// Test second save to ensure that we don't save the object twice needlessly...
 	// This caught a silly bug early on.
 	{
-		rowsAff, err := orm.Save(context.TODO(), db, sch, obj)
+		rowsAff, err := orm.SaveObject(context.TODO(), db, nil, sch, obj)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -74,7 +74,7 @@ func TestSaveBasicObject(t *testing.T) {
 	// Now this should force an update
 	obj.Set("Name", "Joe") // name change
 
-	rowsAff, err := orm.Save(context.TODO(), db, sch, obj)
+	rowsAff, err := orm.SaveObject(context.TODO(), db, nil, sch, obj)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,7 +88,7 @@ func TestSaveBasicObject(t *testing.T) {
 
 	{
 		// refleshen our object
-		latestJoe, err := orm.Retrieve(context.TODO(), db, sch, table, obj.KV)
+		latestJoe, err := orm.RetrieveObject(context.TODO(), db, sch, table, obj.KV)
 		if err != nil {
 			t.Fatal("retrieve failed: " + err.Error())
 		}
@@ -102,6 +102,53 @@ func TestSaveBasicObject(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func sampleAddressObject() *object.Object {
+	addr := object.New("addresses")
+	addr.Set("Address1", "Test")
+	addr.Set("Address2", "Test2")
+	addr.Set("City", "Nowhere")
+	addr.Set("State", "AZ")
+	return addr
+}
+
+func TestSaveNestedObject(t *testing.T) {
+	sch := schema.MockNestedSchema()
+	rootTable := "people"
+
+	obj := object.New(rootTable)
+	obj.Set("Name", "Ryan")
+
+	addrObj := sampleAddressObject()
+	obj.Children["addresses"] = addrObj
+
+	db := getDB()
+	defer db.Close()
+
+	err := createTables(db, sch)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	{
+		rowsAff, err := orm.Save(context.TODO(), db, sch, obj)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !obj.GetSaved() {
+			t.Fatal("Unknown object error, object not saved")
+		}
+		if rowsAff == 0 {
+			t.Fatal("Rows affected shouldn't be zero initially")
+		}
+	}
+
+	err = dropTables(db, sch)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 }
 
 // TODO: use contexts down here also

@@ -3,7 +3,6 @@ package orm
 import (
 	"context"
 	"database/sql"
-	"log"
 
 	"github.com/pkg/errors"
 
@@ -12,34 +11,104 @@ import (
 	"github.com/rbastic/dyndao/sqlgen/sqlitegen"
 )
 
-// Save function will INSERT or UPDATE a record depending on
-// various values.
+func recurseAndSave(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema, obj *object.Object) (int64, error) {
+	// TODO: Implement transactions. Implement 'foreign key fill'
+	// in children objects
+	rowsAff, err := SaveObject(ctx, db, tx, sch, obj)
+	if err != nil {
+		return 0, err
+	}
+
+	// TODO: ChildrenOrder going to happen here?
+	for _, v := range obj.Children {
+		//fmt.Println("attempting to save k=", k, "v=", v)
+		rowsAff, err := recurseAndSave(ctx, db, tx, sch, v)
+		if err != nil {
+			return rowsAff, err
+		}
+
+	}
+	return rowsAff, err
+}
+
+// Save will attempt to save an entire nested object structure inside of a single transaction.
 func Save(ctx context.Context, db *sql.DB, sch *schema.Schema, obj *object.Object) (int64, error) {
+	// TODO: Implement transactions. Implement 'foreign key fill'
+	// in children objects
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+	// TODO: Review this code for how it uses transactions / rollbacks.
+	rowsAff, err := recurseAndSave(ctx, db, tx, sch, obj)
+	if err != nil {
+		err2 := tx.Rollback()
+		if err2 != nil {
+			// TODO: Not sure if this wrap is right.
+			return 0, errors.Wrap(err, err2.Error())
+		}
+		return 0, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return 0, err
+	}
+	return rowsAff, nil
+}
+
+// SaveObject function will INSERT or UPDATE a record depending on
+// various values.
+func SaveObject(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema, obj *object.Object) (int64, error) {
 	objTable := sch.Tables[obj.Type]
 	if objTable == nil {
-		return 0, errors.New("Save: unknown object table " + obj.Type)
+		return 0, errors.New("SaveObject: unknown object table " + obj.Type)
 	}
 	if obj.GetSaved() {
 		return 0, nil
 	}
+	fieldMap := objTable.Fields
 	if !objTable.MultiKey {
-		_, ok := obj.KV[objTable.Fields[objTable.Primary].Name]
-		if !ok {
-			return Insert(ctx, db, sch, obj)
+		pk := objTable.Primary
+		if pk == "" {
+			return 0, errors.New("SaveObject: empty primary key for " + obj.Type)
 		}
-		return Update(ctx, db, sch, obj)
+		f := fieldMap[pk]
+		if f == nil {
+			return 0, errors.New("SaveObject: empty field " + pk + " for " + obj.Type)
+		}
+
+		_, ok := obj.KV[f.Name]
+		if !ok {
+			return Insert(ctx, db, tx, sch, obj)
+		}
+		return Update(ctx, db, tx, sch, obj)
 	}
 
-	panic("Save() does not yet support MultiKey")
+	// multi key mode
+	for _, pk := range objTable.Primaries {
+		f := fieldMap[pk]
+		if f == nil {
+			return 0, errors.New("SaveObject: empty field " + pk + " for " + obj.Type)
+		}
+		_, ok := obj.KV[f.Name]
+		if !ok {
+			return Insert(ctx, db, tx, sch, obj)
+		}
+		return Update(ctx, db, tx, sch, obj)
+	}
+
+	panic("SaveObject() does not yet support MultiKey")
 
 	//	return 0, nil
 }
 
-// Retrieve function will fleshen an entire object structure, given some primary keys.
-func Retrieve(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, pkValues map[string]interface{}) (*object.Object, error) {
+// RetrieveObject function will fleshen an object structure, given some primary keys
+func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, pkValues map[string]interface{}) (*object.Object, error) {
 	objTable := sch.Tables[table]
 	if objTable == nil {
-		return nil, errors.New("Retrieve: unknown object table " + table)
+		return nil, errors.New("RetrieveObject: unknown object table " + table)
 	}
 	obj := object.New(table)
 	obj.KV = pkValues
@@ -49,7 +118,8 @@ func Retrieve(ctx context.Context, db *sql.DB, sch *schema.Schema, table string,
 	if err != nil {
 		return nil, err
 	}
-	stmt, err := db.Prepare(sql)
+
+	stmt, err := db.PrepareContext(ctx, sql)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +159,7 @@ func Retrieve(ctx context.Context, db *sql.DB, sch *schema.Schema, table string,
 		}
 
 		if err := res.Scan(columnPointers...); err != nil {
-			log.Fatalln(err)
+			return nil, err
 		}
 
 		for i, v := range columnPointers {
@@ -115,7 +185,7 @@ func Retrieve(ctx context.Context, db *sql.DB, sch *schema.Schema, table string,
 // TODO: Read this post for more info on the above... https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
 
 // Insert function will INSERT a record depending on various values
-func Insert(ctx context.Context, db *sql.DB, sch *schema.Schema, obj *object.Object) (int64, error) {
+func Insert(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema, obj *object.Object) (int64, error) {
 	objTable := sch.Tables[obj.Type]
 	if objTable == nil {
 		return 0, errors.New("Insert: unknown object table " + obj.Type)
@@ -125,12 +195,16 @@ func Insert(ctx context.Context, db *sql.DB, sch *schema.Schema, obj *object.Obj
 	// We should set the generators prior to running any ORM operations.
 	gen := sqlitegen.New("sqlite", "test", sch)
 
-	sql, bindArgs, err := gen.BindingInsert(obj.Type, obj.KV)
+	sqlStr, bindArgs, err := gen.BindingInsert(obj.Type, obj.KV)
 	if err != nil {
 		return 0, err
 	}
-
-	stmt, err := db.PrepareContext(ctx, sql)
+	var stmt *sql.Stmt
+	if tx != nil {
+		stmt, err = tx.PrepareContext(ctx, sqlStr)
+	} else {
+		stmt, err = db.PrepareContext(ctx, sqlStr)
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -156,7 +230,7 @@ func Insert(ctx context.Context, db *sql.DB, sch *schema.Schema, obj *object.Obj
 }
 
 // Update function will UPDATE a record depending on various values
-func Update(ctx context.Context, db *sql.DB, sch *schema.Schema, obj *object.Object) (int64, error) {
+func Update(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema, obj *object.Object) (int64, error) {
 	objTable := sch.Tables[obj.Type]
 	if objTable == nil {
 		return 0, errors.New("Update: unknown object table " + obj.Type)
@@ -167,12 +241,17 @@ func Update(ctx context.Context, db *sql.DB, sch *schema.Schema, obj *object.Obj
 	// Perhaps I should set the generators prior to running any ORM operations.
 	gen := sqlitegen.New("sqlite", "test", sch)
 
-	sql, bindArgs, bindWhere, err := gen.BindingUpdate(sch, obj)
+	sqlStr, bindArgs, bindWhere, err := gen.BindingUpdate(sch, obj)
 	if err != nil {
 		return 0, err
 	}
 
-	stmt, err := db.PrepareContext(ctx, sql)
+	var stmt *sql.Stmt
+	if tx != nil {
+		stmt, err = tx.PrepareContext(ctx, sqlStr)
+	} else {
+		stmt, err = db.PrepareContext(ctx, sqlStr)
+	}
 	if err != nil {
 		return 0, err
 	}
