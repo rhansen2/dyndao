@@ -31,6 +31,11 @@ func NewObjectArray(val *Object) ObjectArray {
 	return objAry
 }
 
+func NewEmptyObjectArray() ObjectArray {
+	objAry := make(ObjectArray, 0)
+	return objAry
+}
+
 func makeEmptyMap() map[string]interface{} {
 	return make(map[string]interface{})
 }

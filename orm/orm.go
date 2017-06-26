@@ -192,19 +192,27 @@ func RetrieveWithChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, t
 }
 
 // RetrieveObject function will fleshen an object structure, given some primary keys
-func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, pkValues map[string]interface{}) (*object.Object, error) {
+func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, queryVals map[string]interface{}) (*object.Object, error) {
+	// TODO: Implement limit... That's all a singular retrieve should be underneath the hood that's different.
+	objAry, err := RetrieveObjects(ctx, db, sch, table, queryVals)
+	if err != nil {
+		return nil, err
+	}
+	return objAry[0], nil
+}
+
+// RetrieveObjects function will fleshen an object structure, given some primary keys
+func RetrieveObjects(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, queryVals map[string]interface{}) (object.ObjectArray, error) {
 	objTable := sch.Tables[table]
 	if objTable == nil {
-		return nil, errors.New("RetrieveObject: unknown object table " + table)
+		return nil, errors.New("RetrieveObjects: unknown object table " + table)
 	}
-	obj := object.New(table)
-	//fmt.Println("RetrieveObject.pkValues=", pkValues)
-	//obj.KV = pkValues
+	var objectArray object.ObjectArray
 
 	gen := sqlitegen.New("sqlite", "test", sch)
 
 	queryObj := object.New(table)
-	queryObj.KV = pkValues
+	queryObj.KV = queryVals
 
 	sqlStr, bindArgs, err := gen.BindingRetrieve(sch, queryObj)
 	if err != nil {
@@ -232,36 +240,38 @@ func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table s
 		return nil, err
 	}
 
-	for res.Next() {
-		columnPointers := make([]interface{}, len(columnNames))
-		for i := 0; i < len(columnNames); i++ {
-			ct := columnTypes[i]
-			// TODO: Improve database type support.
-			//fmt.Println(ct.DatabaseTypeName())
+	columnPointers := make([]interface{}, len(columnNames))
+	for i := 0; i < len(columnNames); i++ {
+		ct := columnTypes[i]
+		// TODO: Improve database type support.
+		//fmt.Println(ct.DatabaseTypeName())
 
-			// TODO: Do I need to reset columnPointers every time?
-			if ct.DatabaseTypeName() == "text" {
-				nullable, _ := ct.Nullable()
-				if nullable {
-					var s sql.NullString
-					columnPointers[i] = &s
-				} else {
-					var s string
-					columnPointers[i] = &s
-				}
+		// TODO: Do I need to reset columnPointers every time?
+		if ct.DatabaseTypeName() == "text" {
+			nullable, _ := ct.Nullable()
+			if nullable {
+				var s sql.NullString
+				columnPointers[i] = &s
 			} else {
-				nullable, _ := ct.Nullable()
-				if nullable {
-					var j sql.NullInt64
-					columnPointers[i] = &j
-				} else {
-					var j int64
-					columnPointers[i] = &j
-
-				}
+				var s string
+				columnPointers[i] = &s
 			}
-			// columnPointers[i] = &columns[i]
+		} else {
+			nullable, _ := ct.Nullable()
+			if nullable {
+				var j sql.NullInt64
+				columnPointers[i] = &j
+			} else {
+				var j int64
+				columnPointers[i] = &j
+
+			}
 		}
+		// columnPointers[i] = &columns[i]
+	}
+
+	for res.Next() {
+		obj := object.New(table)
 
 		if err := res.Scan(columnPointers...); err != nil {
 			return nil, err
@@ -300,16 +310,23 @@ func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table s
 				}
 			}
 		}
-	}
+		obj.SetSaved(true)
+		obj.ResetChangedFields()
 
-	obj.SetSaved(true)
-	obj.ResetChangedFields()
+		if objectArray == nil {
+			objectArray = object.NewObjectArray(obj)
+		} else {
+			newObjectArray := make(object.ObjectArray, len(objectArray)+1)
+			copy(newObjectArray, objectArray)
+			objectArray = append(newObjectArray, obj)
+		}
+	}
 
 	err = res.Err()
 	if err != nil {
 		return nil, err
 	}
-	return obj, nil
+	return objectArray, nil
 }
 
 // TODO: Read this post for more info on the above...

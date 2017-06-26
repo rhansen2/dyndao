@@ -94,6 +94,9 @@ func TestSaveBasicObject(t *testing.T) {
 		if err != nil {
 			t.Fatal("retrieve failed: " + err.Error())
 		}
+		if latestJoe == nil {
+			t.Fatal("LatestJoe Should not be nil!")
+		}
 		if latestJoe.Get("PersonID") != 1 && latestJoe.Get("Name") != "Joe" {
 			t.Fatal("latestJoe does not match expectations")
 		}
