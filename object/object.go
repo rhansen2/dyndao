@@ -9,11 +9,14 @@ package object
 
 // Object struct encapsulates our key-value pairs and a single-item per-key history
 // of the previous value stored for a given key.
+
+type ObjectArray []*Object
+
 type Object struct {
 	Type          string
 	KV            map[string]interface{} `json:"KV"`
 	ChangedFields map[string]interface{} `json:"ChangedFields"`
-	Children      map[string]*Object     // TODO: make this value an array
+	Children      map[string]ObjectArray // TODO: make this value an array
 	saved         bool
 }
 
@@ -22,12 +25,18 @@ func New(objType string) *Object {
 	return &Object{Type: objType, KV: makeEmptyMap(), ChangedFields: makeEmptyMap(), Children: makeEmptyChildrenMap(), saved: false}
 }
 
+func NewObjectArray(val *Object) ObjectArray {
+	objAry := make(ObjectArray, 1)
+	objAry[0] = val
+	return objAry
+}
+
 func makeEmptyMap() map[string]interface{} {
 	return make(map[string]interface{})
 }
 
-func makeEmptyChildrenMap() map[string]*Object {
-	return make(map[string]*Object)
+func makeEmptyChildrenMap() map[string]ObjectArray {
+	return make(map[string]ObjectArray)
 }
 
 // Get is our accessor

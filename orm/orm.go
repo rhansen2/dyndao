@@ -27,25 +27,26 @@ func recurseAndSave(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Sch
 
 	// TODO: ChildrenOrder going to happen here?
 	for _, v := range obj.Children {
-		// set the primary key in the child object, if it exists in the child object's table
-		childTable, ok := sch.Tables[v.Type]
-		if !ok {
-			return 0, errors.New("recurseAndSave: Unknown child object type " + v.Type + " for parent type " + obj.Type)
-		}
-		// check if the child schema table contains
-		// the parent's primary key field as a name
+		for _, childObj := range v {
+			// set the primary key in the child object, if it exists in the child object's table
+			childTable, ok := sch.Tables[childObj.Type]
+			if !ok {
+				return 0, errors.New("recurseAndSave: Unknown child object type " + childObj.Type + " for parent type " + obj.Type)
+			}
+			// check if the child schema table contains
+			// the parent's primary key field as a name
 
-		_, ok = childTable.Fields[table.Primary]
-		if ok {
-			// ensure it's set if so
-			v.Set(table.Primary, pkVal)
-		}
+			_, ok = childTable.Fields[table.Primary]
+			if ok {
+				// ensure it's set if so
+				childObj.Set(table.Primary, pkVal)
+			}
 
-		rowsAff, err := recurseAndSave(ctx, db, tx, sch, v)
-		if err != nil {
-			return rowsAff, err
+			rowsAff, err := recurseAndSave(ctx, db, tx, sch, childObj)
+			if err != nil {
+				return rowsAff, err
+			}
 		}
-
 	}
 	return rowsAff, err
 }
@@ -118,7 +119,10 @@ func RetrieveParentViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema,
 	}
 	// TODO: support multiple objects...
 	if childObj != nil {
-		obj.Children[childObj.Type] = childObj
+		if obj.Children[childObj.Type] == nil {
+			obj.Children[childObj.Type] = make(object.ObjectArray, 1)
+		}
+		obj.Children[childObj.Type][0] = childObj
 	}
 
 	// TODO: Not sure that this approach ends up very
@@ -130,7 +134,10 @@ func RetrieveParentViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema,
 			if err != nil {
 				return nil, err
 			}
-			parentObj.Children[table] = obj
+			if parentObj.Children[table] == nil {
+				parentObj.Children[table] = make(object.ObjectArray, 1)
+			}
+			parentObj.Children[table][0] = obj
 		}
 	}
 	if parentObj == nil {
@@ -176,7 +183,10 @@ func RetrieveWithChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, t
 		if err != nil {
 			return nil, errors.Wrap(err, "RetrieveWithChildren/RetrieveObject("+name+")")
 		}
-		obj.Children[name] = childObj
+		if obj.Children[name] == nil {
+			obj.Children[name] = make(object.ObjectArray, 1)
+		}
+		obj.Children[name][0] = childObj
 	}
 	return obj, nil
 }

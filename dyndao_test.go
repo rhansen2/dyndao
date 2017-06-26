@@ -124,7 +124,7 @@ func TestSaveNestedObject(t *testing.T) {
 	obj.Set("Name", "Ryan")
 
 	addrObj := sampleAddressObject()
-	obj.Children["addresses"] = addrObj
+	obj.Children["addresses"] = object.NewObjectArray(addrObj)
 
 	db := getDB()
 	defer db.Close()
@@ -177,8 +177,8 @@ func TestSaveNestedObject(t *testing.T) {
 		if len(latestRyan.Children) == 0 {
 			t.Fatal("latestRyan has no children")
 		}
-		addrObj, ok := latestRyan.Children["addresses"]
-		if !ok {
+		addrObj := latestRyan.Children["addresses"][0]
+		if addrObj == nil {
 			t.Fatal("latestRyan lacks an 'addresses' child")
 		}
 		if addrObj != nil {

@@ -42,13 +42,16 @@ func ToJSONFromObject(sch *schema.Schema, obj *object.Object, rootJSON string, r
 
 	if obj.Children != nil && len(obj.Children) > 0 {
 		for k, v := range obj.Children {
-			childJSON, err := ToJSONFromObject(sch, v, "{}", rootPath)
-			if err != nil {
-				return "", fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)
-			}
-			rootJSON, err = sjson.SetRaw(rootJSON, rootPath+"."+k, childJSON)
-			if err != nil {
-				return "", fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)
+			for _, childObj := range v {
+				childJSON, err := ToJSONFromObject(sch, childObj, "{}", rootPath)
+				if err != nil {
+					return "", fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)
+				}
+				// TODO: use i iterator variable somewhere here with SetRaw..
+				rootJSON, err = sjson.SetRaw(rootJSON, rootPath+"."+k, childJSON)
+				if err != nil {
+					return "", fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)
+				}
 			}
 		}
 	}
@@ -92,12 +95,17 @@ func ToObjectFromJSON(sch *schema.Schema, tbl string, json string) (*object.Obje
 
 func walkChildrenFromJSON(sch *schema.Schema, table *schema.Table, obj *object.Object, json string) error {
 	if table.Children != nil && len(table.Children) > 0 {
+		i := 0
 		for k, v := range table.Children {
 			child, err := ToObjectFromJSON(sch, k, json)
 			if err != nil {
 				return fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)
 			}
-			obj.Children[k] = child
+			if obj.Children[k] == nil {
+				obj.Children[k] = make(object.ObjectArray, len(table.Children))
+			}
+			obj.Children[k][i] = child
+			i++
 		}
 	}
 	return nil
