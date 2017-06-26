@@ -3,6 +3,7 @@ package orm
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -104,6 +105,43 @@ func SaveObject(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema,
 	return Update(ctx, db, tx, sch, obj)
 }
 
+// RetrieveWithChildren function will fleshen an *entire* object structure, given some primary keys
+func RetrieveWithChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, pkValues map[string]interface{}) (*object.Object, error) {
+	objTable := sch.Tables[table]
+	if objTable == nil {
+		return nil, errors.New("RetrieveWithChildren: unknown object table " + table)
+	}
+	obj := object.New(table)
+	obj.KV = pkValues
+
+	obj, err := RetrieveObject(ctx, db, sch, table, pkValues)
+	if err != nil {
+		return nil, errors.Wrap(err, "RetrieveWithChildren/RetrieveObject")
+	}
+
+	for name := range objTable.Children {
+		childObj := object.New(name)
+		childPkValues := make(map[string]interface{})
+
+		childSchemaTable := sch.Tables[name]
+		childPkValues[childSchemaTable.Primary] = pkValues[childSchemaTable.Primary]
+
+		if childSchemaTable.MultiKey && childSchemaTable.ForeignKeys != nil {
+			for _, fk := range childSchemaTable.ForeignKeys {
+				childPkValues[fk] = pkValues[fk]
+			}
+		}
+
+		//	fmt.Println("childPkValues=", childPkValues)
+		childObj, err := RetrieveObject(ctx, db, sch, name, childPkValues)
+		if err != nil {
+			return nil, errors.Wrap(err, "RetrieveWithChildren/RetrieveObject("+name+")")
+		}
+		obj.Children[name] = childObj
+	}
+	return obj, nil
+}
+
 // RetrieveObject function will fleshen an object structure, given some primary keys
 func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, pkValues map[string]interface{}) (*object.Object, error) {
 	objTable := sch.Tables[table]
@@ -111,15 +149,17 @@ func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table s
 		return nil, errors.New("RetrieveObject: unknown object table " + table)
 	}
 	obj := object.New(table)
+	//fmt.Println("RetrieveObject.pkValues=", pkValues)
 	obj.KV = pkValues
 
 	gen := sqlitegen.New("sqlite", "test", sch)
-	sql, bindArgs, err := gen.BindingRetrieve(sch, obj)
+	sqlStr, bindArgs, err := gen.BindingRetrieve(sch, obj)
 	if err != nil {
 		return nil, err
 	}
 
-	stmt, err := db.PrepareContext(ctx, sql)
+	fmt.Println(sqlStr)
+	stmt, err := db.PrepareContext(ctx, sqlStr)
 	if err != nil {
 		return nil, err
 	}
@@ -147,12 +187,27 @@ func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table s
 		for i := 0; i < len(columnNames); i++ {
 			ct := columnTypes[i]
 			// TODO: Improve database type support.
+			//fmt.Println(ct.DatabaseTypeName())
+
 			if ct.DatabaseTypeName() == "text" {
-				var s string
-				columnPointers[i] = &s
+				nullable, _ := ct.Nullable()
+				if nullable {
+					var s sql.NullString
+					columnPointers[i] = &s
+				} else {
+					var s string
+					columnPointers[i] = &s
+				}
 			} else {
-				var j int64
-				columnPointers[i] = &j
+				nullable, _ := ct.Nullable()
+				if nullable {
+					var j sql.NullInt64
+					columnPointers[i] = &j
+				} else {
+					var j int64
+					columnPointers[i] = &j
+
+				}
 			}
 			// columnPointers[i] = &columns[i]
 		}
@@ -164,12 +219,31 @@ func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table s
 		for i, v := range columnPointers {
 			ct := columnTypes[i]
 			// TODO: Improve database type support.
+			//fmt.Println("dbtypename=", ct.DatabaseTypeName())
+
 			if ct.DatabaseTypeName() == "text" {
-				val := v.(*string)
-				obj.Set(columnNames[i], *val)
+				nullable, _ := ct.Nullable()
+				if nullable {
+					val := v.(*sql.NullString)
+					if val.Valid {
+						obj.Set(columnNames[i], val.String)
+					}
+				} else {
+					val := v.(*string)
+					obj.Set(columnNames[i], *val)
+
+				}
 			} else {
-				val := v.(*int64)
-				obj.Set(columnNames[i], *val)
+				nullable, _ := ct.Nullable()
+				if nullable {
+					val := v.(*sql.NullInt64)
+					if val.Valid {
+						obj.Set(columnNames[i], val.Int64)
+					}
+				} else {
+					val := v.(*int64)
+					obj.Set(columnNames[i], *val)
+				}
 			}
 		}
 	}

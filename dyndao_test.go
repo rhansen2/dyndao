@@ -110,6 +110,7 @@ func sampleAddressObject() *object.Object {
 	addr.Set("Address2", "Test2")
 	addr.Set("City", "Nowhere")
 	addr.Set("State", "AZ")
+	addr.Set("Zip", "02865")
 	return addr
 }
 
@@ -131,10 +132,11 @@ func TestSaveNestedObject(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// TODO: should we rename Save to SaveWithChildren()? anyway, do a complex nested save
 	{
 		rowsAff, err := orm.Save(context.TODO(), db, sch, obj)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatal("Save:" + err.Error())
 		}
 		if !obj.GetSaved() {
 			t.Fatal("Unknown object error, object not saved")
@@ -142,6 +144,21 @@ func TestSaveNestedObject(t *testing.T) {
 		if rowsAff == 0 {
 			t.Fatal("Rows affected shouldn't be zero initially")
 		}
+	}
+
+	// now try to do a nested retrieve
+	{
+		obj.KV["AddressID"] = 1
+		latestRyan, err := orm.RetrieveWithChildren(context.TODO(), db, sch, rootTable, obj.KV)
+		if err != nil {
+			t.Fatal("retrieve failed: " + err.Error())
+		}
+		/*		if latestRyan.Get("PersonID") != 1 && latestRyan.Get("Name") != "Ryan" {
+					t.Fatal("latestRyan does not match expectations")
+				}
+		*/fmt.Println(latestRyan)
+		fmt.Println(latestRyan.Children["addresses"])
+
 	}
 
 	err = dropTables(db, sch)

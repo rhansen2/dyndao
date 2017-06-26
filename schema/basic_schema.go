@@ -66,10 +66,10 @@ func addressTable() *Table {
 	tbl.Fields["City"] = fieldAddress("City")
 	tbl.Fields["State"] = fieldAddress("State")
 	tbl.Fields["PersonID"] = fkField("PersonID")
+	tbl.Fields["Zip"] = fieldAddress("Zip")
 
-	zip := fieldAddress("Zip")
-	zip.AllowNull = true // TODO: Is this what we want to use to disable validation?
-	tbl.Fields["Zip"] = zip
+	tbl.EssentialFields = []string{"AddressID", "PersonID", "Address1", "Address2", "City", "State", "Zip"}
+
 	return tbl
 }
 
@@ -94,6 +94,8 @@ func MockNestedSchema() *Schema {
 
 	personTable.Children["addresses"] = childTable
 
-	sch.Tables["addresses"] = addressTable()
+	addrTable := addressTable()
+
+	sch.Tables["addresses"] = addrTable
 	return sch
 }
