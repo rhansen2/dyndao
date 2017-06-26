@@ -33,6 +33,7 @@ type Field struct {
 	DefaultValue string `json:"DefaultValue"` // Converts to integer if IsNumber is set
 	IsNumber     bool   `json:"IsNumber"`
 	IsIdentity   bool   `json:"IsIdentity"`
+	IsForeignKey bool   `json:"IsForeignKey"`
 	DBType       string `json:"DBType"`
 	Length       int    `json:"Length"`
 	IsUnique     bool   `json:"IsUnique"`

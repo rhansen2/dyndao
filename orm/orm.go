@@ -178,7 +178,6 @@ func RetrieveWithChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, t
 		}
 		// TODO: Should we do anything else with pkValues?
 
-		//	fmt.Println("childPkValues=", childPkValues)
 		childObj, err := RetrieveObject(ctx, db, sch, name, childPkValues)
 		if err != nil {
 			return nil, errors.Wrap(err, "RetrieveWithChildren/RetrieveObject("+name+")")
@@ -220,6 +219,8 @@ func RetrieveObjects(ctx context.Context, db *sql.DB, sch *schema.Schema, table 
 	}
 
 	//	fmt.Println(sqlStr)
+	//	fmt.Println(bindArgs)
+
 	stmt, err := db.PrepareContext(ctx, sqlStr)
 	if err != nil {
 		return nil, err
@@ -240,43 +241,42 @@ func RetrieveObjects(ctx context.Context, db *sql.DB, sch *schema.Schema, table 
 		return nil, err
 	}
 
-	columnPointers := make([]interface{}, len(columnNames))
-	for i := 0; i < len(columnNames); i++ {
-		ct := columnTypes[i]
-		// TODO: Improve database type support.
-		//fmt.Println(ct.DatabaseTypeName())
-
-		// TODO: Do I need to reset columnPointers every time?
-		if ct.DatabaseTypeName() == "text" {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				var s sql.NullString
-				columnPointers[i] = &s
-			} else {
-				var s string
-				columnPointers[i] = &s
-			}
-		} else {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				var j sql.NullInt64
-				columnPointers[i] = &j
-			} else {
-				var j int64
-				columnPointers[i] = &j
-
-			}
-		}
-		// columnPointers[i] = &columns[i]
-	}
-
 	for res.Next() {
-		obj := object.New(table)
+		columnPointers := make([]interface{}, len(columnNames))
 
+		for i := 0; i < len(columnNames); i++ {
+			ct := columnTypes[i]
+			// TODO: Improve database type support.
+			//fmt.Println(ct.DatabaseTypeName())
+
+			// TODO: Do I need to reset columnPointers every time?
+			if ct.DatabaseTypeName() == "text" {
+				nullable, _ := ct.Nullable()
+				if nullable {
+					var s sql.NullString
+					columnPointers[i] = &s
+				} else {
+					var s string
+					columnPointers[i] = &s
+				}
+			} else {
+				nullable, _ := ct.Nullable()
+				if nullable {
+					var j sql.NullInt64
+					columnPointers[i] = &j
+				} else {
+					var j int64
+					columnPointers[i] = &j
+
+				}
+			}
+			// columnPointers[i] = &columns[i]
+		}
+
+		obj := object.New(table)
 		if err := res.Scan(columnPointers...); err != nil {
 			return nil, err
 		}
-
 		for i, v := range columnPointers {
 			ct := columnTypes[i]
 			// TODO: Improve database type support.
@@ -313,13 +313,7 @@ func RetrieveObjects(ctx context.Context, db *sql.DB, sch *schema.Schema, table 
 		obj.SetSaved(true)
 		obj.ResetChangedFields()
 
-		if objectArray == nil {
-			objectArray = object.NewObjectArray(obj)
-		} else {
-			newObjectArray := make(object.ObjectArray, len(objectArray)+1)
-			copy(newObjectArray, objectArray)
-			objectArray = append(newObjectArray, obj)
-		}
+		objectArray = append(objectArray, obj)
 	}
 
 	err = res.Err()

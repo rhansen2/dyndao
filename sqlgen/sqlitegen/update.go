@@ -21,7 +21,7 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 		return "", nil, nil, errors.New("BindingUpdate: Field map unavailable for table " + obj.Type)
 	}
 
-	whereClause, bindWhere, err := renderWhereClause(schTable, fieldsMap, obj)
+	whereClause, bindWhere, err := renderUpdateWhereClause(schTable, fieldsMap, obj)
 	if err != nil {
 		return "", nil, nil, err
 	}

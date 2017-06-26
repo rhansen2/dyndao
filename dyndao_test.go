@@ -153,7 +153,8 @@ func TestSaveNestedObject(t *testing.T) {
 
 	// now try to do a nested retrieve
 	{
-		obj.KV["AddressID"] = 1
+		nobj := object.New(rootTable)
+		nobj.KV["PersonID"] = obj.Get("PersonID")
 		latestRyan, err := orm.RetrieveWithChildren(context.TODO(), db, sch, rootTable, obj.KV)
 		if err != nil {
 			t.Fatal("retrieve failed: " + err.Error())
@@ -166,13 +167,12 @@ func TestSaveNestedObject(t *testing.T) {
 
 	{
 		queryVals := map[string]interface{}{
-			"PersonID":  1,
-			"AddressID": 1,
+			"PersonID": 1,
 		}
 		childTable := "addresses"
 		latestRyan, err := orm.RetrieveParentViaChild(context.TODO(), db, sch, childTable, queryVals, nil)
 		if err != nil {
-			t.Fatal("retrieveparentsviachild failed: " + err.Error())
+			t.Fatal("RetrieveParentViaChild failed: " + err.Error())
 		}
 		if latestRyan.Get("PersonID") != 1 && latestRyan.Get("Name") != "Ryan" {
 			t.Fatal("latestRyan does not match expectations")
@@ -195,14 +195,44 @@ func TestSaveNestedObject(t *testing.T) {
 		}
 
 		// TODO: Produce nested structure for JSON.
-		newJSON, err := mapper.ToJSONFromObject(sch, latestRyan, "{}", "")
+		//newJSON, err := mapper.ToJSONFromObject(sch, latestRyan, "{}", "")
+		_, err = mapper.ToJSONFromObject(sch, latestRyan, "{}", "")
 		if err != nil {
 			t.Fatal(err)
 		}
-		fmt.Println(newJSON)
+		//fmt.Println(newJSON)
+	}
 
-		//	fmt.Println(latestRyan)
-		//	fmt.Println(latestRyan.Children["addresses"])
+	// test multiple retrieve
+
+	{
+		// insert another object
+		nobj := object.New(rootTable)
+		nobj.Set("Name", "Joe")
+		{
+			rowsAff, err := orm.Save(context.TODO(), db, sch, nobj)
+			if err != nil {
+				t.Fatal("Save:" + err.Error())
+			}
+			if !nobj.GetSaved() {
+				t.Fatal("Unknown object error, object not saved")
+			}
+			if rowsAff == 0 {
+				t.Fatal("Rows affected shouldn't be zero initially")
+			}
+		}
+
+		// try a full table scan
+		all, err := orm.RetrieveObjects(context.TODO(), db, sch, rootTable, make(map[string]interface{}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(all) != 2 {
+			t.Fatal("Should only be 2 rows inserted")
+		}
+		fmt.Println(all[0])
+		fmt.Println(all[1])
+		//		fmt.Println(all[2])
 	}
 
 	err = dropTables(db, sch)

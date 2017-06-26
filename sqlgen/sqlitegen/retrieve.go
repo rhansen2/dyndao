@@ -25,7 +25,7 @@ func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (stri
 
 	whereClause, bindWhere, err := renderWhereClause(schTable, fieldsMap, obj)
 	if err != nil {
-		return "", nil, errors.Wrap(err, "BindingRetrieve: renderWhereClause")
+		return "", nil, errors.Wrap(err, "BindingRetrieve")
 	}
 
 	if schTable.EssentialFields == nil || len(schTable.EssentialFields) == 0 {
@@ -33,22 +33,34 @@ func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (stri
 	}
 	columns := strings.Join(schTable.EssentialFields, ",")
 
-	sqlStr := fmt.Sprintf("SELECT %s FROM %s WHERE %s", columns, table, whereClause)
+	whereStr := ""
+	if whereClause != "" {
+		whereStr = "WHERE"
+	}
+	sqlStr := fmt.Sprintf("SELECT %s FROM %s %s %s", columns, table, whereStr, whereClause)
 	//fmt.Println(sqlStr)
 
 	return sqlStr, bindWhere, nil
 }
 
-func renderWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {
-	whereClause := ""
+func renderUpdateWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {
 	var bindArgs []interface{}
+	whereClause := ""
+
+	if len(obj.KV) == 0 {
+		return "", nil, nil
+	}
 
 	if !schTable.MultiKey {
 		f := fieldsMap[schTable.Primary]
 		sqlName := f.Name
 		whereClause = fmt.Sprintf("%s = %s", sqlName, renderBindingUpdateValue(f))
 		bindArgs = make([]interface{}, 1)
-		bindArgs[0] = obj.Get(schTable.Primary)
+		bindVal := obj.Get(schTable.Primary)
+		if bindVal == nil {
+			return "", nil, errors.New("renderWhereClause: missing primary key " + schTable.Primary)
+		}
+		bindArgs[0] = bindVal
 	} else {
 		// MultiKey means that there could be more than just a single primary key
 		// on a table. In this case, we definitely care about involving the entire
@@ -68,7 +80,12 @@ func renderWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Fiel
 			pk := schTable.Primary
 			f := fieldsMap[schTable.Primary]
 			whereKeys[i] = fmt.Sprintf("%s = %s", f.Name, renderBindingUpdateValue(f))
-			bindArgs[i] = obj.Get(pk)
+
+			bindVal := obj.Get(pk)
+			if bindVal == nil {
+				return "", nil, errors.New("renderWhereClause: missing primary key " + pk)
+			}
+			bindArgs[i] = bindVal
 			i++
 		}
 
@@ -81,7 +98,35 @@ func renderWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Fiel
 			}
 		}
 
+
 		whereClause = strings.Join(whereKeys, " AND ")
 	}
+	return whereClause, bindArgs, nil
+}
+
+func renderWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {
+	whereClause := ""
+
+	if len(obj.KV) == 0 {
+		return "", nil, nil
+	}
+
+	whereKeys := make([]string, len(obj.KV))
+	bindArgs := make([]interface{}, len(obj.KV))
+
+	i := 0
+	for k, v := range obj.KV {
+		f := fieldsMap[k]
+		if f == nil {
+			return "", nil, errors.New("renderWhereClause: unknown field " + k + " in table " + obj.Type)
+		}
+		sqlName := f.Name
+		// TODO: Re-implement using IsForeignKey....
+		whereKeys[i] = fmt.Sprintf("%s = %s", sqlName, renderBindingUpdateValue(f))
+		bindArgs[i] = v
+
+		i++
+	}
+	whereClause = strings.Join(whereKeys, " AND ")
 	return whereClause, bindArgs, nil
 }
