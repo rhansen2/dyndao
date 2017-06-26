@@ -97,6 +97,7 @@ func SaveObject(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema,
 		return 0, errors.New("SaveObject: empty field " + pk + " for " + obj.Type)
 	}
 
+	// Check the primary key to see if we should insert or update
 	_, ok := obj.KV[f.Name]
 	if !ok {
 		return Insert(ctx, db, tx, sch, obj)
@@ -212,25 +213,23 @@ func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table s
 		return nil, err
 	}
 	defer res.Close()
+	columnNames, err := res.Columns()
 	if err != nil {
 		return nil, err
 	}
-	for res.Next() {
-		columnNames, err := res.Columns()
-		if err != nil {
-			return nil, err
-		}
-		columnTypes, err := res.ColumnTypes()
-		if err != nil {
-			return nil, err
-		}
+	columnTypes, err := res.ColumnTypes()
+	if err != nil {
+		return nil, err
+	}
 
+	for res.Next() {
 		columnPointers := make([]interface{}, len(columnNames))
 		for i := 0; i < len(columnNames); i++ {
 			ct := columnTypes[i]
 			// TODO: Improve database type support.
 			//fmt.Println(ct.DatabaseTypeName())
 
+			// TODO: Do I need to reset columnPointers every time?
 			if ct.DatabaseTypeName() == "text" {
 				nullable, _ := ct.Nullable()
 				if nullable {

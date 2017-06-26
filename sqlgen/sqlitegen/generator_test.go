@@ -2,12 +2,10 @@ package sqlitegen
 
 import (
 	"fmt"
-	"testing"
 	"github.com/rbastic/dyndao/schema"
-
+	"testing"
 	/*"github.com/rbastic/dyndao/mapper"
-	"github.com/rbastic/dyndao/object"*/
-)
+	"github.com/rbastic/dyndao/object"*/)
 
 func TestGeneratorBasic(t *testing.T) {
 	sch := schema.MockBasicSchema()

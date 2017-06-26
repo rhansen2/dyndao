@@ -48,7 +48,6 @@ func (g Generator) BindingInsert(table string, data map[string]interface{}) (str
 
 }
 
-
 // Insert generates the SQL for a given INSERT statement for SQLite
 func (g Generator) Insert(table string, data map[string]interface{}) (string, error) {
 	if table == "" {

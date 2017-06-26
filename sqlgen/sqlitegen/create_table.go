@@ -60,4 +60,3 @@ func renderCreateField(f *schema.Field) string {
 	}
 	return strings.Join([]string{f.Name, dataType, identity, notNull, unique}, " ")
 }
-

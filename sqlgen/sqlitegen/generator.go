@@ -16,8 +16,8 @@ func bindingParam(v string) string {
 	return ":" + v
 }
 
-func New( db string, name string, sch * schema.Schema ) *Generator {
-	return &Generator{ Database: db, Name: name, Schema: sch }
+func New(db string, name string, sch *schema.Schema) *Generator {
+	return &Generator{Database: db, Name: name, Schema: sch}
 }
 
 // TODO: Retrieve limited, retrieve paging ... more complexity

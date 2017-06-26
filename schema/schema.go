@@ -32,7 +32,7 @@ func DefaultField() *Field {
 		IsNumber:     false,
 		DBType:       "",
 		IsIdentity:   false,
-		Source: "",
+		Source:       "",
 	}
 	return fld
 }

@@ -5,13 +5,15 @@
 // need to change. (Changing a foreign key on a table with a composite key, for example)
 package object
 
+// TODO: add object array container
+
 // Object struct encapsulates our key-value pairs and a single-item per-key history
 // of the previous value stored for a given key.
 type Object struct {
 	Type          string
 	KV            map[string]interface{} `json:"KV"`
 	ChangedFields map[string]interface{} `json:"ChangedFields"`
-	Children      map[string]*Object
+	Children      map[string]*Object     // TODO: make this value an array
 	saved         bool
 }
 

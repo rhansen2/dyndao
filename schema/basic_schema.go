@@ -15,6 +15,10 @@ func fieldAddress(n string) *Field {
 	fld := DefaultField()
 	fld.Source = n
 	fld.IsNumber = false
+
+	// Note: Name could be 'name', 'email', etc. or 'basic.name', 'basic.email',
+	// but it could not be, say, people.basic.name where people is the root namespace
+	// and there is also no way to specify the root namespace
 	fld.Name = n
 	fld.DBType = "text"
 	fld.AllowNull = true // TODO: Should this be used to accept empty keys?
@@ -89,10 +93,10 @@ func MockNestedSchema() *Schema {
 	personTable := sch.Tables["people"]
 
 	childTable := DefaultChildTable()
-	childTable.ParentTable = "people"
-	childTable.LocalField = ""           // TODO: Not needed here?
-	childTable.ForeignField = "PersonID" // Field to store our ParentTable record's primary key into
-
+	/*	childTable.ParentTable = "people"
+		childTable.LocalField = ""           // TODO: Not needed here?
+		childTable.ForeignField = "PersonID" // Field to store our ParentTable record's primary key into
+	*/
 	personTable.Children["addresses"] = childTable
 
 	addrTable := addressTable()
