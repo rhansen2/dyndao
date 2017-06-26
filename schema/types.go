@@ -18,7 +18,8 @@ type Table struct {
 
 	EssentialFields []string `json:"EssentialFields"`
 
-	Children map[string]*ChildTable `json:"Children"`
+	ParentTables []string               `json:"ParentTables"`
+	Children     map[string]*ChildTable `json:"Children"`
 
 	// YAGNI?
 	// TODO: ChildrenInsertionOrder?

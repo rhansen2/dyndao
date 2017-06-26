@@ -3,7 +3,6 @@ package orm
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -105,6 +104,41 @@ func SaveObject(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema,
 	return Update(ctx, db, tx, sch, obj)
 }
 
+// RetrieveParentViaChild function
+func RetrieveParentViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, queryValues map[string]interface{}, childObj *object.Object) (*object.Object, error) {
+	objTable := sch.Tables[table]
+	if objTable == nil {
+		return nil, errors.New("RetrieveWithChildren: unknown object table " + table)
+	}
+
+	obj, err := RetrieveObject(ctx, db, sch, table, queryValues)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: support multiple objects...
+	if childObj != nil {
+		obj.Children[childObj.Type] = childObj
+	}
+
+	// TODO: Not sure that this approach ends up very
+	// practical.
+	var parentObj *object.Object
+	if objTable.ParentTables != nil {
+		for _, parentName := range objTable.ParentTables {
+			parentObj, err = RetrieveParentViaChild(ctx, db, sch, parentName, queryValues, obj)
+			if err != nil {
+				return nil, err
+			}
+			parentObj.Children[table] = obj
+		}
+	}
+	if parentObj == nil {
+		parentObj = obj
+	}
+
+	return parentObj, nil
+}
+
 // RetrieveWithChildren function will fleshen an *entire* object structure, given some primary keys
 func RetrieveWithChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, pkValues map[string]interface{}) (*object.Object, error) {
 	objTable := sch.Tables[table]
@@ -112,7 +146,6 @@ func RetrieveWithChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, t
 		return nil, errors.New("RetrieveWithChildren: unknown object table " + table)
 	}
 	obj := object.New(table)
-	obj.KV = pkValues
 
 	obj, err := RetrieveObject(ctx, db, sch, table, pkValues)
 	if err != nil {
@@ -124,13 +157,18 @@ func RetrieveWithChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, t
 		childPkValues := make(map[string]interface{})
 
 		childSchemaTable := sch.Tables[name]
-		childPkValues[childSchemaTable.Primary] = pkValues[childSchemaTable.Primary]
+
+		pVal, ok := pkValues[childSchemaTable.Primary]
+		if ok {
+			childPkValues[childSchemaTable.Primary] = pVal
+		}
 
 		if childSchemaTable.MultiKey && childSchemaTable.ForeignKeys != nil {
 			for _, fk := range childSchemaTable.ForeignKeys {
 				childPkValues[fk] = pkValues[fk]
 			}
 		}
+		// TODO: Should we do anything else with pkValues?
 
 		//	fmt.Println("childPkValues=", childPkValues)
 		childObj, err := RetrieveObject(ctx, db, sch, name, childPkValues)
@@ -150,15 +188,19 @@ func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table s
 	}
 	obj := object.New(table)
 	//fmt.Println("RetrieveObject.pkValues=", pkValues)
-	obj.KV = pkValues
+	//obj.KV = pkValues
 
 	gen := sqlitegen.New("sqlite", "test", sch)
-	sqlStr, bindArgs, err := gen.BindingRetrieve(sch, obj)
+
+	queryObj := object.New(table)
+	queryObj.KV = pkValues
+
+	sqlStr, bindArgs, err := gen.BindingRetrieve(sch, queryObj)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println(sqlStr)
+	//	fmt.Println(sqlStr)
 	stmt, err := db.PrepareContext(ctx, sqlStr)
 	if err != nil {
 		return nil, err
@@ -228,18 +270,21 @@ func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table s
 					if val.Valid {
 						obj.Set(columnNames[i], val.String)
 					}
+					// TODO: We don't set keys for null values. How else can we support this?
 				} else {
 					val := v.(*string)
 					obj.Set(columnNames[i], *val)
 
 				}
 			} else {
+				// TODO: support more than 'int64' for integer...
 				nullable, _ := ct.Nullable()
 				if nullable {
 					val := v.(*sql.NullInt64)
 					if val.Valid {
 						obj.Set(columnNames[i], val.Int64)
 					}
+					// TODO: We don't set keys for null values. How else can we support this?
 				} else {
 					val := v.(*int64)
 					obj.Set(columnNames[i], *val)
@@ -247,6 +292,9 @@ func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table s
 			}
 		}
 	}
+
+	obj.SetSaved(true)
+	obj.ResetChangedFields()
 
 	err = res.Err()
 	if err != nil {

@@ -9,7 +9,6 @@ import (
 	"github.com/rbastic/dyndao/schema"
 )
 
-
 // BindingUpdate generates the SQL for a given UPDATE statement for SQLite with binding parameter values
 func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string, []interface{}, []interface{}, error) {
 	schTable, ok := g.Schema.Tables[obj.Type]
@@ -39,11 +38,10 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 
 	// TODO: use schema name from object lookup type, fix in other places...
 	sqlStr := fmt.Sprintf("UPDATE %s SET %s WHERE %s", obj.Type, strings.Join(newValuesAry, ","), whereClause)
-	fmt.Println(sqlStr)
+	//fmt.Println(sqlStr)
 	return sqlStr, bindArgs, bindWhere, nil
 }
 
 func renderBindingUpdateValue(f *schema.Field) string {
 	return ":" + f.Name
 }
-

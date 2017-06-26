@@ -70,6 +70,7 @@ func addressTable() *Table {
 
 	tbl.EssentialFields = []string{"AddressID", "PersonID", "Address1", "Address2", "City", "State", "Zip"}
 
+	tbl.ParentTables = []string{"people"}
 	return tbl
 }
 

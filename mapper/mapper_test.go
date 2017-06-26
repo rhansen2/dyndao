@@ -29,7 +29,7 @@ func TestBasicMapperToJSON(t *testing.T) {
 	}
 	fmt.Println(obj)
 
-	json, err := ToJSONFromObject(sch, obj, "")
+	json, err := ToJSONFromObject(sch, obj, "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -90,7 +90,7 @@ func TestNestedMapper(t *testing.T) {
 	fmt.Println(testObj.Children)
 	fmt.Println(testObj.Children["addresses"])
 
-	json, err := ToJSONFromObject(sch, obj, "")
+	json, err := ToJSONFromObject(sch, obj, "", "")
 	if err != nil {
 		t.Fatal(err)
 	}

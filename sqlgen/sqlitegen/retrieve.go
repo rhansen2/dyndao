@@ -34,7 +34,7 @@ func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (stri
 	columns := strings.Join(schTable.EssentialFields, ",")
 
 	sqlStr := fmt.Sprintf("SELECT %s FROM %s WHERE %s", columns, table, whereClause)
-	fmt.Println(sqlStr)
+	//fmt.Println(sqlStr)
 
 	return sqlStr, bindWhere, nil
 }

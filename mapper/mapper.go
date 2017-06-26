@@ -12,14 +12,20 @@ import (
 )
 
 // ToJSONFromObject encodes a DynDAO object
-func ToJSONFromObject(sch *schema.Schema, obj *object.Object, jsonStr string) (string, error) {
+func ToJSONFromObject(sch *schema.Schema, obj *object.Object, rootJSON string, rootPath string) (string, error) {
 	tbl := obj.Type
 	table := sch.Tables[tbl]
 	fieldsMap := table.Fields
 
-	if jsonStr == "" {
-		jsonStr = "{}"
+	if rootJSON == "" {
+		rootJSON = "{}"
 	}
+	if rootPath == "" {
+		rootPath = tbl
+	} else {
+		rootPath += "." + tbl
+	}
+
 	for k, v := range obj.KV {
 		field, ok := fieldsMap[k]
 		if !ok {
@@ -27,7 +33,8 @@ func ToJSONFromObject(sch *schema.Schema, obj *object.Object, jsonStr string) (s
 		}
 
 		var err error
-		jsonStr, err = sjson.Set(jsonStr, field.Source, v)
+		// TODO: use table.JSONRoot or something instead of tbl here?
+		rootJSON, err = sjson.Set(rootJSON, field.Source, v)
 		if err != nil {
 			return "", err
 		}
@@ -35,14 +42,17 @@ func ToJSONFromObject(sch *schema.Schema, obj *object.Object, jsonStr string) (s
 
 	if obj.Children != nil && len(obj.Children) > 0 {
 		for k, v := range obj.Children {
-			var err error
-			jsonStr, err = ToJSONFromObject(sch, v, jsonStr)
+			childJSON, err := ToJSONFromObject(sch, v, "{}", rootPath)
+			if err != nil {
+				return "", fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)
+			}
+			rootJSON, err = sjson.SetRaw(rootJSON, rootPath+"."+k, childJSON)
 			if err != nil {
 				return "", fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)
 			}
 		}
 	}
-	return jsonStr, nil
+	return rootJSON, nil
 }
 
 // ToObjectFromJSON maps a JSON string into a DynDAO object

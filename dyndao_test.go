@@ -11,10 +11,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/rbastic/dyndao/mapper"
 	"github.com/rbastic/dyndao/object"
-	"github.com/rbastic/dyndao/schema"
-	//"github.com/rbastic/dyndao/mapper"
 	"github.com/rbastic/dyndao/orm"
+	"github.com/rbastic/dyndao/schema"
 	"github.com/rbastic/dyndao/sqlgen/sqlitegen"
 )
 
@@ -56,7 +56,10 @@ func TestSaveBasicObject(t *testing.T) {
 		}
 	}
 
-	//fmt.Println("PersonID=", obj.Get("PersonID"))
+	personID := obj.Get("PersonID").(int64)
+	if personID > 1 {
+		t.Fatalf("PersonID has the wrong value, has value %d", personID)
+	}
 
 	// Test second save to ensure that we don't save the object twice needlessly...
 	// This caught a silly bug early on.
@@ -81,7 +84,6 @@ func TestSaveBasicObject(t *testing.T) {
 	if rowsAff == 0 {
 		t.Fatalf("rowsAff should not be zero")
 	}
-
 	if !obj.GetSaved() {
 		t.Fatal("system is claiming object isn't saved")
 	}
@@ -95,7 +97,7 @@ func TestSaveBasicObject(t *testing.T) {
 		if latestJoe.Get("PersonID") != 1 && latestJoe.Get("Name") != "Joe" {
 			t.Fatal("latestJoe does not match expectations")
 		}
-		fmt.Println(latestJoe)
+		//	fmt.Println(latestJoe)
 	}
 
 	err = dropTables(db, sch)
@@ -153,12 +155,51 @@ func TestSaveNestedObject(t *testing.T) {
 		if err != nil {
 			t.Fatal("retrieve failed: " + err.Error())
 		}
-		/*		if latestRyan.Get("PersonID") != 1 && latestRyan.Get("Name") != "Ryan" {
-					t.Fatal("latestRyan does not match expectations")
-				}
-		*/fmt.Println(latestRyan)
-		fmt.Println(latestRyan.Children["addresses"])
+		if latestRyan.Get("PersonID") != 1 && latestRyan.Get("Name") != "Ryan" {
+			t.Fatal("latestRyan does not match expectations")
+		}
 
+	}
+
+	{
+		queryVals := map[string]interface{}{
+			"PersonID":  1,
+			"AddressID": 1,
+		}
+		childTable := "addresses"
+		latestRyan, err := orm.RetrieveParentViaChild(context.TODO(), db, sch, childTable, queryVals, nil)
+		if err != nil {
+			t.Fatal("retrieveparentsviachild failed: " + err.Error())
+		}
+		if latestRyan.Get("PersonID") != 1 && latestRyan.Get("Name") != "Ryan" {
+			t.Fatal("latestRyan does not match expectations")
+		}
+		if len(latestRyan.Children) == 0 {
+			t.Fatal("latestRyan has no children")
+		}
+		addrObj, ok := latestRyan.Children["addresses"]
+		if !ok {
+			t.Fatal("latestRyan lacks an 'addresses' child")
+		}
+		if addrObj != nil {
+			if addrObj.Get("Zip") != "02865" {
+				t.Fatal("latestRyan has the wrong zipcode")
+			}
+			if addrObj.Get("City") != "Nowhere" {
+				t.Fatal("latestRyan has the wrong city")
+			}
+			// TODO: write a better expected comparison
+		}
+
+		// TODO: Produce nested structure for JSON.
+		newJSON, err := mapper.ToJSONFromObject(sch, latestRyan, "{}", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Println(newJSON)
+
+		//	fmt.Println(latestRyan)
+		//	fmt.Println(latestRyan.Children["addresses"])
 	}
 
 	err = dropTables(db, sch)
@@ -201,7 +242,10 @@ func dropTables(db *sql.DB, sch *schema.Schema) error {
 	return nil
 }
 
-// TODO: Test UPDATE code with an instance of an address that now belongs to a different person in the system...
+// TODO: Test UPDATE code with an instance of an address
+// that now belongs to a different person in the system...
+// This will verify that the primary/foreign key code is
+// working properly (AKA MultiKey)
 
 /*
 	func TestLoadBasicObject(t * testing.T) {
