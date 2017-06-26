@@ -59,7 +59,6 @@ func getNestedObj() *object.Object {
 		"PersonID": 1,
 		"Name":     "Sam",
 	}
-	o.Children = make(map[string]*object.Object)
 
 	addr := object.New("addresses")
 
@@ -69,7 +68,7 @@ func getNestedObj() *object.Object {
 	addr.Set("City", "Nowhere")
 	addr.Set("State", "AZ")
 
-	o.Children["addresses"] = addr // TODO: make this an accessor?
+	o.Children["addresses"] = object.NewObjectArray(addr)
 	return o
 }
 
