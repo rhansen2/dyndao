@@ -42,10 +42,10 @@ func renderCreateField(f *schema.Field) string {
 	identity := ""
 	unique := ""
 	if f.IsIdentity {
-		identity = " PRIMARY KEY "
+		identity = "PRIMARY KEY"
 	}
 	if !f.AllowNull {
-		notNull = " NOT NULL "
+		notNull = "NOT NULL"
 	}
 	if f.IsNumber {
 		dataType = f.DBType // not relevant here?
@@ -56,7 +56,7 @@ func renderCreateField(f *schema.Field) string {
 		dataType = f.DBType
 	}
 	if f.IsUnique {
-		unique = " UNIQUE "
+		unique = "UNIQUE"
 	}
 	return strings.Join([]string{f.Name, dataType, identity, notNull, unique}, " ")
 }
