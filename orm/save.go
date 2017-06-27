@@ -2,34 +2,34 @@ package orm
 
 import (
 	"context"
+	"fmt"
 	"database/sql"
 
 	"github.com/pkg/errors"
 
 	"github.com/rbastic/dyndao/object"
-	"github.com/rbastic/dyndao/schema"
-	"github.com/rbastic/dyndao/sqlgen/sqlitegen"
 )
 
 // TODO: For foreign key filling, we do not check to see if there are conflicts
 // with regards to the uniqueness of primary key names.
 
-func recurseAndSave(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema, obj *object.Object) (int64, error) {
+func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	// TODO: Implement transactions. Implement 'foreign key fill'
 	// in children objects
-	rowsAff, err := SaveObject(ctx, db, tx, sch, obj)
+	rowsAff, err := o.SaveObject(ctx, tx, obj)
 	if err != nil {
 		return 0, err
 	}
 
-	table := sch.Tables[obj.Type]
+	table := o.s.Tables[obj.Type]
 	pkVal := obj.Get(table.Primary)
 
 	// TODO: ChildrenOrder going to happen here?
 	for _, v := range obj.Children {
 		for _, childObj := range v {
 			// set the primary key in the child object, if it exists in the child object's table
-			childTable, ok := sch.Tables[childObj.Type]
+			fmt.Println("o.s=",o.s, "childObj Type ->", childObj.Type)
+			childTable, ok := o.s.Tables[childObj.Type]
 			if !ok {
 				return 0, errors.New("recurseAndSave: Unknown child object type " + childObj.Type + " for parent type " + obj.Type)
 			}
@@ -42,7 +42,7 @@ func recurseAndSave(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Sch
 				childObj.Set(table.Primary, pkVal)
 			}
 
-			rowsAff, err := recurseAndSave(ctx, db, tx, sch, childObj)
+			rowsAff, err := o.recurseAndSave(ctx, tx, childObj)
 			if err != nil {
 				return rowsAff, err
 			}
@@ -52,14 +52,14 @@ func recurseAndSave(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Sch
 }
 
 // Save will attempt to save an entire nested object structure inside of a single transaction.
-func Save(ctx context.Context, db *sql.DB, sch *schema.Schema, obj *object.Object) (int64, error) {
+func (o ORM) Save(ctx context.Context, obj *object.Object) (int64, error) {
 
-	tx, err := db.BeginTx(ctx, nil)
+	tx, err := o.RawConn.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, err
 	}
 	// TODO: Review this code for how it uses transactions / rollbacks.
-	rowsAff, err := recurseAndSave(ctx, db, tx, sch, obj)
+	rowsAff, err := o.recurseAndSave(ctx, tx, obj)
 	if err != nil {
 		err2 := tx.Rollback()
 		if err2 != nil {
@@ -79,8 +79,8 @@ func Save(ctx context.Context, db *sql.DB, sch *schema.Schema, obj *object.Objec
 
 // SaveObject function will INSERT or UPDATE a record depending on
 // various values.
-func SaveObject(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema, obj *object.Object) (int64, error) {
-	objTable := sch.Tables[obj.Type]
+func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	objTable := o.s.Tables[obj.Type]
 	if objTable == nil {
 		return 0, errors.New("SaveObject: unknown object table " + obj.Type)
 	}
@@ -101,26 +101,25 @@ func SaveObject(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema,
 	// Check the primary key to see if we should insert or update
 	_, ok := obj.KV[f.Name]
 	if !ok {
-		return Insert(ctx, db, tx, sch, obj)
+		return o.Insert(ctx, tx, obj)
 	}
-	return Update(ctx, db, tx, sch, obj)
+	return o.Update(ctx, tx, obj)
 }
 
 // TODO: Read this post for more info on the above...
 // https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
 
 // Insert function will INSERT a record depending on various values
-func Insert(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema, obj *object.Object) (int64, error) {
-	objTable := sch.Tables[obj.Type]
+func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	objTable := o.s.Tables[obj.Type]
 	if objTable == nil {
 		return 0, errors.New("Insert: unknown object table " + obj.Type)
 	}
 	// NOTE: perhaps the generator should become a part of the schema...
 	// This should work well once we understand OOP in Go a bit better.
 	// We should set the generators prior to running any ORM operations.
-	gen := sqlitegen.New("sqlite", "test", sch)
 
-	sqlStr, bindArgs, err := gen.BindingInsert(obj.Type, obj.KV)
+	sqlStr, bindArgs, err := o.sqlGen.BindingInsert(o.s, obj.Type, obj.KV)
 	if err != nil {
 		return 0, err
 	}
@@ -128,7 +127,7 @@ func Insert(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema, obj
 	if tx != nil {
 		stmt, err = tx.PrepareContext(ctx, sqlStr)
 	} else {
-		stmt, err = db.PrepareContext(ctx, sqlStr)
+		stmt, err = o.RawConn.PrepareContext(ctx, sqlStr)
 	}
 	if err != nil {
 		return 0, err
@@ -155,8 +154,8 @@ func Insert(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema, obj
 }
 
 // Update function will UPDATE a record depending on various values
-func Update(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema, obj *object.Object) (int64, error) {
-	objTable := sch.Tables[obj.Type]
+func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	objTable := o.s.Tables[obj.Type]
 	if objTable == nil {
 		return 0, errors.New("Update: unknown object table " + obj.Type)
 	}
@@ -164,9 +163,8 @@ func Update(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema, obj
 	// This should work well once I grok OOP in Go a bit better w.r.t. how this should
 	// all be structured.
 	// Perhaps I should set the generators prior to running any ORM operations.
-	gen := sqlitegen.New("sqlite", "test", sch)
 
-	sqlStr, bindArgs, bindWhere, err := gen.BindingUpdate(sch, obj)
+	sqlStr, bindArgs, bindWhere, err := o.sqlGen.BindingUpdate(o.s, obj)
 	if err != nil {
 		return 0, err
 	}
@@ -175,7 +173,7 @@ func Update(ctx context.Context, db *sql.DB, tx *sql.Tx, sch *schema.Schema, obj
 	if tx != nil {
 		stmt, err = tx.PrepareContext(ctx, sqlStr)
 	} else {
-		stmt, err = db.PrepareContext(ctx, sqlStr)
+		stmt, err = o.RawConn.PrepareContext(ctx, sqlStr)
 	}
 	if err != nil {
 		return 0, err

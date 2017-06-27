@@ -29,7 +29,9 @@ func getDB() *sql.DB {
 
 func TestSaveBasicObject(t *testing.T) {
 	sch := schema.MockBasicSchema()
-	sqliteORM := orm.New(sqlitegen.New("test", sch))
+	db := getDB()
+	defer db.Close()
+	sqliteORM := orm.New(sqlitegen.New("test", sch), sch, db)
 
 	table := "people"
 
@@ -38,8 +40,6 @@ func TestSaveBasicObject(t *testing.T) {
 	//obj.Set("PersonID", 1)
 	obj.Set("Name", "Ryan")
 
-	db := getDB()
-	defer db.Close()
 
 	err := createTables(db, sch)
 	if err != nil {
@@ -47,7 +47,7 @@ func TestSaveBasicObject(t *testing.T) {
 	}
 
 	{
-		rowsAff, err := sqliteORM.SaveObject(context.TODO(), db, nil, sch, obj)
+		rowsAff, err := sqliteORM.SaveObject(context.TODO(), nil, obj)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -67,7 +67,7 @@ func TestSaveBasicObject(t *testing.T) {
 	// Test second save to ensure that we don't save the object twice needlessly...
 	// This caught a silly bug early on.
 	{
-		rowsAff, err := sqliteORM.SaveObject(context.TODO(), db, nil, sch, obj)
+		rowsAff, err := sqliteORM.SaveObject(context.TODO(), nil, obj)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -80,7 +80,7 @@ func TestSaveBasicObject(t *testing.T) {
 	// Now this should force an update
 	obj.Set("Name", "Joe") // name change
 
-	rowsAff, err := sqliteORM.SaveObject(context.TODO(), db, nil, sch, obj)
+	rowsAff, err := sqliteORM.SaveObject(context.TODO(), nil, obj)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -93,7 +93,7 @@ func TestSaveBasicObject(t *testing.T) {
 
 	{
 		// refleshen our object
-		latestJoe, err := orm.RetrieveObject(context.TODO(), db, sch, table, obj.KV)
+		latestJoe, err := sqliteORM.RetrieveObject(context.TODO(), table, obj.KV)
 		if err != nil {
 			t.Fatal("retrieve failed: " + err.Error())
 		}
@@ -124,6 +124,9 @@ func sampleAddressObject() *object.Object {
 
 func TestSaveNestedObject(t *testing.T) {
 	sch := schema.MockNestedSchema()
+	db := getDB()
+	defer db.Close()
+	sqliteORM := orm.New(sqlitegen.New("test", sch), sch, db)
 	rootTable := "people"
 
 	obj := object.New(rootTable)
@@ -132,9 +135,6 @@ func TestSaveNestedObject(t *testing.T) {
 	addrObj := sampleAddressObject()
 	obj.Children["addresses"] = object.NewArray(addrObj)
 
-	db := getDB()
-	defer db.Close()
-
 	err := createTables(db, sch)
 	if err != nil {
 		t.Fatal(err)
@@ -142,7 +142,7 @@ func TestSaveNestedObject(t *testing.T) {
 
 	// TODO: should we rename Save to SaveWithChildren()? anyway, do a complex nested save
 	{
-		rowsAff, err := orm.Save(context.TODO(), db, sch, obj)
+		rowsAff, err := sqliteORM.Save(context.TODO(), obj)
 		if err != nil {
 			t.Fatal("Save:" + err.Error())
 		}
@@ -158,7 +158,7 @@ func TestSaveNestedObject(t *testing.T) {
 	{
 		nobj := object.New(rootTable)
 		nobj.KV["PersonID"] = obj.Get("PersonID")
-		latestRyan, err := orm.RetrieveWithChildren(context.TODO(), db, sch, rootTable, obj.KV)
+		latestRyan, err := sqliteORM.RetrieveWithChildren(context.TODO(), rootTable, obj.KV)
 		if err != nil {
 			t.Fatal("retrieve failed: " + err.Error())
 		}
@@ -173,7 +173,7 @@ func TestSaveNestedObject(t *testing.T) {
 			"PersonID": 1,
 		}
 		childTable := "addresses"
-		latestRyan, err := orm.RetrieveParentViaChild(context.TODO(), db, sch, childTable, queryVals, nil)
+		latestRyan, err := sqliteORM.RetrieveParentViaChild(context.TODO(), childTable, queryVals, nil)
 		if err != nil {
 			t.Fatal("RetrieveParentViaChild failed: " + err.Error())
 		}
@@ -212,7 +212,7 @@ func TestSaveNestedObject(t *testing.T) {
 		nobj := object.New(rootTable)
 		nobj.Set("Name", "Joe")
 		{
-			rowsAff, err := orm.Save(context.TODO(), db, sch, nobj)
+			rowsAff, err := sqliteORM.Save(context.TODO(), nobj)
 			if err != nil {
 				t.Fatal("Save:" + err.Error())
 			}
@@ -225,7 +225,7 @@ func TestSaveNestedObject(t *testing.T) {
 		}
 
 		// try a full table scan
-		all, err := orm.RetrieveObjects(context.TODO(), db, sch, rootTable, make(map[string]interface{}))
+		all, err := sqliteORM.RetrieveObjects(context.TODO(), rootTable, make(map[string]interface{}))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -239,7 +239,7 @@ func TestSaveNestedObject(t *testing.T) {
 		// try fleshen children on person id 1
 
 		{
-			obj, err = orm.RetrieveObject(context.TODO(), db, sch, rootTable, map[string]interface{}{
+			obj, err = sqliteORM.RetrieveObject(context.TODO(), rootTable, map[string]interface{}{
 				"PersonID": 1,
 			})
 			if err != nil {
@@ -248,7 +248,7 @@ func TestSaveNestedObject(t *testing.T) {
 			if obj == nil {
 				t.Fatal("object should not be nil")
 			}
-			_, err := orm.FleshenChildren(context.TODO(), db, sch, rootTable, obj)
+			_, err := sqliteORM.FleshenChildren(context.TODO(), rootTable, obj)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -260,12 +260,12 @@ func TestSaveNestedObject(t *testing.T) {
 		{
 			queryVals := make(map[string]interface{})
 			queryVals["PersonID"] = 1
-			childObj, err := orm.RetrieveObject(context.TODO(), db, sch, "addresses", queryVals)
+			childObj, err := sqliteORM.RetrieveObject(context.TODO(), "addresses", queryVals)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			objs, err := orm.GetParentsViaChild(context.TODO(), db, sch, childObj)
+			objs, err := sqliteORM.GetParentsViaChild(context.TODO(), childObj)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -283,11 +283,11 @@ func TestSaveNestedObject(t *testing.T) {
 // TODO: use contexts down here also?
 
 func createTables(db *sql.DB, sch *schema.Schema) error {
-	gen := sqlitegen.New("sqlite", "test", sch)
+	gen := sqlitegen.New("test", sch)
 
 	for k := range sch.Tables {
 		fmt.Println("Creating table ", k)
-		sql, err := gen.CreateTable(k)
+		sql, err := gen.CreateTable(sch, k)
 		if err != nil {
 			return err
 		}
@@ -300,7 +300,7 @@ func createTables(db *sql.DB, sch *schema.Schema) error {
 }
 
 func dropTables(db *sql.DB, sch *schema.Schema) error {
-	gen := sqlitegen.New("sqlite", "test", sch)
+	gen := sqlitegen.New("test", sch)
 
 	for k := range sch.Tables {
 		fmt.Println("Dropping table ", k)

@@ -11,7 +11,7 @@ import (
 )
 
 // CreateTable determines the SQL to create a given table within a schema
-func (g Generator) CreateTable(table string, s *schema.Schema) (string, error) {
+func (g Generator) CreateTable(s *schema.Schema, table string) (string, error) {
 	tbl, ok := s.Tables[table]
 	if !ok {
 		return "", errors.New("unknown schema for table with name " + table)
