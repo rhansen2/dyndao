@@ -24,7 +24,6 @@ func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName s
 	for fName, field := range schemaTable.Fields {
 		if field.IsIdentity || field.IsForeignKey || field.Name == schemaPrimary {
 			qv[fName] = obj.Get(fName)
-			fmt.Println("qv -> setting ", fName, " with ", qv[fName])
 		}
 	}
 	return qv, nil

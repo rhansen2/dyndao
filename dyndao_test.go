@@ -19,6 +19,7 @@ import (
 )
 
 func getDB() *sql.DB {
+	// TODO: test all database types that we support.
 	db, err := sql.Open("sqlite3", "file::memory:?mode=memory&cache=shared")
 	if err != nil {
 		panic(err)
