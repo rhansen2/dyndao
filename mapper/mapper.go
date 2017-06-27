@@ -12,7 +12,7 @@ import (
 )
 
 // ToJSONFromObject encodes a DynDAO object
-func ToJSONFromObject(sch *schema.Schema, obj *object.Object, rootJSON string, rootPath string) (string, error) {
+func ToJSONFromObject(sch *schema.Schema, obj *object.Object, rootJSON string, rootPath string, setRootPath bool) (string, error) {
 	tbl := obj.Type
 	table := sch.Tables[tbl]
 	fieldsMap := table.Fields
@@ -20,12 +20,15 @@ func ToJSONFromObject(sch *schema.Schema, obj *object.Object, rootJSON string, r
 	if rootJSON == "" {
 		rootJSON = "{}"
 	}
-	if rootPath == "" {
-		rootPath = tbl
-	} else {
-		rootPath += "." + tbl
+	if setRootPath {
+		if rootPath == "" {
+			rootPath = tbl
+		} else {
+			rootPath += "." + tbl
+		}
+		rootPath = rootPath + "."
 	}
-
+	// Populate object's key-value pairs into JSON
 	for k, v := range obj.KV {
 		field, ok := fieldsMap[k]
 		if !ok {
@@ -34,7 +37,7 @@ func ToJSONFromObject(sch *schema.Schema, obj *object.Object, rootJSON string, r
 
 		var err error
 		// TODO: use table.JSONRoot or something instead of tbl here?
-		rootJSON, err = sjson.Set(rootJSON, field.Source, v)
+		rootJSON, err = sjson.Set(rootJSON, rootPath+field.Source, v)
 		if err != nil {
 			return "", err
 		}
@@ -43,12 +46,13 @@ func ToJSONFromObject(sch *schema.Schema, obj *object.Object, rootJSON string, r
 	if obj.Children != nil && len(obj.Children) > 0 {
 		for k, v := range obj.Children {
 			for _, childObj := range v {
-				childJSON, err := ToJSONFromObject(sch, childObj, "{}", rootPath)
+				childJSON, err := ToJSONFromObject(sch, childObj, "", "", false)
 				if err != nil {
 					return "", fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)
 				}
 				// TODO: use i iterator variable somewhere here with SetRaw.. ? bench that?
-				rootJSON, err = sjson.SetRaw(rootJSON, rootPath+"."+k, childJSON)
+
+				rootJSON, err = sjson.SetRaw(rootJSON, rootPath+k, childJSON)
 				if err != nil {
 					return "", fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)
 				}
@@ -58,8 +62,21 @@ func ToJSONFromObject(sch *schema.Schema, obj *object.Object, rootJSON string, r
 	return rootJSON, nil
 }
 
+func getPathPrefix(consumedPath string, tbl string) string {
+	pathPrefix := ""
+	if consumedPath != "" {
+		pathPrefix = consumedPath
+	}
+	if pathPrefix == "" {
+		pathPrefix = tbl
+	} else {
+		pathPrefix = pathPrefix + "." + tbl
+	}
+	return pathPrefix
+}
+
 // ToObjectFromJSON maps a JSON string into a DynDAO object
-func ToObjectFromJSON(sch *schema.Schema, tbl string, json string) (*object.Object, error) {
+func ToObjectFromJSON(sch *schema.Schema, consumedPath string, tbl string, json string) (*object.Object, error) {
 	obj := object.New(tbl)
 
 	table := sch.Tables[tbl]
@@ -68,42 +85,42 @@ func ToObjectFromJSON(sch *schema.Schema, tbl string, json string) (*object.Obje
 	keys := make([]string, len(fieldsMap))    // list of keys we're going to set
 	sources := make([]string, len(fieldsMap)) // list of paths we'll retrieve them from
 
+	pathPrefix := getPathPrefix(consumedPath, tbl)
 	i := 0
 	for k, field := range fieldsMap {
 		if field.Source == "" {
 			return nil, errors.New("ToObjectFromJSON: missing Source for field " + k)
 		}
 		keys[i] = k
-		sources[i] = field.Source
+		sources[i] = pathPrefix + "." + field.Source
 		i++
 	}
-
 	values := gjson.GetMany(json, sources...)
-
 	for i, v := range values {
 		if v.Exists() {
 			obj.Set(keys[i], v.Value())
 		}
 	}
 
-	err := walkChildrenFromJSON(sch, table, obj, json)
+	err := walkChildrenFromJSON(sch, table, obj, tbl, json)
 	if err != nil {
 		return nil, err
 	}
 	return obj, nil
 }
 
-func walkChildrenFromJSON(sch *schema.Schema, table *schema.Table, obj *object.Object, json string) error {
+func walkChildrenFromJSON(sch *schema.Schema, table *schema.Table, obj *object.Object, pathPrefix string, json string) error {
 	if table.Children != nil && len(table.Children) > 0 {
 		i := 0
 		for k, v := range table.Children {
-			child, err := ToObjectFromJSON(sch, k, json)
+			child, err := ToObjectFromJSON(sch, pathPrefix, k, json)
 			if err != nil {
 				return fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)
 			}
 			if obj.Children[k] == nil {
 				obj.Children[k] = make(object.Array, len(table.Children))
 			}
+
 			obj.Children[k][i] = child
 			i++
 		}
