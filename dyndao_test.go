@@ -233,6 +233,27 @@ func TestSaveNestedObject(t *testing.T) {
 		fmt.Println(all[0])
 		fmt.Println(all[1])
 		//		fmt.Println(all[2])
+
+		// try fleshen children on person id 1
+
+		{
+			obj, err = orm.RetrieveObject(context.TODO(), db, sch, rootTable, map[string]interface{}{
+				"PersonID": 1,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if obj == nil {
+				t.Fatal("object should not be nil")
+			}
+			_, err := orm.FleshenChildren(context.TODO(), db, sch, rootTable, obj)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// TODO: Fix these tests to actually check the values.... To ensure FleshenChildren works.
+			//fmt.Println(obj)
+			//fmt.Println(obj.Children["addresses"][0])
+		}
 	}
 
 	err = dropTables(db, sch)

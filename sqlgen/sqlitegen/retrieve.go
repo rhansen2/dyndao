@@ -98,7 +98,6 @@ func renderUpdateWhereClause(schTable *schema.Table, fieldsMap map[string]*schem
 			}
 		}
 
-
 		whereClause = strings.Join(whereKeys, " AND ")
 	}
 	return whereClause, bindArgs, nil
