@@ -97,6 +97,7 @@ func ToObjectFromJSON(sch *schema.Schema, consumedPath string, tbl string, json 
 	}
 	values := gjson.GetMany(json, sources...)
 	for i, v := range values {
+
 		if v.Exists() {
 			obj.Set(keys[i], v.Value())
 		}
@@ -113,7 +114,8 @@ func walkChildrenFromJSON(sch *schema.Schema, table *schema.Table, obj *object.O
 	if table.Children != nil && len(table.Children) > 0 {
 		i := 0
 		for k, v := range table.Children {
-			child, err := ToObjectFromJSON(sch, pathPrefix, k, json)
+			jsonPath := k
+			child, err := ToObjectFromJSON(sch, pathPrefix, jsonPath, json)
 			if err != nil {
 				return fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)
 			}
@@ -126,4 +128,50 @@ func walkChildrenFromJSON(sch *schema.Schema, table *schema.Table, obj *object.O
 		}
 	}
 	return nil
+}
+
+func ToObjectsFromJSON(sch *schema.Schema, json string) (object.Array, error) {
+	if json == "" {
+		return nil, errors.New("ToObjectsFromJSON: json parameter is empty")
+	}
+	parsed := gjson.Parse(json)
+	objs := object.NewEmptyArray()
+	if parsed.Type == gjson.JSON {
+		m := parsed.Map()
+		for k, v := range m {
+			obj := object.New(k)
+
+			if v.Type == gjson.JSON {
+				parsed := gjson.Parse(v.Raw)
+
+				parsed.ForEach(func(k, v gjson.Result) bool {
+					ks := k.String()
+					if v.Type == gjson.JSON {
+						val := v.Value().([]interface{})
+						objAry := mapValToObjAry(ks, val)
+						obj.Children[ks] = objAry
+					} else {
+						obj.Set(ks, v.Value())
+					}
+					return true
+				})
+			}
+			objs = append(objs, obj)
+		}
+	}
+
+	return objs, nil
+}
+
+func mapValToObjAry(objectType string, vals []interface{}) object.Array {
+	objs := make(object.Array, len(vals))
+	for i, val := range vals {
+		obj := object.New(objectType)
+		m := val.(map[string]interface{})
+		for k, v := range m {
+			obj.Set(k, v)
+		}
+		objs[i] = obj
+	}
+	return objs
 }

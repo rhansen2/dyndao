@@ -103,3 +103,47 @@ func TestNestedMapper(t *testing.T) {
 		}
 	}
 }
+
+func getNestedArrayJSONData() string {
+	return `
+	{"people": 
+		{ "Name":"Sam", 
+	      "PersonID":1, 
+		  "addresses": [
+			{"Address1":"Test","Address2":"Test2","City":"Nowhere","State":"AZ" },
+			{"Address1":"Foo","Address2":"Bar","City":"Lincoln","State":"RI" }
+		] 
+		} 
+	}`
+}
+
+func TestNestedArrayMapper(t *testing.T) {
+	sch := schema.MockNestedSchema()
+	objs, err := ToObjectsFromJSON(sch, getNestedArrayJSONData())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(objs) == 0 {
+		t.Fatal("object array is empty")
+	}
+	obj := objs[0]
+	if obj.Type != PeopleObjectType {
+		t.Fatal("Object doesn't match expected Type")
+	}
+	if obj.Get("Name") != "Sam" {
+		t.Fatal("Name doesn't match expected value")
+	}
+	if obj.Get("PersonID").(float64) != 1 {
+		t.Fatal("PersonID doesn't match expected value")
+	}
+	if obj.Children[AddressesObjectType] == nil {
+		t.Fatal("Why doesn't our object have any addresses?")
+	}
+	// TODO: Check addresses...
+	first := obj.Children[AddressesObjectType][0]
+	if first.Get("Address1") == nil {
+		t.Fatal("Why is the first Address1 empty?")
+	}
+	//	fmt.Println(obj)
+	//	fmt.Println(obj.Children[AddressesObjectType][0])
+}
