@@ -3,7 +3,6 @@ package orm
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -161,7 +160,6 @@ func (o ORM) FleshenChildren(ctx context.Context, table string, obj *object.Obje
 	if len(schemaTable.Children) > 0 {
 		// Does this table have child tables?
 		for childTableName := range schemaTable.Children {
-			fmt.Println(childTableName)
 			m := map[string]interface{}{}
 			m[pkKey] = pkVal
 			childObjs, err := o.RetrieveObjects(ctx, childTableName, m)

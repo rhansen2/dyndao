@@ -2,7 +2,6 @@ package orm
 
 import (
 	"context"
-	"fmt"
 	"database/sql"
 
 	"github.com/pkg/errors"
@@ -28,7 +27,6 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 	for _, v := range obj.Children {
 		for _, childObj := range v {
 			// set the primary key in the child object, if it exists in the child object's table
-			fmt.Println("o.s=",o.s, "childObj Type ->", childObj.Type)
 			childTable, ok := o.s.Tables[childObj.Type]
 			if !ok {
 				return 0, errors.New("recurseAndSave: Unknown child object type " + childObj.Type + " for parent type " + obj.Type)

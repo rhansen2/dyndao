@@ -18,6 +18,9 @@ import (
 	"github.com/rbastic/dyndao/sqlgen/sqlitegen"
 )
 
+const PeopleObjectType string = "people"
+const AddressesObjectType string = "addresses"
+
 func getDB() *sql.DB {
 	// TODO: test all database types that we support.
 	db, err := sql.Open("sqlite3", "file::memory:?mode=memory&cache=shared")
@@ -33,13 +36,12 @@ func TestSaveBasicObject(t *testing.T) {
 	defer db.Close()
 	sqliteORM := orm.New(sqlitegen.New("test", sch), sch, db)
 
-	table := "people"
+	table := PeopleObjectType
 
 	// NOTE: This should force insert
 	obj := object.New(table)
 	//obj.Set("PersonID", 1)
 	obj.Set("Name", "Ryan")
-
 
 	err := createTables(db, sch)
 	if err != nil {
@@ -103,7 +105,6 @@ func TestSaveBasicObject(t *testing.T) {
 		if latestJoe.Get("PersonID") != 1 && latestJoe.Get("Name") != "Joe" {
 			t.Fatal("latestJoe does not match expectations")
 		}
-		//	fmt.Println(latestJoe)
 	}
 
 	err = dropTables(db, sch)
@@ -152,6 +153,14 @@ func TestSaveNestedObject(t *testing.T) {
 		if rowsAff == 0 {
 			t.Fatal("Rows affected shouldn't be zero initially")
 		}
+		// Check that children were saved
+		for _, childArray := range obj.Children {
+			for _, child := range childArray {
+				if !child.GetSaved() {
+					t.Fatal("Child wasn't saved, type was ", child.Type)
+				}
+			}
+		}
 	}
 
 	// now try to do a nested retrieve
@@ -165,119 +174,69 @@ func TestSaveNestedObject(t *testing.T) {
 		if latestRyan.Get("PersonID") != 1 && latestRyan.Get("Name") != "Ryan" {
 			t.Fatal("latestRyan does not match expectations")
 		}
-
+		// TODO: Verify that addresses are present
 	}
 
-	{
-		queryVals := map[string]interface{}{
-			"PersonID": 1,
-		}
-		childTable := "addresses"
-		latestRyan, err := sqliteORM.RetrieveParentViaChild(context.TODO(), childTable, queryVals, nil)
-		if err != nil {
-			t.Fatal("RetrieveParentViaChild failed: " + err.Error())
-		}
-		if latestRyan.Get("PersonID") != 1 && latestRyan.Get("Name") != "Ryan" {
-			t.Fatal("latestRyan does not match expectations")
-		}
-		if len(latestRyan.Children) == 0 {
-			t.Fatal("latestRyan has no children")
-		}
-		addrObj := latestRyan.Children["addresses"][0]
-		if addrObj == nil {
-			t.Fatal("latestRyan lacks an 'addresses' child")
-		}
-		if addrObj != nil {
-			if addrObj.Get("Zip") != "02865" {
-				t.Fatal("latestRyan has the wrong zipcode")
-			}
-			if addrObj.Get("City") != "Nowhere" {
-				t.Fatal("latestRyan has the wrong city")
-			}
-			// TODO: write a better expected comparison
-		}
-
-		// TODO: Produce nested structure for JSON.
-		newJSON, err := mapper.ToJSONFromObject(sch, latestRyan, "{}", "", true)
-		if err != nil {
-			t.Fatal(err)
-		}
-		fmt.Println(newJSON)
-	}
+	testRetrieveParentViaChild(&sqliteORM, t, sch)
 
 	// test multiple retrieve
+	testRetrieveObjects(&sqliteORM, t, rootTable)
 
-	{
-		// insert another object
-		nobj := object.New(rootTable)
-		nobj.Set("Name", "Joe")
-		{
-			rowsAff, err := sqliteORM.Save(context.TODO(), nobj)
-			if err != nil {
-				t.Fatal("Save:" + err.Error())
-			}
-			if !nobj.GetSaved() {
-				t.Fatal("Unknown object error, object not saved")
-			}
-			if rowsAff == 0 {
-				t.Fatal("Rows affected shouldn't be zero initially")
-			}
-		}
+	// try fleshen children on person id 1
+	testFleshenChildren(&sqliteORM, t, rootTable)
 
-		// try a full table scan
-		all, err := sqliteORM.RetrieveObjects(context.TODO(), rootTable, make(map[string]interface{}))
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(all) != 2 {
-			t.Fatal("Should only be 2 rows inserted")
-		}
-		fmt.Println(all[0])
-		fmt.Println(all[1])
-		//		fmt.Println(all[2])
-
-		// try fleshen children on person id 1
-
-		{
-			obj, err = sqliteORM.RetrieveObject(context.TODO(), rootTable, map[string]interface{}{
-				"PersonID": 1,
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-			if obj == nil {
-				t.Fatal("object should not be nil")
-			}
-			_, err := sqliteORM.FleshenChildren(context.TODO(), rootTable, obj)
-			if err != nil {
-				t.Fatal(err)
-			}
-			// TODO: Fix these tests to actually check the values.... To ensure FleshenChildren works.
-			//fmt.Println(obj)
-			//fmt.Println(obj.Children["addresses"][0])
-		}
-
-		{
-			queryVals := make(map[string]interface{})
-			queryVals["PersonID"] = 1
-			childObj, err := sqliteORM.RetrieveObject(context.TODO(), "addresses", queryVals)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			objs, err := sqliteORM.GetParentsViaChild(context.TODO(), childObj)
-			if err != nil {
-				t.Fatal(err)
-			}
-			fmt.Println(objs)
-		}
-	}
+	testGetParentsViaChild(&sqliteORM, t)
 
 	err = dropTables(db, sch)
 	if err != nil {
 		t.Fatal(err)
 	}
 
+}
+
+func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
+	queryVals := make(map[string]interface{})
+	queryVals["PersonID"] = 1
+	childObj, err := o.RetrieveObject(context.TODO(), "addresses", queryVals)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//objs, err := o.GetParentsViaChild(context.TODO(), childObj)
+	_, err = o.GetParentsViaChild(context.TODO(), childObj)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// TODO: fix this
+	//fmt.Println(objs)
+}
+
+func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
+	obj, err := o.RetrieveObject(context.TODO(), rootTable, map[string]interface{}{
+		"PersonID": 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if obj == nil {
+		t.Fatal("object should not be nil")
+	}
+	fleshened, err := o.FleshenChildren(context.TODO(), rootTable, obj)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fleshened.Type != PeopleObjectType {
+		t.Fatal("fleshened object has wrong type, expected", AddressesObjectType)
+	}
+	if fleshened.Children[AddressesObjectType] == nil {
+		t.Fatal("expected Addresses children")
+	}
+	if fleshened.Children["addresses"][0].Get("Address1") != "Test" {
+		t.Fatal("expected 'Test' for 'Address1'")
+	}
+	// TODO: Fix these tests to actually check the values.... To ensure FleshenChildren works.
+	//fmt.Println(obj)
+	//fmt.Println(obj.Children["addresses"][0])
 }
 
 // TODO: use contexts down here also?
@@ -330,3 +289,72 @@ func dropTables(db *sql.DB, sch *schema.Schema) error {
 
 	}
 */
+func testRetrieveParentViaChild(o *orm.ORM, t *testing.T, sch *schema.Schema) {
+	queryVals := map[string]interface{}{
+		"PersonID": 1,
+	}
+	childTable := "addresses"
+	latestRyan, err := o.RetrieveParentViaChild(context.TODO(), childTable, queryVals, nil)
+	if err != nil {
+		t.Fatal("RetrieveParentViaChild failed: " + err.Error())
+	}
+	if latestRyan.Get("PersonID") != 1 && latestRyan.Get("Name") != "Ryan" {
+		t.Fatal("latestRyan does not match expectations")
+	}
+	if len(latestRyan.Children) == 0 {
+		t.Fatal("latestRyan has no children")
+	}
+	addrObj := latestRyan.Children["addresses"][0]
+	if addrObj == nil {
+		t.Fatal("latestRyan lacks an 'addresses' child")
+	}
+	if addrObj != nil {
+		if addrObj.Get("Zip") != "02865" {
+			t.Fatal("latestRyan has the wrong zipcode")
+		}
+		if addrObj.Get("City") != "Nowhere" {
+			t.Fatal("latestRyan has the wrong city")
+		}
+		// TODO: write a better expected comparison
+	}
+
+	// TODO: Produce nested structure for JSON.
+	//newJSON, err := mapper.ToJSONFromObject(sch, latestRyan, "{}", "", true)
+	_, err = mapper.ToJSONFromObject(sch, latestRyan, "{}", "", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// TODO: Fix this test.
+//	fmt.Println(newJSON)
+}
+
+func testRetrieveObjects(o *orm.ORM, t *testing.T, rootTable string) {
+	// insert another object
+	nobj := object.New(rootTable)
+	nobj.Set("Name", "Joe")
+	{
+		rowsAff, err := o.Save(context.TODO(), nobj)
+		if err != nil {
+			t.Fatal("Save:" + err.Error())
+		}
+		if !nobj.GetSaved() {
+			t.Fatal("Unknown object error, object not saved")
+		}
+		if rowsAff == 0 {
+			t.Fatal("Rows affected shouldn't be zero initially")
+		}
+	}
+
+	// try a full table scan
+	all, err := o.RetrieveObjects(context.TODO(), rootTable, make(map[string]interface{}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(all) != 2 {
+		t.Fatal("Should only be 2 rows inserted")
+	}
+	/*fmt.Println(all[0])
+	fmt.Println(all[1])*/
+	//		fmt.Println(all[2])
+
+}
