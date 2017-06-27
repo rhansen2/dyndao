@@ -47,7 +47,7 @@ func ToJSONFromObject(sch *schema.Schema, obj *object.Object, rootJSON string, r
 				if err != nil {
 					return "", fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)
 				}
-				// TODO: use i iterator variable somewhere here with SetRaw..
+				// TODO: use i iterator variable somewhere here with SetRaw.. ? bench that?
 				rootJSON, err = sjson.SetRaw(rootJSON, rootPath+"."+k, childJSON)
 				if err != nil {
 					return "", fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)

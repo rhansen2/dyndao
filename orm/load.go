@@ -64,7 +64,6 @@ func GetParentsViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema, chi
 // TODO: For foreign key filling, we do not check to see if there are conflicts
 // with regards to the uniqueness of primary key names.
 
-// RetrieveParentViaChild function ..... TODO: Finish writing this.
 func RetrieveParentViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, queryValues map[string]interface{}, childObj *object.Object) (*object.Object, error) {
 	objTable := sch.Tables[table]
 	if objTable == nil {
