@@ -31,10 +31,10 @@ func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName s
 // GetParentsViaChild retrieves all direct (one-level up) parents for a given child object.
 // If a child contains multiple parent tables (possibility?) then this would return an Array
 // with multiple sorts of obj.Type's.
-func GetParentsViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema, childObj *object.Object) (*object.Array, error) {
+func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (*object.Array, error) {
 	table := childObj.Type
 
-	objTable := sch.Tables[table]
+	objTable := o.s.Tables[table]
 	if objTable == nil {
 		return nil, errors.New("GetParentsViaChild: unknown object table " + table)
 	}
@@ -45,11 +45,11 @@ func GetParentsViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema, chi
 		return nil, errors.New("GetParentsViaChild: cannot retrieve parents for table " + table + ", schema ParentTables is nil")
 	}
 	for _, pt := range objTable.ParentTables {
-		pkQueryVals, err := pkQueryValsFromKV(childObj, sch, pt)
+		pkQueryVals, err := pkQueryValsFromKV(childObj, o.s, pt)
 		if err != nil {
 			return nil, err
 		}
-		objs, err := RetrieveObjects(ctx, db, sch, pt, pkQueryVals)
+		objs, err := o.RetrieveObjects(ctx, pt, pkQueryVals)
 		if err != nil {
 			return nil, err
 		}
@@ -62,13 +62,13 @@ func GetParentsViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema, chi
 // TODO: For foreign key filling, we do not check to see if there are conflicts
 // with regards to the uniqueness of primary key names.
 
-func RetrieveParentViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, queryValues map[string]interface{}, childObj *object.Object) (*object.Object, error) {
-	objTable := sch.Tables[table]
+func (o ORM) RetrieveParentViaChild(ctx context.Context, table string, queryValues map[string]interface{}, childObj *object.Object) (*object.Object, error) {
+	objTable := o.s.Tables[table]
 	if objTable == nil {
 		return nil, errors.New("RetrieveParentViaChild: unknown object table " + table)
 	}
 
-	obj, err := RetrieveObject(ctx, db, sch, table, queryValues)
+	obj, err := o.RetrieveObject(ctx, table, queryValues)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func RetrieveParentViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema,
 	var parentObj *object.Object
 	if objTable.ParentTables != nil {
 		for _, parentName := range objTable.ParentTables {
-			parentObj, err = RetrieveParentViaChild(ctx, db, sch, parentName, queryValues, obj)
+			parentObj, err = o.RetrieveParentViaChild(ctx, parentName, queryValues, obj)
 			if err != nil {
 				return nil, err
 			}
@@ -103,23 +103,21 @@ func RetrieveParentViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema,
 }
 
 // RetrieveWithChildren function will fleshen an *entire* object structure, given some primary keys
-func RetrieveWithChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, pkValues map[string]interface{}) (*object.Object, error) {
-	objTable := sch.Tables[table]
+func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues map[string]interface{}) (*object.Object, error) {
+	objTable := o.s.Tables[table]
 	if objTable == nil {
 		return nil, errors.New("RetrieveWithChildren: unknown object table " + table)
 	}
-	obj := object.New(table)
 
-	obj, err := RetrieveObject(ctx, db, sch, table, pkValues)
+	obj, err := o.RetrieveObject(ctx, table, pkValues)
 	if err != nil {
 		return nil, errors.Wrap(err, "RetrieveWithChildren/RetrieveObject")
 	}
 
 	for name := range objTable.Children {
-		childObj := object.New(name)
 		childPkValues := make(map[string]interface{})
 
-		childSchemaTable := sch.Tables[name]
+		childSchemaTable := o.s.Tables[name]
 
 		pVal, ok := pkValues[childSchemaTable.Primary]
 		if ok {
@@ -132,7 +130,7 @@ func RetrieveWithChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, t
 			}
 		}
 		// TODO: Should we do anything else with pkValues?
-		childObj, err := RetrieveObject(ctx, db, sch, name, childPkValues)
+		childObj, err := o.RetrieveObject(ctx, name, childPkValues)
 		if err != nil {
 			return nil, errors.Wrap(err, "RetrieveWithChildren/RetrieveObject("+name+")")
 		}
@@ -145,9 +143,9 @@ func RetrieveWithChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, t
 }
 
 // RetrieveObject function will fleshen an object structure, given some primary keys
-func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, queryVals map[string]interface{}) (*object.Object, error) {
+func (o ORM) RetrieveObject(ctx context.Context, table string, queryVals map[string]interface{}) (*object.Object, error) {
 	// TODO: Implement LIMIT... That's all a singular retrieve should be underneath the hood that's different.
-	objAry, err := RetrieveObjects(ctx, db, sch, table, queryVals)
+	objAry, err := o.RetrieveObjects(ctx, table, queryVals)
 	if err != nil {
 		return nil, err
 	}
@@ -155,8 +153,8 @@ func RetrieveObject(ctx context.Context, db *sql.DB, sch *schema.Schema, table s
 }
 
 // FleshenChildren function accepts an object and resets it's children.
-func FleshenChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, obj *object.Object) (*object.Object, error) {
-	schemaTable := sch.Tables[obj.Type]
+func (o ORM) FleshenChildren(ctx context.Context, table string, obj *object.Object) (*object.Object, error) {
+	schemaTable := o.s.Tables[obj.Type]
 	pkKey := schemaTable.Primary
 	pkVal := obj.Get(pkKey)
 
@@ -166,7 +164,7 @@ func FleshenChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, table 
 			fmt.Println(childTableName)
 			m := map[string]interface{}{}
 			m[pkKey] = pkVal
-			childObjs, err := RetrieveObjects(ctx, db, sch, childTableName, m)
+			childObjs, err := o.RetrieveObjects(ctx, childTableName, m)
 			if err != nil {
 				return nil, err
 			}
@@ -177,19 +175,17 @@ func FleshenChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, table 
 }
 
 // RetrieveObjects function will fleshen an object structure, given some primary keys
-func (ormObj ORM) RetrieveObjects(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, queryVals map[string]interface{}) (object.Array, error) {
-	objTable := sch.Tables[table]
+func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[string]interface{}) (object.Array, error) {
+	objTable := o.s.Tables[table]
 	if objTable == nil {
 		return nil, errors.New("RetrieveObjects: unknown object table " + table)
 	}
 	var objectArray object.Array
 
-	gen := ormObj.SQLGen
-
 	queryObj := object.New(table)
 	queryObj.KV = queryVals
 
-	sqlStr, bindArgs, err := gen.BindingRetrieve(sch, queryObj)
+	sqlStr, bindArgs, err := o.sqlGen.BindingRetrieve(o.s, queryObj)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +193,7 @@ func (ormObj ORM) RetrieveObjects(ctx context.Context, db *sql.DB, sch *schema.S
 	//	fmt.Println(sqlStr)
 	//	fmt.Println(bindArgs)
 
-	stmt, err := db.PrepareContext(ctx, sqlStr)
+	stmt, err := o.RawConn.PrepareContext(ctx, sqlStr)
 	if err != nil {
 		return nil, err
 	}

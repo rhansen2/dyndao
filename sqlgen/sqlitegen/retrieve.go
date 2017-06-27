@@ -13,7 +13,7 @@ import (
 // BindingRetrieve is a simple binding retrieve.
 func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (string, []interface{}, error) {
 	table := obj.Type // TODO: we may want to map this
-	schTable, ok := g.Schema.Tables[table]
+	schTable, ok := sch.Tables[table]
 	if !ok {
 		return "", nil, errors.New("BindingRetrieve: Table map unavailable for table " + table)
 	}

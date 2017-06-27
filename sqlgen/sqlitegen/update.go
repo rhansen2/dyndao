@@ -11,7 +11,7 @@ import (
 
 // BindingUpdate generates the SQL for a given UPDATE statement for SQLite with binding parameter values
 func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string, []interface{}, []interface{}, error) {
-	schTable, ok := g.Schema.Tables[obj.Type]
+	schTable, ok := sch.Tables[obj.Type]
 	if !ok {
 		return "", nil, nil, errors.New("BindingUpdate: Table map unavailable for table " + obj.Type)
 	}

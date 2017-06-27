@@ -12,7 +12,7 @@ import (
 // TODO: Refactor common code... later. A lot of overall work remains.
 
 // BindingInsert generates the SQL for a given INSERT statement for SQLite with binding parameter values
-func (g Generator) BindingInsert(table string, data map[string]interface{}) (string, []interface{}, error) {
+func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[string]interface{}) (string, []interface{}, error) {
 	if table == "" {
 		return "", nil, errors.New("BindingInsert: Empty table name")
 	}
@@ -20,7 +20,7 @@ func (g Generator) BindingInsert(table string, data map[string]interface{}) (str
 		return "", nil, errors.New("BindingInsert: Empty data passed")
 	}
 
-	schTable, ok := g.Schema.Tables[table]
+	schTable, ok := sch.Tables[table]
 	if !ok {
 		return "", nil, errors.New("BindingInsert: Table map unavailable for table " + table)
 	}
@@ -49,7 +49,7 @@ func (g Generator) BindingInsert(table string, data map[string]interface{}) (str
 }
 
 // Insert generates the SQL for a given INSERT statement for SQLite
-func (g Generator) Insert(table string, data map[string]interface{}) (string, error) {
+func (g Generator) Insert(sch *schema.Schema, table string, data map[string]interface{}) (string, error) {
 	if table == "" {
 		return "", errors.New("Insert: empty table name")
 	}
@@ -62,7 +62,7 @@ func (g Generator) Insert(table string, data map[string]interface{}) (string, er
 	dataAry := make([]string, dataLen)
 	keysAry := make([]string, dataLen)
 
-	schTable, ok := g.Schema.Tables[table]
+	schTable, ok := sch.Tables[table]
 	if !ok {
 		return "", errors.New("Insert: Table map unavailable for table " + table)
 	}
