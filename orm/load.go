@@ -12,14 +12,63 @@ import (
 	"github.com/rbastic/dyndao/sqlgen/sqlitegen"
 )
 
+func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName string) (map[string]interface{}, error) {
+	qv := make(map[string]interface{})
+
+	schemaTable := sch.Tables[parentTableName]
+	if schemaTable == nil {
+		return nil, errors.New("pkQueryValsFromKV: no schemaTable for table " + parentTableName)
+	}
+	schemaPrimary := schemaTable.Primary
+
+	for fName, field := range schemaTable.Fields {
+		if field.IsIdentity || field.IsForeignKey || field.Name == schemaPrimary {
+			qv[fName] = obj.Get(fName)
+			fmt.Println("qv -> setting ", fName, " with ", qv[fName])
+		}
+	}
+	return qv, nil
+}
+
+// GetParentsViaChild retrieves all direct (one-level up) parents for a given child object.
+// If a child contains multiple parent tables (possibility?) then this would return an Array
+// with multiple sorts of obj.Type's.
+func GetParentsViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema, childObj *object.Object) (*object.Array, error) {
+	table := childObj.Type
+
+	objTable := sch.Tables[table]
+	if objTable == nil {
+		return nil, errors.New("GetParentsViaChild: unknown object table " + table)
+	}
+
+	var parentObjs object.Array
+
+	if objTable.ParentTables == nil {
+		return nil, errors.New("GetParentsViaChild: cannot retrieve parents for table " + table + ", schema ParentTables is nil")
+	}
+	for _, pt := range objTable.ParentTables {
+		pkQueryVals, err := pkQueryValsFromKV(childObj, sch, pt)
+		if err != nil {
+			return nil, err
+		}
+		objs, err := RetrieveObjects(ctx, db, sch, pt, pkQueryVals)
+		if err != nil {
+			return nil, err
+		}
+		parentObjs = append(parentObjs, objs...)
+	}
+
+	return &parentObjs, nil
+}
+
 // TODO: For foreign key filling, we do not check to see if there are conflicts
 // with regards to the uniqueness of primary key names.
 
-// RetrieveParentViaChild function
+// RetrieveParentViaChild function ..... TODO: Finish writing this.
 func RetrieveParentViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, queryValues map[string]interface{}, childObj *object.Object) (*object.Object, error) {
 	objTable := sch.Tables[table]
 	if objTable == nil {
-		return nil, errors.New("RetrieveWithChildren: unknown object table " + table)
+		return nil, errors.New("RetrieveParentViaChild: unknown object table " + table)
 	}
 
 	obj, err := RetrieveObject(ctx, db, sch, table, queryValues)
@@ -29,7 +78,7 @@ func RetrieveParentViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema,
 	// TODO: support multiple objects...
 	if childObj != nil {
 		if obj.Children[childObj.Type] == nil {
-			obj.Children[childObj.Type] = make(object.ObjectArray, 1)
+			obj.Children[childObj.Type] = make(object.Array, 1)
 		}
 		obj.Children[childObj.Type][0] = childObj
 	}
@@ -44,7 +93,7 @@ func RetrieveParentViaChild(ctx context.Context, db *sql.DB, sch *schema.Schema,
 				return nil, err
 			}
 			if parentObj.Children[table] == nil {
-				parentObj.Children[table] = make(object.ObjectArray, 1)
+				parentObj.Children[table] = make(object.Array, 1)
 			}
 			parentObj.Children[table][0] = obj
 		}
@@ -91,7 +140,7 @@ func RetrieveWithChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, t
 			return nil, errors.Wrap(err, "RetrieveWithChildren/RetrieveObject("+name+")")
 		}
 		if obj.Children[name] == nil {
-			obj.Children[name] = make(object.ObjectArray, 1)
+			obj.Children[name] = make(object.Array, 1)
 		}
 		obj.Children[name][0] = childObj
 	}
@@ -131,12 +180,12 @@ func FleshenChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, table 
 }
 
 // RetrieveObjects function will fleshen an object structure, given some primary keys
-func RetrieveObjects(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, queryVals map[string]interface{}) (object.ObjectArray, error) {
+func RetrieveObjects(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, queryVals map[string]interface{}) (object.Array, error) {
 	objTable := sch.Tables[table]
 	if objTable == nil {
 		return nil, errors.New("RetrieveObjects: unknown object table " + table)
 	}
-	var objectArray object.ObjectArray
+	var objectArray object.Array
 
 	gen := sqlitegen.New("sqlite", "test", sch)
 
@@ -255,4 +304,3 @@ func RetrieveObjects(ctx context.Context, db *sql.DB, sch *schema.Schema, table 
 
 // TODO: Read this post for more info on the above...
 // https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
-

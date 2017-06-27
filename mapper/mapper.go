@@ -102,7 +102,7 @@ func walkChildrenFromJSON(sch *schema.Schema, table *schema.Table, obj *object.O
 				return fmt.Errorf("ToObjectFromJSON: error %s with child [k:%v v:%v]", err.Error(), k, v)
 			}
 			if obj.Children[k] == nil {
-				obj.Children[k] = make(object.ObjectArray, len(table.Children))
+				obj.Children[k] = make(object.Array, len(table.Children))
 			}
 			obj.Children[k][i] = child
 			i++

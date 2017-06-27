@@ -127,7 +127,7 @@ func TestSaveNestedObject(t *testing.T) {
 	obj.Set("Name", "Ryan")
 
 	addrObj := sampleAddressObject()
-	obj.Children["addresses"] = object.NewObjectArray(addrObj)
+	obj.Children["addresses"] = object.NewArray(addrObj)
 
 	db := getDB()
 	defer db.Close()
@@ -253,6 +253,21 @@ func TestSaveNestedObject(t *testing.T) {
 			// TODO: Fix these tests to actually check the values.... To ensure FleshenChildren works.
 			//fmt.Println(obj)
 			//fmt.Println(obj.Children["addresses"][0])
+		}
+
+		{
+			queryVals := make(map[string]interface{})
+			queryVals["PersonID"] = 1
+			childObj, err := orm.RetrieveObject(context.TODO(), db, sch, "addresses", queryVals)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			objs, err := orm.GetParentsViaChild(context.TODO(), db, sch, childObj)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fmt.Println(objs)
 		}
 	}
 

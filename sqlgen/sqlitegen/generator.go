@@ -16,6 +16,7 @@ func bindingParam(v string) string {
 	return ":" + v
 }
 
+// New is our SQLITE code-generator constructor.
 func New(db string, name string, sch *schema.Schema) *Generator {
 	return &Generator{Database: db, Name: name, Schema: sch}
 }

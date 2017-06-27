@@ -5,18 +5,17 @@
 // need to change. (Changing a foreign key on a table with a composite key, for example)
 package object
 
-// TODO: add object array container
+// Array is our object array container to facilitate a couple of instances
+// where slices are needed.
+type Array []*Object
 
 // Object struct encapsulates our key-value pairs and a single-item per-key history
 // of the previous value stored for a given key.
-
-type ObjectArray []*Object
-
 type Object struct {
 	Type          string
 	KV            map[string]interface{} `json:"KV"`
 	ChangedFields map[string]interface{} `json:"ChangedFields"`
-	Children      map[string]ObjectArray // TODO: make this value an array
+	Children      map[string]Array
 	saved         bool
 }
 
@@ -25,14 +24,16 @@ func New(objType string) *Object {
 	return &Object{Type: objType, KV: makeEmptyMap(), ChangedFields: makeEmptyMap(), Children: makeEmptyChildrenMap(), saved: false}
 }
 
-func NewObjectArray(val *Object) ObjectArray {
-	objAry := make(ObjectArray, 1)
+// NewArray is our single-object array constructor
+func NewArray(val *Object) Array {
+	objAry := make(Array, 1)
 	objAry[0] = val
 	return objAry
 }
 
-func NewEmptyObjectArray() ObjectArray {
-	objAry := make(ObjectArray, 0)
+// NewEmptyArray is an empty array constructor
+func NewEmptyArray() Array {
+	objAry := make(Array, 0)
 	return objAry
 }
 
@@ -40,8 +41,8 @@ func makeEmptyMap() map[string]interface{} {
 	return make(map[string]interface{})
 }
 
-func makeEmptyChildrenMap() map[string]ObjectArray {
-	return make(map[string]ObjectArray)
+func makeEmptyChildrenMap() map[string]Array {
+	return make(map[string]Array)
 }
 
 // Get is our accessor

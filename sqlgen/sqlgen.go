@@ -4,6 +4,7 @@ import "errors"
 import "github.com/rbastic/dyndao/sqlgen/sqlitegen"
 import "github.com/rbastic/dyndao/schema"
 
+// New is our generic sql generator constructor
 func New(db string, name string, sch *schema.Schema) (interface{}, error) {
 	switch db {
 	case "sqlite":

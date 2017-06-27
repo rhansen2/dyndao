@@ -68,7 +68,7 @@ func getNestedObj() *object.Object {
 	addr.Set("City", "Nowhere")
 	addr.Set("State", "AZ")
 
-	o.Children["addresses"] = object.NewObjectArray(addr)
+	o.Children["addresses"] = object.NewArray(addr)
 	return o
 }
 
