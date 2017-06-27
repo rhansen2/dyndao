@@ -196,7 +196,7 @@ func TestSaveNestedObject(t *testing.T) {
 		}
 
 		// TODO: Produce nested structure for JSON.
-		newJSON, err := mapper.ToJSONFromObject(sch, latestRyan, "{}", "")
+		newJSON, err := mapper.ToJSONFromObject(sch, latestRyan, "{}", "", true)
 		if err != nil {
 			t.Fatal(err)
 		}
