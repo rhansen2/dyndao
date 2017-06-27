@@ -29,6 +29,8 @@ func getDB() *sql.DB {
 
 func TestSaveBasicObject(t *testing.T) {
 	sch := schema.MockBasicSchema()
+	sqliteORM := orm.New(sqlitegen.New("test", sch))
+
 	table := "people"
 
 	// NOTE: This should force insert
@@ -45,7 +47,7 @@ func TestSaveBasicObject(t *testing.T) {
 	}
 
 	{
-		rowsAff, err := orm.SaveObject(context.TODO(), db, nil, sch, obj)
+		rowsAff, err := sqliteORM.SaveObject(context.TODO(), db, nil, sch, obj)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -65,7 +67,7 @@ func TestSaveBasicObject(t *testing.T) {
 	// Test second save to ensure that we don't save the object twice needlessly...
 	// This caught a silly bug early on.
 	{
-		rowsAff, err := orm.SaveObject(context.TODO(), db, nil, sch, obj)
+		rowsAff, err := sqliteORM.SaveObject(context.TODO(), db, nil, sch, obj)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -78,7 +80,7 @@ func TestSaveBasicObject(t *testing.T) {
 	// Now this should force an update
 	obj.Set("Name", "Joe") // name change
 
-	rowsAff, err := orm.SaveObject(context.TODO(), db, nil, sch, obj)
+	rowsAff, err := sqliteORM.SaveObject(context.TODO(), db, nil, sch, obj)
 	if err != nil {
 		t.Fatal(err)
 	}

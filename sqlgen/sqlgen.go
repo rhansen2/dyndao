@@ -1,11 +1,8 @@
 package sqlgen
 
 import (
-	"errors"
-
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
-	"github.com/rbastic/dyndao/sqlgen/sqlitegen"
 )
 
 type GeneratorImp interface {
@@ -20,17 +17,4 @@ type Generator struct {
 	Database string
 	Name     string
 	Schema   *schema.Schema
-}
-
-// New is our generic sql generator constructor
-func New(db string, name string, sch *schema.Schema) (interface{}, error) {
-	switch db {
-	case "sqlite":
-		//	fallthrough
-		//case "oracle":
-		// TODO: fix testName as a parameter
-		return sqlitegen.New(db, "testName", sch), nil
-	default:
-		return nil, errors.New("sqlgen: Unrecognized database type " + db)
-	}
 }

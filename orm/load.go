@@ -9,7 +9,6 @@ import (
 
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
-	"github.com/rbastic/dyndao/sqlgen/sqlitegen"
 )
 
 func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName string) (map[string]interface{}, error) {
@@ -178,14 +177,14 @@ func FleshenChildren(ctx context.Context, db *sql.DB, sch *schema.Schema, table 
 }
 
 // RetrieveObjects function will fleshen an object structure, given some primary keys
-func RetrieveObjects(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, queryVals map[string]interface{}) (object.Array, error) {
+func (ormObj ORM) RetrieveObjects(ctx context.Context, db *sql.DB, sch *schema.Schema, table string, queryVals map[string]interface{}) (object.Array, error) {
 	objTable := sch.Tables[table]
 	if objTable == nil {
 		return nil, errors.New("RetrieveObjects: unknown object table " + table)
 	}
 	var objectArray object.Array
 
-	gen := sqlitegen.New("sqlite", "test", sch)
+	gen := ormObj.SQLGen
 
 	queryObj := object.New(table)
 	queryObj.KV = queryVals
