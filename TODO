@@ -1,7 +1,6 @@
 - add more functionality
 - add more tests
 - clean up code
-
 - turn on gometalinter
 
 mapper:
@@ -9,13 +8,14 @@ mapper:
 	- not completely confident that mapper is in sufficient end-state
 
 TODO
-	- sqlite cascading key stuff
+	- sqlite support for cascading key constraints on table schema
 
-	- oracle text->CLOB mapper... what about constraints? aka IS JSON constraints.
-
-	* oracle appears to be uppercasing all the column names during the RetrieveObjects code ... 
-	How are we going to handle this now? :/
+	- oracle text->CLOB mapper... what about adding constraints? aka IS JSON constraints.
 
 	* use ChangedFields in update code so that we only update the values that changed....
 	* Sort out the float64 vs int64 debacle happening internally.
 
+	--
+	* TODO: oracle, support varchar2 data type
+	* TODO: oracle, support JSON BLOB constraint on table
+	* TODO: what do other databases (cough, sqlite) do in this area?
