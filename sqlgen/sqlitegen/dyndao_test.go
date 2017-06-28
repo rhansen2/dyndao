@@ -357,5 +357,3 @@ func testRetrieveObjects(o *orm.ORM, t *testing.T, rootTable string) {
 	//		fmt.Println(all[2])
 
 }
-
-

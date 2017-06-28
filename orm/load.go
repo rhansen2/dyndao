@@ -30,7 +30,7 @@ func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName s
 // GetParentsViaChild retrieves all direct (one-level up) parents for a given child object.
 // If a child contains multiple parent tables (possibility?) then this would return an Array
 // with multiple sorts of obj.Type's.
-func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (*object.Array, error) {
+func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (object.Array, error) {
 	table := childObj.Type
 
 	objTable := o.s.Tables[table]
@@ -55,7 +55,7 @@ func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (*
 		parentObjs = append(parentObjs, objs...)
 	}
 
-	return &parentObjs, nil
+	return parentObjs, nil
 }
 
 // TODO: For foreign key filling, we do not check to see if there are conflicts
