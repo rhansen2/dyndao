@@ -11,25 +11,25 @@ import (
 )
 
 // BindingRetrieve is a simple binding retrieve.
-func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (string, []interface{}, error) {
+func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (string, []string, []interface{}, error) {
 	table := obj.Type // TODO: we may want to map this
 	schTable, ok := sch.Tables[table]
 	if !ok {
-		return "", nil, errors.New("BindingRetrieve: Table map unavailable for table " + table)
+		return "", nil, nil, errors.New("BindingRetrieve: Table map unavailable for table " + table)
 	}
 
 	fieldsMap := schTable.Fields
 	if fieldsMap == nil {
-		return "", nil, errors.New("BindingRetrieve: Field map unavailable for table " + table)
+		return "", nil, nil, errors.New("BindingRetrieve: Field map unavailable for table " + table)
 	}
 
 	whereClause, bindWhere, err := renderWhereClause(schTable, fieldsMap, obj)
 	if err != nil {
-		return "", nil, errors.Wrap(err, "BindingRetrieve")
+		return "", nil, nil, errors.Wrap(err, "BindingRetrieve")
 	}
 
 	if schTable.EssentialFields == nil || len(schTable.EssentialFields) == 0 {
-		return "", nil, errors.New("BindingRetrieve: EssentialFields is empty")
+		return "", nil, nil, errors.New("BindingRetrieve: EssentialFields is empty")
 	}
 	columns := strings.Join(schTable.EssentialFields, ",")
 
@@ -40,7 +40,7 @@ func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (stri
 	sqlStr := fmt.Sprintf("SELECT %s FROM %s %s %s", columns, table, whereStr, whereClause)
 	//fmt.Println(sqlStr)
 
-	return sqlStr, bindWhere, nil
+	return sqlStr, schTable.EssentialFields, bindWhere, nil
 }
 
 func renderUpdateWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {

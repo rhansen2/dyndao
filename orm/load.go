@@ -188,7 +188,7 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 	queryObj := object.New(table)
 	queryObj.KV = queryVals
 
-	sqlStr, bindArgs, err := o.sqlGen.BindingRetrieve(o.s, queryObj)
+	sqlStr, columnNames, bindArgs, err := o.sqlGen.BindingRetrieve(o.s, queryObj)
 	if err != nil {
 		return nil, err
 	}
@@ -206,10 +206,6 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 		return nil, err
 	}
 	defer res.Close()
-	columnNames, err := res.Columns()
-	if err != nil {
-		return nil, err
-	}
 	columnTypes, err := res.ColumnTypes()
 	if err != nil {
 		return nil, err

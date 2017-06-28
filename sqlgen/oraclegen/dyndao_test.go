@@ -131,7 +131,7 @@ func TestSaveBasicObject(t *testing.T) {
 			t.Fatal("LatestJoe Should not be nil!")
 		}
 		fmt.Println(latestJoe)
-		if latestJoe.Get("PersonID") != 1 || latestJoe.Get("Name") != "Joe" {
+		if latestJoe.Get("PersonID").(int64) != 1 || latestJoe.Get("Name") != "Joe" {
 			t.Fatal("latestJoe does not match expectations")
 		}
 	}
