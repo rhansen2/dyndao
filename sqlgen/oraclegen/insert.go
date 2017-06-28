@@ -45,7 +45,7 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 		bindArgs[i] = v
 		i++
 	}
-	sqlStr := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING \"%s\" /*LASTINSERTID*/ INTO :%s", table, strings.Join(colNames, ","), strings.Join(bindNames, ","), identityCol, identityCol)
+	sqlStr := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING %s /*LASTINSERTID*/ INTO :%s", table, strings.Join(colNames, ","), strings.Join(bindNames, ","), identityCol, identityCol)
 	fmt.Println(sqlStr)
 	return sqlStr, bindArgs, nil
 
