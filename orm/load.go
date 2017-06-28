@@ -3,6 +3,7 @@ package orm
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -192,9 +193,6 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 		return nil, err
 	}
 
-	//	fmt.Println(sqlStr)
-	//	fmt.Println(bindArgs)
-
 	stmt, err := o.RawConn.PrepareContext(ctx, sqlStr)
 	if err != nil {
 		return nil, err
@@ -220,11 +218,10 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 
 		for i := 0; i < len(columnNames); i++ {
 			ct := columnTypes[i]
-			// TODO: Improve database type support.
-			//fmt.Println(ct.DatabaseTypeName())
+			fmt.Println(ct.DatabaseTypeName())
 
 			// TODO: Do I need to reset columnPointers every time?
-			if ct.DatabaseTypeName() == "text" {
+			if ct.DatabaseTypeName() == "CLOB" {
 				nullable, _ := ct.Nullable()
 				if nullable {
 					var s sql.NullString
@@ -256,7 +253,7 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 			// TODO: Improve database type support.
 			//fmt.Println("dbtypename=", ct.DatabaseTypeName())
 
-			if ct.DatabaseTypeName() == "text" {
+			if ct.DatabaseTypeName() == "CLOB" {
 				nullable, _ := ct.Nullable()
 				if nullable {
 					val := v.(*sql.NullString)

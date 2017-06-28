@@ -12,3 +12,6 @@ TODO
 	- sqlite cascading key stuff
 
 	- oracle text->CLOB mapper... what about constraints? aka IS JSON constraints.
+
+	* oracle appears to be uppercasing all the column names during the RetrieveObjects code ... 
+	How are we going to handle this now? :/

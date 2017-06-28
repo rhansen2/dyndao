@@ -9,7 +9,6 @@ import (
 
 type Generator interface {
 	BindingInsert(sch *schema.Schema, table string, data map[string]interface{}) (string, []interface{}, error)
-	Insert(sch *schema.Schema, table string, data map[string]interface{}) (string, error)
 	BindingUpdate(sch *schema.Schema, obj *object.Object) (string, []interface{}, []interface{}, error)
 	BindingRetrieve(sch *schema.Schema, obj *object.Object) (string, []interface{}, error)
 	CreateTable(sch *schema.Schema, table string) (string, error)
