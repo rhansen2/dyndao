@@ -192,6 +192,8 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(sqlStr)
+	fmt.Println(bindArgs)
 
 	stmt, err := o.RawConn.PrepareContext(ctx, sqlStr)
 	if err != nil {

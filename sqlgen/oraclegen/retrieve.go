@@ -121,7 +121,7 @@ func renderWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Fiel
 		}
 		sqlName := f.Name
 		// TODO: Re-implement using IsForeignKey....
-		whereKeys[i] = fmt.Sprintf("\"%s\" = %s", sqlName, renderBindingUpdateValue(f))
+		whereKeys[i] = fmt.Sprintf("%s = %s", sqlName, renderBindingUpdateValue(f))
 		bindArgs[i] = v
 
 		i++

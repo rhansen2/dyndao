@@ -162,7 +162,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	return rowsAff, nil
 }
 
-// Update function will UPDATE a record depending on various values
+// Update function will UPDATE a record ...
 func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	objTable := o.s.Tables[obj.Type]
 	if objTable == nil {
