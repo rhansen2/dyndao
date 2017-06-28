@@ -325,7 +325,7 @@ func testRetrieveParentViaChild(o *orm.ORM, t *testing.T, sch *schema.Schema) {
 		t.Fatal(err)
 	}
 	// TODO: Fix this test.
-//	fmt.Println(newJSON)
+	//	fmt.Println(newJSON)
 }
 
 func testRetrieveObjects(o *orm.ORM, t *testing.T, rootTable string) {

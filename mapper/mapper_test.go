@@ -115,11 +115,11 @@ func getNestedArrayJSONData() string {
 	return `
 	{"people": 
 		{ "Name":"Sam", 
-	      "PersonID":1, 
+ 	          "PersonID":1, 
 		  "addresses": [
 			{"Address1":"Test","Address2":"Test2","City":"Nowhere","State":"AZ" },
 			{"Address1":"Foo","Address2":"Bar","City":"Lincoln","State":"RI" }
-		] 
+		  ] 
 		} 
 	}`
 }

@@ -2,16 +2,16 @@ package sqlitegen
 
 import (
 	"fmt"
-	"github.com/rbastic/dyndao/schema"
 	"testing"
-	/*"github.com/rbastic/dyndao/mapper"
-	"github.com/rbastic/dyndao/object"*/)
+
+	"github.com/rbastic/dyndao/schema"
+)
 
 func TestGeneratorBasic(t *testing.T) {
 	sch := schema.MockBasicSchema()
-	basic := New("sqlite", "testDB", sch) // Basic generator initialization
+	basic := New("testDB", sch) // Basic generator initialization
 
-	sql, err := basic.CreateTable("people")
+	sql, err := basic.CreateTable(sch, "people")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -23,6 +23,7 @@ func TestGeneratorBasic(t *testing.T) {
 	// TODO: test output or execution
 
 	sql, err = basic.Insert(
+		sch,
 		"people",
 		map[string]interface{}{
 			"PersonID": 1,
@@ -45,15 +46,15 @@ func TestGeneratorNested(t *testing.T) {
 	sch := schema.MockNestedSchema()
 
 	// Basic generator initialization
-	basic := New("sqlite", "testDB", sch)
+	basic := New("testDB", sch)
 
-	sql, err := basic.CreateTable("people")
+	sql, err := basic.CreateTable(sch, "people")
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println(sql + ";")
 
-	sql, err = basic.CreateTable("addresses")
+	sql, err = basic.CreateTable(sch, "addresses")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,6 +66,7 @@ func TestGeneratorNested(t *testing.T) {
 	// TODO: test output or execution
 
 	sql, err = basic.Insert(
+		sch,
 		"people",
 		map[string]interface{}{
 			"PersonID": 1,
