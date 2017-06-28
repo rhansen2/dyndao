@@ -1,3 +1,7 @@
 - add more functionality
 - add more tests
 - clean up code
+
+mapper:
+	- needs more tests overall
+	- not completely confident that mapper is in sufficient end-state
