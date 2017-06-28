@@ -212,69 +212,19 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 	}
 
 	for res.Next() {
-		columnPointers := make([]interface{}, len(columnNames))
-
-		for i := 0; i < len(columnNames); i++ {
-			ct := columnTypes[i]
-
-			// TODO: Do I need to reset columnPointers every time?
-			if ct.DatabaseTypeName() == "CLOB" {
-				nullable, _ := ct.Nullable()
-				if nullable {
-					var s sql.NullString
-					columnPointers[i] = &s
-				} else {
-					var s string
-					columnPointers[i] = &s
-				}
-			} else {
-				nullable, _ := ct.Nullable()
-				if nullable {
-					var j sql.NullInt64
-					columnPointers[i] = &j
-				} else {
-					var j int64
-					columnPointers[i] = &j
-
-				}
-			}
-			// columnPointers[i] = &columns[i]
+		columnPointers, err := o.makeColumnPointers(len(columnNames), columnTypes)
+		if err != nil {
+			return nil, err
 		}
 
 		obj := object.New(table)
 		if err := res.Scan(columnPointers...); err != nil {
 			return nil, err
 		}
-		for i, v := range columnPointers {
-			ct := columnTypes[i]
 
-			if ct.DatabaseTypeName() == "CLOB" {
-				nullable, _ := ct.Nullable()
-				if nullable {
-					val := v.(*sql.NullString)
-					if val.Valid {
-						obj.Set(columnNames[i], val.String)
-					}
-					// TODO: We don't set keys for null values. How else can we support this?
-				} else {
-					val := v.(*string)
-					obj.Set(columnNames[i], *val)
-
-				}
-			} else {
-				// TODO: support more than 'int64' for integer...
-				nullable, _ := ct.Nullable()
-				if nullable {
-					val := v.(*sql.NullInt64)
-					if val.Valid {
-						obj.Set(columnNames[i], val.Int64)
-					}
-					// TODO: We don't set keys for null values. How else can we support this?
-				} else {
-					val := v.(*int64)
-					obj.Set(columnNames[i], *val)
-				}
-			}
+		err = o.dynamicObjectSetter(columnNames, columnPointers, columnTypes, obj)
+		if err != nil {
+			return nil, err
 		}
 		obj.SetSaved(true)
 		obj.ResetChangedFields()
@@ -287,6 +237,77 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 		return nil, err
 	}
 	return objectArray, nil
+}
+
+func (o ORM) dynamicObjectSetter(columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj * object.Object) error {
+	sqlGen := o.sqlGen
+	for i, v := range columnPointers {
+		ct := columnTypes[i]
+
+		typeName := ct.DatabaseTypeName()
+		if sqlGen.IsStringType(typeName) {
+			nullable, _ := ct.Nullable()
+			if nullable {
+				val := v.(*sql.NullString)
+				if val.Valid {
+					obj.Set(columnNames[i], val.String)
+				}
+				// TODO: We don't set keys for null values. How else can we support this?
+			} else {
+				val := v.(*string)
+				obj.Set(columnNames[i], *val)
+
+			}
+		} else if sqlGen.IsNumberType(typeName) {
+			// TODO: support more than 'int64' for integer...
+			nullable, _ := ct.Nullable()
+			if nullable {
+				val := v.(*sql.NullInt64)
+				if val.Valid {
+					obj.Set(columnNames[i], val.Int64)
+				}
+				// TODO: We don't set keys for null values. How else can we support this?
+			} else {
+				val := v.(*int64)
+				obj.Set(columnNames[i], *val)
+			}
+		} else {
+			return errors.New("dynamicObjectSetter: Unrecognized type: " + typeName)
+		}
+	}
+	return nil
+}
+
+func (o ORM) makeColumnPointers(sliceLen int, columnTypes []*sql.ColumnType) ([]interface{}, error) {
+	columnPointers := make([]interface{}, sliceLen)
+	sqlGen := o.sqlGen
+	for i := 0; i < sliceLen; i++ {
+		ct := columnTypes[i]
+		typeName := ct.DatabaseTypeName()
+		if sqlGen.IsStringType(typeName) {
+			nullable, _ := ct.Nullable()
+			if nullable {
+				var s sql.NullString
+				columnPointers[i] = &s
+			} else {
+				var s string
+				columnPointers[i] = &s
+			}
+		} else if sqlGen.IsNumberType(typeName) {
+			nullable, _ := ct.Nullable()
+			if nullable {
+				var j sql.NullInt64
+				columnPointers[i] = &j
+			} else {
+				var j int64
+				columnPointers[i] = &j
+
+			}
+		} else {
+			return nil, errors.New("makeColumnPointers: Unrecognized type: " + typeName)
+		}
+	}
+	return columnPointers, nil
 }
 
 // TODO: Read this post for more info on the above...

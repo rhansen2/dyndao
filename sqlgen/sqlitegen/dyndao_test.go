@@ -142,7 +142,7 @@ func TestSaveNestedObject(t *testing.T) {
 
 	// TODO: should we rename Save to SaveWithChildren()? anyway, do a complex nested save
 	{
-		rowsAff, err := sqliteORM.Save(context.TODO(), obj)
+		rowsAff, err := sqliteORM.SaveAll(context.TODO(), obj)
 		if err != nil {
 			t.Fatal("Save:" + err.Error())
 		}
@@ -332,7 +332,7 @@ func testRetrieveObjects(o *orm.ORM, t *testing.T, rootTable string) {
 	nobj := object.New(rootTable)
 	nobj.Set("Name", "Joe")
 	{
-		rowsAff, err := o.Save(context.TODO(), nobj)
+		rowsAff, err := o.SaveAll(context.TODO(), nobj)
 		if err != nil {
 			t.Fatal("Save:" + err.Error())
 		}

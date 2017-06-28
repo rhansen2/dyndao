@@ -146,13 +146,13 @@ func TestNestedArrayMapper(t *testing.T) {
 	if obj.Children[AddressesObjectType] == nil {
 		t.Fatal("Why doesn't our object have any addresses?")
 	}
-	// TODO: Check addresses...
 	first := obj.Children[AddressesObjectType][0]
 	if first.Get("Address1") == nil {
 		t.Fatal("Why is the first Address1 empty?")
 	}
-	//	fmt.Println(obj)
-	//	fmt.Println(obj.Children[AddressesObjectType][0])
+	if first.Get("Address1") != "Test" {
+		t.Fatal("Why isn't Address1 equal to Test?")
+	}
 }
 
 func getNestedArrayJSONData2() string {
@@ -208,7 +208,8 @@ func TestNestedArrayMapper2(t *testing.T) {
 	if first.Get("Address1") == nil {
 		t.Fatal("Why is the first Address1 empty?")
 	}
-	//	fmt.Println(obj)
-	//	fmt.Println(obj.Children[AddressesObjectType][0])
+	if first.Get("Address1") != "Test" {
+		t.Fatal("Why isn't Address1 equal to Test?")
+	}
 
 }

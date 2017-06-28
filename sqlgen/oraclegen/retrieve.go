@@ -120,7 +120,6 @@ func renderWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Fiel
 			return "", nil, errors.New("renderWhereClause: unknown field " + k + " in table " + obj.Type)
 		}
 		sqlName := f.Name
-		// TODO: Re-implement using IsForeignKey....
 		whereKeys[i] = fmt.Sprintf("%s = %s", sqlName, renderBindingUpdateValue(f))
 		bindArgs[i] = v
 

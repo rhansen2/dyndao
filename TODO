@@ -13,9 +13,11 @@ TODO
 	- oracle text->CLOB mapper... what about adding constraints? aka IS JSON constraints.
 
 	* use ChangedFields in update code so that we only update the values that changed....
-	* Sort out the float64 vs int64 debacle happening internally.
+	* Sort out the float64 (JSON mapper) vs int64 (database code) debacle happening internally.
 
 	--
 	* TODO: oracle, support varchar2 data type
 	* TODO: oracle, support JSON BLOB constraint on table
 	* TODO: what do other databases (cough, sqlite) do in this area?
+
+	* sqlite test currently broken... but oracle tests working? did we break something core?

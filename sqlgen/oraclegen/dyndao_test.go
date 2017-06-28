@@ -99,6 +99,12 @@ func TestSuiteNested(t *testing.T) {
 	// Validate that we correctly fleshened the primary key
 	t.Run("ValidatePersonID", func(t *testing.T) {
 		validatePersonID(t, obj)
+		// TODO: Make sure we saved the Address with a person id also
+	})
+
+	// Validate that we correctly saved the children
+	t.Run("ValidateChildrenSaved", func(t *testing.T) {
+		validateChildrenSaved(t, obj)
 	})
 
 	// Test second additional Save to ensure that we don't save
@@ -213,7 +219,7 @@ func validateJSONMapperFrom(t *testing.T, obj *object.Object) {
 }
 
 func saveMockObject(t *testing.T, o *orm.ORM, obj *object.Object) {
-	rowsAff, err := o.Save(context.TODO(), obj)
+	rowsAff, err := o.SaveAll(context.TODO(), obj)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -233,6 +239,20 @@ func validatePersonID(t *testing.T, obj *object.Object) {
 			t.Fatal("Tests are not in a ready state. Pre-existing data is present.")
 		}
 		t.Fatalf("PersonID has the wrong value, has value %d", personID)
+	}
+}
+
+func validateChildrenSaved(t *testing.T, obj *object.Object) {
+	for _, childs := range obj.Children {
+		for _, v := range childs {
+			if !v.GetSaved() {
+				t.Fatal("Child object wasn't saved")
+			}
+			addrId := v.Get("AddressID").(int64)
+			if addrId < 1 {
+				t.Fatal("AddressID was not what we expected")
+			}
+		}
 	}
 }
 
@@ -303,7 +323,7 @@ func testRetrieveObjects(o *orm.ORM, t *testing.T, rootTable string) {
 	nobj := object.New(rootTable)
 	nobj.Set("Name", "Joe")
 	{
-		rowsAff, err := o.Save(context.TODO(), nobj)
+		rowsAff, err := o.SaveAll(context.TODO(), nobj)
 		if err != nil {
 			t.Fatal("Save:" + err.Error())
 		}

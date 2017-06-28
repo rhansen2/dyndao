@@ -17,3 +17,7 @@ func bindingParam(v string) string {
 func New(name string, sch *schema.Schema) *Generator {
 	return &Generator{Database: "oracle", Name: name}
 }
+
+func (g Generator) FixLastInsertIDbug() bool {
+	return true
+}

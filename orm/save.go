@@ -49,8 +49,8 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 	return rowsAff, err
 }
 
-// Save will attempt to save an entire nested object structure inside of a single transaction.
-func (o ORM) Save(ctx context.Context, obj *object.Object) (int64, error) {
+// SaveAll will attempt to save an entire nested object structure inside of a single transaction.
+func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 
 	tx, err := o.RawConn.BeginTx(ctx, nil)
 	if err != nil {
@@ -124,8 +124,10 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	// TODO: Possible bug in rana ora.v4? I wouldn't have expected that I'd have to pass a parameter in like this,
 	// based on reading the code.
-	var lastID int64
-	bindArgs = append(bindArgs, &lastID)
+	if o.sqlGen.FixLastInsertIDbug() {
+		var lastID int64
+		bindArgs = append(bindArgs, &lastID)
+	}
 
 	var stmt *sql.Stmt
 	if tx != nil {

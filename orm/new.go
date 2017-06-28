@@ -14,6 +14,11 @@ type Generator interface {
 	BindingRetrieve(sch *schema.Schema, obj *object.Object) (string, []string, []interface{}, error)
 	CreateTable(sch *schema.Schema, table string) (string, error)
 	DropTable(name string) string
+
+	IsStringType(string) bool
+	IsNumberType(string) bool
+
+	FixLastInsertIDbug() bool
 }
 
 // ORM is the abstraction that results from combining a sql generator, schema, and a database connection.
