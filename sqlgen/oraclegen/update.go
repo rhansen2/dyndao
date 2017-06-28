@@ -9,7 +9,7 @@ import (
 	"github.com/rbastic/dyndao/schema"
 )
 
-// BindingUpdate generates the SQL for a given UPDATE statement for SQLite with binding parameter values
+// BindingUpdate generates the SQL for a given UPDATE statement for oracle with binding parameter values
 func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string, []interface{}, []interface{}, error) {
 	schTable, ok := sch.Tables[obj.Type]
 	if !ok {

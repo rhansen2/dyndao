@@ -11,7 +11,7 @@ import (
 
 // TODO: Refactor common code... later. A lot of overall work remains.
 
-// BindingInsert generates the SQL for a given INSERT statement for SQLite with binding parameter values
+// BindingInsert generates the SQL for a given INSERT statement for oracle with binding parameter values
 func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[string]interface{}) (string, []interface{}, error) {
 	if table == "" {
 		return "", nil, errors.New("BindingInsert: Empty table name")
