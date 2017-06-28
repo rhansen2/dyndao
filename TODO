@@ -16,8 +16,7 @@ TODO
 	* Sort out the float64 (JSON mapper) vs int64 (database code) debacle happening internally.
 
 	--
-	* TODO: oracle, support varchar2 data type
+	* TODO: oracle, add tests for varchar2 database type?
 	* TODO: oracle, support JSON BLOB constraint on table
 	* TODO: what do other databases (cough, sqlite) do in this area?
 
-	* sqlite test currently broken... but oracle tests working? did we break something core?
