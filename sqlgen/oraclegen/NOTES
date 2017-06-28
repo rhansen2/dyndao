@@ -1,0 +1,8 @@
+Started running around quoting string identifiers in a few different places:
+	Create table
+	Insert
+	Update
+	Select
+	....
+
+	And then I hit another problem with it. Now NAME is a problem!? Wtf....

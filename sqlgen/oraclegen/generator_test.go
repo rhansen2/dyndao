@@ -1,4 +1,4 @@
-package sqlitegen
+package oraclegen
 
 import (
 	"fmt"
@@ -16,13 +16,9 @@ func TestGeneratorBasic(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(sql + ";")
-	// TODO: test output or execution
-	// TODO: Run schema against sqlite3
-
 	fmt.Println(basic.Begin("") + ";")
-	// TODO: test output or execution
 
-	sql, err = basic.Insert(
+	sqlStr, bindArgs, err := basic.BindingInsert(
 		sch,
 		"people",
 		map[string]interface{}{
@@ -33,13 +29,11 @@ func TestGeneratorBasic(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(sql + ";")
-
-	// TODO: test output or execution
+	fmt.Println(sqlStr + ";")
+	fmt.Println("bindArgs:", bindArgs)
 	fmt.Println(basic.Commit() + ";")
 
 	fmt.Println(basic.DropTable("people") + ";")
-	// TODO: test output or execution
 }
 
 func TestGeneratorNested(t *testing.T) {
@@ -59,23 +53,12 @@ func TestGeneratorNested(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(sql + ";")
-
 	fmt.Println(basic.Begin("") + ";")
 
-	sql, err = basic.Insert(
-		sch,
-		"people",
-		map[string]interface{}{
-			"PersonID": 1,
-			"Name":     "Sam",
-		},
-	)
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println(sql + ";")
-
 	fmt.Println(basic.Commit() + ";")
-
 	fmt.Println(basic.DropTable("people") + ";")
 }

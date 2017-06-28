@@ -1,6 +1,6 @@
 // Package tests is a set of tests that put the various components together and
 // demonstrate how they can be combined. (As well as serving as a bit of a test suite...)
-package tests
+package sqlitegen
 
 import (
 	"context"
@@ -15,7 +15,6 @@ import (
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/orm"
 	"github.com/rbastic/dyndao/schema"
-	"github.com/rbastic/dyndao/sqlgen/sqlitegen"
 )
 
 const PeopleObjectType string = "people"
@@ -34,7 +33,7 @@ func TestSaveBasicObject(t *testing.T) {
 	sch := schema.MockBasicSchema()
 	db := getDB()
 	defer db.Close()
-	sqliteORM := orm.New(sqlitegen.New("test", sch), sch, db)
+	sqliteORM := orm.New(New("test", sch), sch, db)
 
 	table := PeopleObjectType
 
@@ -127,7 +126,7 @@ func TestSaveNestedObject(t *testing.T) {
 	sch := schema.MockNestedSchema()
 	db := getDB()
 	defer db.Close()
-	sqliteORM := orm.New(sqlitegen.New("test", sch), sch, db)
+	sqliteORM := orm.New(New("test", sch), sch, db)
 	rootTable := "people"
 
 	obj := object.New(rootTable)
@@ -242,7 +241,7 @@ func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
 // TODO: use contexts down here also?
 
 func createTables(db *sql.DB, sch *schema.Schema) error {
-	gen := sqlitegen.New("test", sch)
+	gen := New("test", sch)
 
 	for k := range sch.Tables {
 		fmt.Println("Creating table ", k)
@@ -259,7 +258,7 @@ func createTables(db *sql.DB, sch *schema.Schema) error {
 }
 
 func dropTables(db *sql.DB, sch *schema.Schema) error {
-	gen := sqlitegen.New("test", sch)
+	gen := New("test", sch)
 
 	for k := range sch.Tables {
 		fmt.Println("Dropping table ", k)
@@ -358,3 +357,5 @@ func testRetrieveObjects(o *orm.ORM, t *testing.T, rootTable string) {
 	//		fmt.Println(all[2])
 
 }
+
+

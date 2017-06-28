@@ -61,22 +61,26 @@ func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (*
 // TODO: For foreign key filling, we do not check to see if there are conflicts
 // with regards to the uniqueness of primary key names.
 
+// RetrieveParentViaChild accepts a table string and queryValues as a data type. The childObj will be appended to
+// the
 func (o ORM) RetrieveParentViaChild(ctx context.Context, table string, queryValues map[string]interface{}, childObj *object.Object) (*object.Object, error) {
 	objTable := o.s.Tables[table]
 	if objTable == nil {
 		return nil, errors.New("RetrieveParentViaChild: unknown object table " + table)
 	}
 
+	// non-nested single table retrieve
 	obj, err := o.RetrieveObject(ctx, table, queryValues)
 	if err != nil {
 		return nil, err
 	}
-	// TODO: support multiple objects...
+	// append the child object to the parent object
 	if childObj != nil {
 		if obj.Children[childObj.Type] == nil {
-			obj.Children[childObj.Type] = make(object.Array, 1)
+			obj.Children[childObj.Type] = object.NewArray(childObj)
+		} else {
+			obj.Children[childObj.Type] = append(obj.Children[childObj.Type], childObj)
 		}
-		obj.Children[childObj.Type][0] = childObj
 	}
 
 	// TODO: Not sure that this approach ends up very

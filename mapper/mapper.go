@@ -204,6 +204,8 @@ func unmarshalToObjects(sch *schema.Schema, unm interface{}, rootLevel bool) (ob
 	return objAry, nil
 }
 
+// ToObjectsFromJSON accepts a schema configuration and a string of json data and
+// returns an object array.
 func ToObjectsFromJSON(sch *schema.Schema, json string) (object.Array, error) {
 	if json == "" {
 		return nil, errors.New("ToObjectsFromJSON: json parameter is empty")
@@ -215,8 +217,7 @@ func ToObjectsFromJSON(sch *schema.Schema, json string) (object.Array, error) {
 		return nil, err
 	}
 
-	objs, err := unmarshalToObjects(sch, unmarsh, true)
-	return objs, err
+	return unmarshalToObjects(sch, unmarsh, true)
 }
 
 func mapValToObjAry(sch *schema.Schema, objectType string, vals []interface{}, rootLevel bool) (object.Array, error) {
@@ -225,8 +226,6 @@ func mapValToObjAry(sch *schema.Schema, objectType string, vals []interface{}, r
 		switch t := val.(type) {
 		case []interface{}:
 			valAry := val.([]interface{})
-
-			var objAry object.Array
 			objAry, err := mapValToObjAry(sch, objectType, valAry, rootLevel)
 			return objAry, err
 		case map[string]interface{}:
@@ -248,6 +247,7 @@ func mapValToObjAry(sch *schema.Schema, objectType string, vals []interface{}, r
 			}
 			return object.NewArray(obj), nil
 		default:
+			// TODO:
 			fmt.Println("[mapValToObjAry] Unrecognized: val ", val, " is type ", t)
 		}
 	}
