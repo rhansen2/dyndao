@@ -130,48 +130,126 @@ func walkChildrenFromJSON(sch *schema.Schema, table *schema.Table, obj *object.O
 	return nil
 }
 
+func unmarshalObject(sch *schema.Schema, unm interface{}, objType string, rootLevel bool) (*object.Object, error) {
+	m := unm.(map[string]interface{})
+	var objAry object.Array
+	obj := object.New(objType)
+
+	for k, v := range m {
+		switch v.(type) {
+		case []interface{}:
+			vi := v.([]interface{})
+			objs, err := mapValToObjAry(sch, k, vi, false)
+			if err != nil {
+				return nil, err
+			}
+			objAry = append(objAry, objs...)
+			continue
+		case map[string]interface{}:
+			oary, err := unmarshalToObjects(sch, v, false)
+			if err != nil {
+				return nil, err
+			}
+			objAry = append(objAry, oary...)
+		default:
+			obj.Set(k, v)
+		}
+
+	}
+	return obj, nil
+}
+
+func unmarshalToObjects(sch *schema.Schema, unm interface{}, rootLevel bool) (object.Array, error) {
+	// top level is map
+	m := unm.(map[string]interface{})
+	var objAry object.Array
+	for k, v := range m {
+
+		switch v.(type) {
+		case []interface{}:
+			vi := v.([]interface{})
+			objs, err := mapValToObjAry(sch, k, vi, false)
+			if err != nil {
+				return nil, err
+			}
+			objAry = append(objAry, objs...)
+			continue
+		case map[string]interface{}:
+			vals := v.(map[string]interface{})
+
+			obj := object.New(k)
+			obj.KV = vals
+
+			for childTableName := range sch.Tables {
+				if obj.KV[childTableName] != nil {
+					thingy := obj.KV[childTableName]
+					interSlice := []interface{}{thingy}
+					objs, err := mapValToObjAry(sch, k, interSlice, false)
+					if err != nil {
+						return nil, err
+					}
+
+					obj.Children[childTableName] = append(obj.Children[childTableName], objs...)
+					delete(obj.KV, childTableName)
+				}
+			}
+
+			objAry = append(objAry, obj)
+		default:
+			// TODO: how to note these to the caller?
+			fmt.Println("Unrecognized: default: k=", k, "v=", v)
+		}
+	}
+
+	return objAry, nil
+}
+
 func ToObjectsFromJSON(sch *schema.Schema, json string) (object.Array, error) {
 	if json == "" {
 		return nil, errors.New("ToObjectsFromJSON: json parameter is empty")
 	}
-	parsed := gjson.Parse(json)
-	objs := object.NewEmptyArray()
-	if parsed.Type == gjson.JSON {
-		m := parsed.Map()
-		for k, v := range m {
-			obj := object.New(k)
 
-			if v.Type == gjson.JSON {
-				parsed := gjson.Parse(v.Raw)
-
-				parsed.ForEach(func(k, v gjson.Result) bool {
-					ks := k.String()
-					if v.Type == gjson.JSON {
-						val := v.Value().([]interface{})
-						objAry := mapValToObjAry(ks, val)
-						obj.Children[ks] = objAry
-					} else {
-						obj.Set(ks, v.Value())
-					}
-					return true
-				})
-			}
-			objs = append(objs, obj)
-		}
+	var unmarsh interface{}
+	err := gjson.Unmarshal([]byte(json), &unmarsh)
+	if err != nil {
+		return nil, err
 	}
 
-	return objs, nil
+	objs, err := unmarshalToObjects(sch, unmarsh, true)
+	return objs, err
 }
 
-func mapValToObjAry(objectType string, vals []interface{}) object.Array {
-	objs := make(object.Array, len(vals))
-	for i, val := range vals {
-		obj := object.New(objectType)
-		m := val.(map[string]interface{})
-		for k, v := range m {
-			obj.Set(k, v)
+func mapValToObjAry(sch *schema.Schema, objectType string, vals []interface{}, rootLevel bool) (object.Array, error) {
+	var allObjs object.Array
+	for _, val := range vals {
+		switch t := val.(type) {
+		case []interface{}:
+			valAry := val.([]interface{})
+
+			var objAry object.Array
+			objAry, err := mapValToObjAry(sch, objectType, valAry, rootLevel)
+			return objAry, err
+		case map[string]interface{}:
+			obj := object.New(objectType)
+			m := val.(map[string]interface{})
+			schTable := sch.Tables[objectType]
+
+			for k, v := range m {
+				if schTable.Children[k] == nil {
+					obj.Set(k, v)
+				} else {
+					vAry := v.([]interface{})
+					objAry, err := mapValToObjAry(sch, k, vAry, false)
+					if err != nil {
+						return nil, err
+					}
+					obj.Children[k] = append(obj.Children[k], objAry...)
+				}
+			}
+			return object.NewArray(obj), nil
+		default:
+			fmt.Println("[mapValToObjAry] Unrecognized: val ", val, " is type ", t)
 		}
-		objs[i] = obj
 	}
-	return objs
+	return allObjs, nil
 }
