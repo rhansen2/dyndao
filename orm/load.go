@@ -3,7 +3,6 @@ package orm
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -153,6 +152,9 @@ func (o ORM) RetrieveObject(ctx context.Context, table string, queryVals map[str
 	if err != nil {
 		return nil, err
 	}
+	if objAry == nil {
+		return nil, errors.New("RetrieveObject: received empty object array from RetrieveObjects")
+	}
 	return objAry[0], nil
 }
 
@@ -192,8 +194,6 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(sqlStr)
-	fmt.Println(bindArgs)
 
 	stmt, err := o.RawConn.PrepareContext(ctx, sqlStr)
 	if err != nil {
@@ -216,7 +216,6 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 
 		for i := 0; i < len(columnNames); i++ {
 			ct := columnTypes[i]
-			fmt.Println(ct.DatabaseTypeName())
 
 			// TODO: Do I need to reset columnPointers every time?
 			if ct.DatabaseTypeName() == "CLOB" {
@@ -248,8 +247,6 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 		}
 		for i, v := range columnPointers {
 			ct := columnTypes[i]
-			// TODO: Improve database type support.
-			//fmt.Println("dbtypename=", ct.DatabaseTypeName())
 
 			if ct.DatabaseTypeName() == "CLOB" {
 				nullable, _ := ct.Nullable()

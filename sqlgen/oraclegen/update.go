@@ -39,16 +39,12 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 
 		newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, renderBindingUpdateValue(f), i)
 		bindArgs[i] = v
-		fmt.Println("newValues[i]=", newValuesAry[i], "bindArgs[i]=", bindArgs[i])
 
 		i++
 	}
 
 	// TODO: use schema name from object lookup type, fix in other places...
 	sqlStr := fmt.Sprintf("UPDATE %s SET %s WHERE %s", obj.Type, strings.Join(newValuesAry, ","), whereClause)
-	fmt.Println(sqlStr)
-	fmt.Println(bindArgs)
-	fmt.Println(bindWhere)
 	return sqlStr, bindArgs, bindWhere, nil
 }
 

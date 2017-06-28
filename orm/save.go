@@ -3,7 +3,6 @@ package orm
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -100,10 +99,8 @@ func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (in
 	// Check the primary key to see if we should insert or update
 	_, ok := obj.KV[f.Name]
 	if !ok {
-		fmt.Println("calling Insert")
 		return o.Insert(ctx, tx, obj)
 	}
-	fmt.Println("calling Update")
 	return o.Update(ctx, tx, obj)
 }
 
@@ -124,8 +121,6 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	if err != nil {
 		return 0, err
 	}
-	fmt.Println(sqlStr)
-	fmt.Println(bindArgs)
 
 	// TODO: Possible bug in rana ora.v4? I wouldn't have expected that I'd have to pass a parameter in like this,
 	// based on reading the code.

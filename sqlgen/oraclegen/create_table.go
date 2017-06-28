@@ -68,7 +68,6 @@ func renderCreateField(f *schema.Field) string {
 	}
 	if f.IsIdentity {
 		return strings.Join([]string{f.Name, dataType, "GENERATED ALWAYS AS IDENTITY"}, " ")
-	} else {
-		return strings.Join([]string{f.Name, dataType, identity, notNull, unique}, " ")
 	}
+	return strings.Join([]string{f.Name, dataType, identity, notNull, unique}, " ")
 }
