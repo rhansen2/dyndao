@@ -1,5 +1,8 @@
 // Package oraclegen is a set of tests that put the various components together and
 // demonstrate how they can be combined. (As well as serving as a bit of a test suite...)
+//
+// In other words, we run database tests, use the generator, use the ORM, etc.
+// TODO: More complex test schemas.
 package oraclegen
 
 import (
@@ -164,6 +167,24 @@ func TestSuiteNested(t *testing.T) {
 		validateJSONMapper(t, newJSON)
 	})
 
+	t.Run("JSONMapperFrom", func(t *testing.T) {
+		objs, err := mapper.ToObjectsFromJSON(sch, newJSON)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if objs == nil {
+			t.Fatal("objs was nil")
+		}
+		if len(objs) != 1 {
+			t.Fatal("objs length was: ", len(objs), "expected 1")
+		}
+		obj := objs[0]
+		if obj == nil {
+			t.Fatal("obj was nil")
+		}
+		validateJSONMapperFrom(t, obj)
+	})
+
 	// TODO: More JSON mapper tests <-> (both To and From)
 }
 
@@ -173,6 +194,21 @@ func validateJSONMapper(t *testing.T, json string) {
 	}
 	if gjson.Get(json, "people.PersonID").String() != "1" {
 		t.Fatal("people.PersonID was not 1")
+	}
+}
+
+func validateJSONMapperFrom(t *testing.T, obj *object.Object) {
+	if obj.Type != PeopleObjectType {
+		t.Fatal("Object is wrong type")
+	}
+	pn := obj.Get("Name")
+	if pn != "Joe" {
+		t.Fatal("Object has wrong name")
+	}
+
+	pi := obj.Get("PersonID")
+	if pi.(float64) != 1 {
+		t.Fatal("Object has wrong PersonID")
 	}
 }
 
