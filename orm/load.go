@@ -27,9 +27,9 @@ func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName s
 	return qv, nil
 }
 
-// GetParentsViaChild retrieves all direct (one-level up) parents for a given child object.
+// GetParentsViaChild retrieves all direct (one-level 'up') parents for a given child object.
 // If a child contains multiple parent tables (possibility?) then this would return an Array
-// with multiple sorts of obj.Type's.
+// of objects with multiple potential values for their obj.Type fields.
 func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (object.Array, error) {
 	table := childObj.Type
 
@@ -60,50 +60,6 @@ func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (o
 
 // TODO: For foreign key filling, we do not check to see if there are conflicts
 // with regards to the uniqueness of primary key names.
-
-// RetrieveParentViaChild accepts a table string and queryValues as a data type. The childObj will be appended to
-// the
-func (o ORM) RetrieveParentViaChild(ctx context.Context, table string, queryValues map[string]interface{}, childObj *object.Object) (*object.Object, error) {
-	objTable := o.s.Tables[table]
-	if objTable == nil {
-		return nil, errors.New("RetrieveParentViaChild: unknown object table " + table)
-	}
-
-	// non-nested single table retrieve
-	obj, err := o.RetrieveObject(ctx, table, queryValues)
-	if err != nil {
-		return nil, err
-	}
-	// append the child object to the parent object
-	if childObj != nil {
-		if obj.Children[childObj.Type] == nil {
-			obj.Children[childObj.Type] = object.NewArray(childObj)
-		} else {
-			obj.Children[childObj.Type] = append(obj.Children[childObj.Type], childObj)
-		}
-	}
-
-	// TODO: Not sure that this approach ends up very
-	// practical.
-	var parentObj *object.Object
-	if objTable.ParentTables != nil {
-		for _, parentName := range objTable.ParentTables {
-			parentObj, err = o.RetrieveParentViaChild(ctx, parentName, queryValues, obj)
-			if err != nil {
-				return nil, err
-			}
-			if parentObj.Children[table] == nil {
-				parentObj.Children[table] = make(object.Array, 1)
-			}
-			parentObj.Children[table][0] = obj
-		}
-	}
-	if parentObj == nil {
-		parentObj = obj
-	}
-
-	return parentObj, nil
-}
 
 // RetrieveWithChildren function will fleshen an *entire* object structure, given some primary keys
 func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues map[string]interface{}) (*object.Object, error) {

@@ -133,11 +133,6 @@ func TestSuiteNested(t *testing.T) {
 		testRetrieveObject(&o, t, sch)
 	})
 
-	t.Run("RetrieveParentViaChild", func(t *testing.T) {
-		// test retrieving the parent, given a child object
-		testRetrieveParentViaChild(&o, t, sch)
-	})
-
 	t.Run("RetrieveObjects", func(t *testing.T) {
 		// test multiple retrieve
 		testRetrieveObjects(&o, t, PeopleObjectType)
@@ -286,36 +281,6 @@ func testRetrieveObject(o *orm.ORM, t *testing.T, sch *schema.Schema) {
 	if latestJoe.Get("PersonID").(int64) != 1 || latestJoe.Get("Name") != "Joe" {
 		t.Fatal("latestJoe does not match expectations")
 	}
-}
-
-func testRetrieveParentViaChild(o *orm.ORM, t *testing.T, sch *schema.Schema) {
-	queryVals := map[string]interface{}{
-		"PersonID": 1,
-	}
-	childTable := "addresses"
-	latestRyan, err := o.RetrieveParentViaChild(context.TODO(), childTable, queryVals, nil)
-	if err != nil {
-		t.Fatal("RetrieveParentViaChild failed: " + err.Error())
-	}
-	if latestRyan.Get("PersonID").(int64) != 1 && latestRyan.Get("Name") != "Ryan" {
-		t.Fatal("latestRyan does not match expectations")
-	}
-	if len(latestRyan.Children) == 0 {
-		t.Fatal("latestRyan has no children")
-	}
-	addrObj := latestRyan.Children["addresses"][0]
-	if addrObj == nil {
-		t.Fatal("latestRyan lacks an 'addresses' child")
-	} else {
-		if addrObj.Get("Zip") != "02865" {
-			t.Fatal("latestRyan has the wrong zipcode")
-		}
-		if addrObj.Get("City") != "Nowhere" {
-			t.Fatal("latestRyan has the wrong city")
-		}
-		// TODO: finish checking the other fields?
-	}
-
 }
 
 func testRetrieveObjects(o *orm.ORM, t *testing.T, rootTable string) {

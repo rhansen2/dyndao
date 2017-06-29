@@ -176,8 +176,6 @@ func TestSaveNestedObject(t *testing.T) {
 		// TODO: Verify that addresses are present
 	}
 
-	testRetrieveParentViaChild(&sqliteORM, t, sch)
-
 	// test multiple retrieve
 	testRetrieveObjects(&sqliteORM, t, rootTable)
 
@@ -288,44 +286,6 @@ func dropTables(db *sql.DB, sch *schema.Schema) error {
 
 	}
 */
-func testRetrieveParentViaChild(o *orm.ORM, t *testing.T, sch *schema.Schema) {
-	queryVals := map[string]interface{}{
-		"PersonID": 1,
-	}
-	childTable := "addresses"
-	latestRyan, err := o.RetrieveParentViaChild(context.TODO(), childTable, queryVals, nil)
-	if err != nil {
-		t.Fatal("RetrieveParentViaChild failed: " + err.Error())
-	}
-	if latestRyan.Get("PersonID") != 1 && latestRyan.Get("Name") != "Ryan" {
-		t.Fatal("latestRyan does not match expectations")
-	}
-	if len(latestRyan.Children) == 0 {
-		t.Fatal("latestRyan has no children")
-	}
-	addrObj := latestRyan.Children["addresses"][0]
-	if addrObj == nil {
-		t.Fatal("latestRyan lacks an 'addresses' child")
-	}
-	if addrObj != nil {
-		if addrObj.Get("Zip") != "02865" {
-			t.Fatal("latestRyan has the wrong zipcode")
-		}
-		if addrObj.Get("City") != "Nowhere" {
-			t.Fatal("latestRyan has the wrong city")
-		}
-		// TODO: write a better expected comparison
-	}
-
-	// TODO: Produce nested structure for JSON.
-	//newJSON, err := mapper.ToJSONFromObject(sch, latestRyan, "{}", "", true)
-	_, err = mapper.ToJSONFromObject(sch, latestRyan, "{}", "", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// TODO: Fix this test.
-	//	fmt.Println(newJSON)
-}
 
 func testRetrieveObjects(o *orm.ORM, t *testing.T, rootTable string) {
 	// insert another object
