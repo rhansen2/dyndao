@@ -8,8 +8,8 @@ import (
 	"github.com/rbastic/dyndao/schema"
 )
 
-func (o ORM) CreateTables(sch *schema.Schema) error {
-	for tName := range sch.Tables {
+func (o ORM) CreateTables() error {
+	for tName := range o.s.Tables {
 		err := o.CreateTable(sch, tName)
 		if err != nil {
 			return err
@@ -19,8 +19,8 @@ func (o ORM) CreateTables(sch *schema.Schema) error {
 	return nil
 }
 
-func (o ORM) DropTables(sch *schema.Schema) error {
-	for tName := range sch.Tables {
+func (o ORM) DropTables() error {
+	for tName := range o.s.Tables {
 		err := o.DropTable(tName)
 		if err != nil {
 			return err
