@@ -29,7 +29,7 @@ func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (stri
 	}
 
 	if schTable.EssentialFields == nil || len(schTable.EssentialFields) == 0 {
-		return "", nil, nil, errors.New("BindingRetrieve: EssentialFields is empty")
+		return "", nil, nil, errors.New("BindingRetrieve: EssentialFields is empty for table " + table)
 	}
 	columns := strings.Join(schTable.EssentialFields, ",")
 

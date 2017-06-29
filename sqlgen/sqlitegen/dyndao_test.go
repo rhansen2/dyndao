@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/rbastic/dyndao/mapper"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/orm"
 	"github.com/rbastic/dyndao/schema"

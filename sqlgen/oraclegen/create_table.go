@@ -37,7 +37,7 @@ func (g Generator) CreateTable(s *schema.Schema, table string) (string, error) {
 }
 
 func renderCreateField(f *schema.Field) string {
-	dataType := ""
+	dataType := f.DBType
 	notNull := ""
 	identity := ""
 	unique := ""
@@ -48,26 +48,34 @@ func renderCreateField(f *schema.Field) string {
 		notNull = "NOT NULL"
 	}
 	if f.IsNumber {
-		dataType = f.DBType // not relevant here?
+		dataType = f.DBType
 	} else {
 		if f.Length > 0 {
-			// TODO: Needed?
+			dataType = fmt.Sprintf("%s(%d)", f.DBType, f.Length)
 		}
-		dataType = f.DBType
 	}
 	if f.IsUnique {
 		unique = "UNIQUE"
 	}
 
-	// Map 'integer' to 'number' for now for Oracle
-	if dataType == "integer" {
-		dataType = "NUMBER"
-	}
-	if dataType == "text" {
-		dataType = "CLOB"
+	dataType = mapType(dataType)
+
+	if dataType == "" {
+		panic("Empty dataType in renderCreateField for " + f.Name)
 	}
 	if f.IsIdentity {
 		return strings.Join([]string{f.Name, dataType, "GENERATED ALWAYS AS IDENTITY"}, " ")
 	}
 	return strings.Join([]string{f.Name, dataType, identity, notNull, unique}, " ")
+}
+
+func mapType(s string) string {
+	// Map 'integer' to 'number' for now for Oracle
+	if s == "integer" {
+		return "NUMBER"
+	}
+	if s == "text" {
+		return "CLOB"
+	}
+	return s
 }

@@ -137,6 +137,9 @@ func (o ORM) FleshenChildren(ctx context.Context, table string, obj *object.Obje
 
 // RetrieveObjects function will fleshen an object structure, given some primary keys
 func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[string]interface{}) (object.Array, error) {
+	if o.s == nil {
+		return nil, errors.New("RetrieveObjects: why is ORM schema set to nil?")
+	}
 	objTable := o.s.Tables[table]
 	if objTable == nil {
 		return nil, errors.New("RetrieveObjects: unknown object table " + table)

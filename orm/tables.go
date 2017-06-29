@@ -3,6 +3,9 @@ package orm
 import (
 	"context"
 	"database/sql"
+	"os"
+	// TODO: Use log15 instead of fmt?
+	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/schema"
@@ -10,7 +13,7 @@ import (
 
 func (o ORM) CreateTables() error {
 	for tName := range o.s.Tables {
-		err := o.CreateTable(sch, tName)
+		err := o.CreateTable(o.s, tName)
 		if err != nil {
 			return err
 		}
@@ -35,6 +38,13 @@ func (o ORM) CreateTable(sch *schema.Schema, tableName string) error {
 	if err != nil {
 		return err
 	}
+
+	debug := os.Getenv("DEBUG")
+	if debug != "" {
+		// Currently, DEBUG is either on or off.
+		fmt.Println("CreateTable:", sqlStr)
+	}
+
 	_, err = prepareAndExecSQL(o.RawConn, sqlStr)
 	if err != nil {
 		return errors.Wrap(err, "CreateTable")
@@ -56,7 +66,7 @@ func prepareAndExecSQL(db *sql.DB, sqlStr string) (sql.Result, error) {
 	defer stmt.Close()
 	r, err := stmt.ExecContext(context.TODO())
 	if err != nil {
-		return nil, errors.Wrap(err, "prepareAndExecSQL")
+		return nil, errors.Wrap(err, "prepareAndExecSQL (" + sqlStr +")")
 	}
 	return r, nil
 }
