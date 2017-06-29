@@ -9,25 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/rbastic/dyndao/object"
-	"github.com/rbastic/dyndao/schema"
 )
-
-func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName string) (map[string]interface{}, error) {
-	qv := make(map[string]interface{})
-
-	schemaTable := sch.Tables[parentTableName]
-	if schemaTable == nil {
-		return nil, errors.New("pkQueryValsFromKV: no schemaTable for table " + parentTableName)
-	}
-	schemaPrimary := schemaTable.Primary
-
-	for fName, field := range schemaTable.Fields {
-		if field.IsIdentity || field.IsForeignKey || field.Name == schemaPrimary {
-			qv[fName] = obj.Get(fName)
-		}
-	}
-	return qv, nil
-}
 
 // GetParentsViaChild retrieves all direct (one-level 'up') parents for a given child object.
 // If a child contains multiple parent tables (possibility?) then this would return an Array

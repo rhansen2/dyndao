@@ -10,6 +10,22 @@ import (
 
 // TODO: For foreign key filling, we do not check to see if there are conflicts
 // with regards to the uniqueness of primary key names.
+func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName string) (map[string]interface{}, error) {
+	qv := make(map[string]interface{})
+
+	schemaTable := sch.Tables[parentTableName]
+	if schemaTable == nil {
+		return nil, errors.New("pkQueryValsFromKV: no schemaTable for table " + parentTableName)
+	}
+	schemaPrimary := schemaTable.Primary
+
+	for fName, field := range schemaTable.Fields {
+		if field.IsIdentity || field.IsForeignKey || field.Name == schemaPrimary {
+			qv[fName] = obj.Get(fName)
+		}
+	}
+	return qv, nil
+}
 
 func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	rowsAff, err := o.SaveObject(ctx, tx, obj)
@@ -110,6 +126,7 @@ func stmtFromDbOrTx(ctx context.Context, o ORM, tx *sql.Tx, sqlStr string) (*sql
 	return stmt, err
 }
 
+
 // TODO: Read this post for more info on the above...
 // https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
 
@@ -190,3 +207,5 @@ func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	return rowsAff, nil
 
 }
+
+
