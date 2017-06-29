@@ -3,6 +3,8 @@ package orm
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"os"
 
 	"github.com/pkg/errors"
 
@@ -140,6 +142,9 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 	if o.s == nil {
 		return nil, errors.New("RetrieveObjects: why is ORM schema set to nil?")
 	}
+	if o.s.Tables == nil {
+		return nil, errors.New("RetrieveObjects: why is Tables nil?")
+	}
 	objTable := o.s.Tables[table]
 	if objTable == nil {
 		return nil, errors.New("RetrieveObjects: unknown object table " + table)
@@ -150,6 +155,10 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 	queryObj.KV = queryVals
 
 	sqlStr, columnNames, bindArgs, err := o.sqlGen.BindingRetrieve(o.s, queryObj)
+	if os.Getenv("DEBUG") != "" {
+		fmt.Println("RetrieveObjects/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +207,7 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 	return objectArray, nil
 }
 
-func (o ORM) dynamicObjectSetter(columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj * object.Object) error {
+func (o ORM) dynamicObjectSetter(columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error {
 	sqlGen := o.sqlGen
 	for i, v := range columnPointers {
 		ct := columnTypes[i]
