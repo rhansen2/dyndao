@@ -3,6 +3,7 @@ package orm
 import (
 	"context"
 	"database/sql"
+
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
 )
@@ -47,7 +48,6 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 // It begins the transaction, attempts to recursively save the object and all of it's children,
 // and any of the children's children, and then will finally rollback/commit as necessary.
 func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
-
 	tx, err := o.RawConn.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, err
@@ -82,7 +82,6 @@ func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (in
 	if obj.GetSaved() {
 		return 0, nil
 	}
-
 	fieldMap := objTable.Fields
 	pk := objTable.Primary
 	if pk == "" {
@@ -92,7 +91,6 @@ func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (in
 	if f == nil {
 		return 0, errors.New("SaveObject: empty field " + pk + " for " + obj.Type)
 	}
-
 	// Check the primary key to see if we should insert or update
 	_, ok := obj.KV[f.Name]
 	if !ok {

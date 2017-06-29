@@ -21,3 +21,5 @@ TODO
 	* TODO: what do other databases (cough, sqlite) do in this area?
 
 	-> Review TODOs in code, in particular the transactions. Review the code overall.
+
+	* consider sync.Map for object.Object
