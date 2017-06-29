@@ -9,7 +9,6 @@ mapper:
 
 TODO
 	- sqlite support for cascading key constraints on table schema
-
 	- oracle text->CLOB mapper... what about adding constraints? aka IS JSON constraints.
 
 	* use ChangedFields in update code so that we only update the values that changed....
@@ -25,3 +24,8 @@ TODO
 	: consider sync.Map for object.Object
 
 	. use schema.Field.IsNumber more ?
+
+--
+
+* use ChildTable to determine whether we'll have an Intermediate Linking table or we will just use a more 
+denormalized approach? Both are typical and should be able to be supported.
