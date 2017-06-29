@@ -3,9 +3,7 @@ package orm
 import (
 	"context"
 	"database/sql"
-
 	"github.com/pkg/errors"
-
 	"github.com/rbastic/dyndao/object"
 )
 
@@ -46,6 +44,8 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 }
 
 // SaveAll will attempt to save an entire nested object structure inside of a single transaction.
+// It begins the transaction, attempts to recursively save the object and all of it's children,
+// and any of the children's children, and then will finally rollback/commit as necessary.
 func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 
 	tx, err := o.RawConn.BeginTx(ctx, nil)
@@ -71,8 +71,9 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 	return rowsAff, nil
 }
 
-// SaveObject function will INSERT or UPDATE a record depending on
-// various values.
+// SaveObject function will INSERT or UPDATE a record. It does not attempt to
+// save any of the children. If given a transaction, it will use that to
+// attempt to insert the data.
 func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	objTable := o.s.Tables[obj.Type]
 	if objTable == nil {
