@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
+	"github.com/rbastic/dyndao/schema"
 )
 
 // TODO: For foreign key filling, we do not check to see if there are conflicts
