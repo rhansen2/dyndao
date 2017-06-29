@@ -20,3 +20,4 @@ TODO
 	* TODO: oracle, support JSON BLOB constraint on table
 	* TODO: what do other databases (cough, sqlite) do in this area?
 
+	-> Review TODOs in code, in particular the transactions. Review the code overall.

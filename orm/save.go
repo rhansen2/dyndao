@@ -13,8 +13,6 @@ import (
 // with regards to the uniqueness of primary key names.
 
 func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
-	// TODO: Implement transactions. Implement 'foreign key fill'
-	// in children objects
 	rowsAff, err := o.SaveObject(ctx, tx, obj)
 	if err != nil {
 		return 0, err
@@ -23,7 +21,6 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 	table := o.s.Tables[obj.Type]
 	pkVal := obj.Get(table.Primary)
 
-	// TODO: ChildrenOrder going to happen here?
 	for _, v := range obj.Children {
 		for _, childObj := range v {
 			// set the primary key in the child object, if it exists in the child object's table
@@ -33,10 +30,9 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 			}
 			// check if the child schema table contains
 			// the parent's primary key field as a name
-
 			_, ok = childTable.Fields[table.Primary]
 			if ok {
-				// ensure it's set if so
+				// set in the child object if the table contains the primary
 				childObj.Set(table.Primary, pkVal)
 			}
 
@@ -104,6 +100,17 @@ func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (in
 	return o.Update(ctx, tx, obj)
 }
 
+func stmtFromDbOrTx(ctx context.Context, o ORM, tx *sql.Tx, sqlStr string) (*sql.Stmt, error) {
+	var stmt *sql.Stmt
+	var err error
+	if tx != nil {
+		stmt, err = tx.PrepareContext(ctx, sqlStr)
+	} else {
+		stmt, err = o.RawConn.PrepareContext(ctx, sqlStr)
+	}
+	return stmt, err
+}
+
 // TODO: Read this post for more info on the above...
 // https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
 
@@ -113,28 +120,19 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	if objTable == nil {
 		return 0, errors.New("Insert: unknown object table " + obj.Type)
 	}
-	// NOTE: perhaps the generator should become a part of the schema...
-	// This should work well once we understand OOP in Go a bit better.
-	// We should set the generators prior to running any ORM operations.
-
 	sqlStr, bindArgs, err := o.sqlGen.BindingInsert(o.s, obj.Type, obj.KV)
 	if err != nil {
 		return 0, err
 	}
 
-	// TODO: Possible bug in rana ora.v4? I wouldn't have expected that I'd have to pass a parameter in like this,
-	// based on reading the code.
+	// TODO: Possible bug in rana ora.v4? I wouldn't have expected that I'd
+	// have to append a parameter like this, based on reading the code.
 	if o.sqlGen.FixLastInsertIDbug() {
 		var lastID int64
 		bindArgs = append(bindArgs, &lastID)
 	}
 
-	var stmt *sql.Stmt
-	if tx != nil {
-		stmt, err = tx.PrepareContext(ctx, sqlStr)
-	} else {
-		stmt, err = o.RawConn.PrepareContext(ctx, sqlStr)
-	}
+	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)
 	if err != nil {
 		return 0, err
 	}
@@ -165,22 +163,12 @@ func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	if objTable == nil {
 		return 0, errors.New("Update: unknown object table " + obj.Type)
 	}
-	// NOTE: perhaps the generator should become a part of the schema...
-	// This should work well once I grok OOP in Go a bit better w.r.t. how this should
-	// all be structured.
-	// Perhaps I should set the generators prior to running any ORM operations.
-
 	sqlStr, bindArgs, bindWhere, err := o.sqlGen.BindingUpdate(o.s, obj)
 	if err != nil {
 		return 0, err
 	}
 
-	var stmt *sql.Stmt
-	if tx != nil {
-		stmt, err = tx.PrepareContext(ctx, sqlStr)
-	} else {
-		stmt, err = o.RawConn.PrepareContext(ctx, sqlStr)
-	}
+	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)
 	if err != nil {
 		return 0, err
 	}
