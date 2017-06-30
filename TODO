@@ -8,6 +8,8 @@ mapper:
 	- not completely confident that mapper is in sufficient end-state
 
 TODO
+	- add tests for Delete
+
 	- sqlite support for cascading key constraints on table schema
 	- oracle text->CLOB mapper... what about adding constraints? aka IS JSON constraints.
 
