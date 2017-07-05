@@ -217,7 +217,7 @@ func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
 	if obj == nil {
 		t.Fatal("object should not be nil")
 	}
-	fleshened, err := o.FleshenChildren(context.TODO(), rootTable, obj)
+	fleshened, err := o.FleshenChildren(context.TODO(),  obj)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -28,6 +28,7 @@ func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName s
 	return qv, nil
 }
 
+// TODO: add a queryVals struct containing all new LastInsertIDs
 func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	rowsAff, err := o.SaveObject(ctx, tx, obj)
 	if err != nil {
@@ -44,7 +45,9 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 			if !ok {
 				return 0, errors.New("recurseAndSave: Unknown child object type " + childObj.Type + " for parent type " + obj.Type)
 			}
-			// check if the child schema table contains
+			// TODO: support propagation of additional primary keys that are
+			// saved from previous recursive saves
+			// ... check if the child schema table contains
 			// the parent's primary key field as a name
 			_, ok = childTable.Fields[table.Primary]
 			if ok {
@@ -127,7 +130,6 @@ func stmtFromDbOrTx(ctx context.Context, o ORM, tx *sql.Tx, sqlStr string) (*sql
 	return stmt, err
 }
 
-
 // TODO: Read this post for more info on the above...
 // https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
 
@@ -208,5 +210,3 @@ func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	return rowsAff, nil
 
 }
-
-

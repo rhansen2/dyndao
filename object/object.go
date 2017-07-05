@@ -24,6 +24,12 @@ func New(objType string) *Object {
 	return &Object{Type: objType, KV: makeEmptyMap(), ChangedFields: makeEmptyMap(), Children: makeEmptyChildrenMap(), saved: false}
 }
 
+// MakeArray will construct an array of length 'size'
+func MakeArray(size int) Array {
+	objAry := make(Array, size)
+	return objAry
+}
+
 // NewArray is our single-object array constructor
 func NewArray(val *Object) Array {
 	objAry := make(Array, 1)

@@ -99,7 +99,8 @@ func (o ORM) RetrieveObject(ctx context.Context, table string, queryVals map[str
 }
 
 // FleshenChildren function accepts an object and resets it's children.
-func (o ORM) FleshenChildren(ctx context.Context, table string, obj *object.Object) (*object.Object, error) {
+// TODO: remove table
+func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.Object, error) {
 	schemaTable := o.s.Tables[obj.Type]
 	pkKey := schemaTable.Primary
 	pkVal := obj.Get(pkKey)
