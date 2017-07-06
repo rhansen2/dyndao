@@ -27,9 +27,6 @@ func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	}
 	defer stmt.Close()
 
-	fmt.Println("WARN bindArgs->", bindArgs)
-	fmt.Println("WARN bindWhere->", bindWhere)
-
 	allBind := append(bindArgs, bindWhere...)
 	res, err := stmt.ExecContext(ctx, allBind...)
 	if err != nil {
