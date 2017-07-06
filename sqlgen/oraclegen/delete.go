@@ -15,6 +15,8 @@ func (g Generator) BindingDelete(sch *schema.Schema, obj * object.Object) (strin
 		return "", nil, nil, errors.New("BindingDelete: Table map unavailable for table " + obj.Type)
 	}
 
+	tableName := schema.GetTableName( schTable.Name, obj.Type )
+
 	fieldsMap := schTable.Fields
 	if fieldsMap == nil {
 		return "", nil, nil, errors.New("BindingDelete: Field map unavailable for table " + obj.Type)
@@ -33,7 +35,7 @@ func (g Generator) BindingDelete(sch *schema.Schema, obj * object.Object) (strin
 	}
 
 	// TODO: use schema name from object lookup type, fix in other places...
-	sqlStr := fmt.Sprintf("DELETE FROM %s WHERE %s", obj.Type, whereClause)
+	sqlStr := fmt.Sprintf("DELETE FROM %s WHERE %s", tableName, whereClause)
 	//fmt.Println(sqlStr)
 	return sqlStr, bindArgs, bindWhere, nil
 }

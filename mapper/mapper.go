@@ -203,6 +203,22 @@ func unmarshalToObjects(sch *schema.Schema, unm interface{}, rootLevel bool) (ob
 	return objAry, nil
 }
 
+// UnmarshalToObject accepts a schema configuration and a string of json data and
+// returns an object array.
+func UnmarshalToObject(sch *schema.Schema, json string) (*object.Object, error) {
+	if json == "" {
+		return nil, errors.New("ToObjectFromJSON: json parameter is empty")
+	}
+
+	var obj object.Object
+	err := gjson.Unmarshal([]byte(json), &obj)
+	if err != nil {
+		return nil, err
+	}
+
+	return &obj, nil
+}
+
 // ToObjectsFromJSON accepts a schema configuration and a string of json data and
 // returns an object array.
 func ToObjectsFromJSON(sch *schema.Schema, json string) (object.Array, error) {
