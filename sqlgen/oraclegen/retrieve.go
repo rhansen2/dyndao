@@ -2,6 +2,7 @@ package oraclegen
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -10,7 +11,11 @@ import (
 	"github.com/rbastic/dyndao/schema"
 )
 
-// BindingRetrieve is a simple binding retrieve.
+// BindingRetrieve accepts a schema and an object, constructing the appropriate SELECT
+// statement to retrieve the object. It will return sqlStr, the EssentialFields used, and the
+// binding where clause.
+// DEBUG mode may be turned on by setting an environment parameter, "DEBUG".
+// TODO: We may consider using a different name in the future.
 func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (string, []string, []interface{}, error) {
 	table := obj.Type // TODO: we may want to map this
 	schTable, ok := sch.Tables[table]
@@ -37,10 +42,12 @@ func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (stri
 	if whereClause != "" {
 		whereStr = "WHERE"
 	}
-	tableName := schema.GetTableName( schTable.Name, table )
-	sqlStr := fmt.Sprintf("SELECT %s FROM %s %s %s", columns, tableName, whereStr, whereClause)
-	//fmt.Println(sqlStr)
+	tableName := schema.GetTableName(schTable.Name, table)
 
+	sqlStr := fmt.Sprintf("SELECT %s FROM %s %s %s", columns, tableName, whereStr, whereClause)
+	if os.Getenv("DEBUG") != "" {
+		fmt.Println(sqlStr)
+	}
 	return sqlStr, schTable.EssentialFields, bindWhere, nil
 }
 

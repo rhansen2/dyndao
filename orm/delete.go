@@ -3,12 +3,12 @@ package orm
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/pkg/errors"
 
 	"github.com/rbastic/dyndao/object"
 )
-
 
 // Delete function will DELETE a record ...
 func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
@@ -26,6 +26,9 @@ func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, err
 	}
 	defer stmt.Close()
+
+	fmt.Println("WARN bindArgs->", bindArgs)
+	fmt.Println("WARN bindWhere->", bindWhere)
 
 	allBind := append(bindArgs, bindWhere...)
 	res, err := stmt.ExecContext(ctx, allBind...)
