@@ -43,8 +43,8 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 		i++
 	}
 
-	// TODO: use schema name from object lookup type, fix in other places...
-	sqlStr := fmt.Sprintf("UPDATE %s SET %s WHERE %s", obj.Type, strings.Join(newValuesAry, ","), whereClause)
+	tableName := schema.GetTableName( schTable.Name, obj.Type )
+	sqlStr := fmt.Sprintf("UPDATE %s SET %s WHERE %s", tableName, strings.Join(newValuesAry, ","), whereClause)
 	return sqlStr, bindArgs, bindWhere, nil
 }
 

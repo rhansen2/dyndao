@@ -24,6 +24,9 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 	if !ok {
 		return "", nil, errors.New("BindingInsert: Table map unavailable for table " + table)
 	}
+
+	tableName := schema.GetTableName( schTable.Name, table )
+
 	fieldsMap := schTable.Fields
 	if fieldsMap == nil {
 		return "", nil, errors.New("BindingInsert: Field map unavailable for table " + table)
@@ -44,7 +47,7 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 		bindArgs[i] = v
 		i++
 	}
-	sqlStr := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING %s /*LASTINSERTID*/ INTO :%s", table, strings.Join(colNames, ","), strings.Join(bindNames, ","), identityCol, identityCol)
+	sqlStr := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING %s /*LASTINSERTID*/ INTO :%s", tableName, strings.Join(colNames, ","), strings.Join(bindNames, ","), identityCol, identityCol)
 	return sqlStr, bindArgs, nil
 }
 

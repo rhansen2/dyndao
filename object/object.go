@@ -5,6 +5,10 @@
 // need to change. (Changing a foreign key on a table with a composite key, for example)
 package object
 
+import (
+	"fmt"
+)
+
 // Array is our object array container to facilitate a couple of instances
 // where slices are needed.
 type Array []*Object
@@ -54,6 +58,49 @@ func makeEmptyChildrenMap() map[string]Array {
 // Get is our accessor
 func (o Object) Get(k string) interface{} {
 	return o.KV[k]
+}
+
+func (o Object) GetString(k string) string {
+	return o.KV[k].(string)
+}
+
+func (o Object) GetInt(k string) int64 {
+	return o.KV[k].(int64)
+}
+func (o Object) GetFloat(k string) float64 {
+	return o.KV[k].(float64)
+}
+
+func (o Object) GetIntAlways(k string) (int64, error) {
+	switch v := o.KV[k].(type) {
+	case float64:
+		fl := o.KV[k].(float64)
+		return int64(fl), nil
+	case int64:
+		fl := o.KV[k].(int64)
+		return fl, nil
+	case uint64:
+		fl := o.KV[k].(uint64)
+		return int64(fl), nil
+	default:
+		return 0, fmt.Errorf("GetIntAlways: unrecognized type %v", v)
+	}
+}
+
+func (o Object) GetUintAlways(k string) (uint64, error) {
+	switch v := o.KV[k].(type) {
+	case float64:
+		fl := o.KV[k].(float64)
+		return uint64(fl), nil
+	case int64:
+		fl := o.KV[k].(int64)
+		return uint64(fl), nil
+	case uint64:
+		fl := o.KV[k].(uint64)
+		return fl, nil
+	default:
+		return 0, fmt.Errorf("GetIntAlways: unrecognized type %v", v)
+	}
 }
 
 // Set is our setter

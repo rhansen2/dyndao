@@ -8,6 +8,8 @@ mapper:
 	- not completely confident that mapper is in sufficient end-state
 
 TODO
+
+	- finish implementing table name usage (new table.Name override)
 	- add tests for Delete
 
 	- sqlite support for cascading key constraints on table schema

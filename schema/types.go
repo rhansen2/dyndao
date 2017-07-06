@@ -9,6 +9,7 @@ type Schema struct {
 type Table struct {
 	MultiKey bool   `json:"MultiKey"` // Use Primary or Primary + ForeignKeys
 	Primary  string `json:"Primary"`
+	Name string `json:"Name"`
 
 	// MultiKey must be set to true if a table has
 	// foreign keys.
@@ -24,6 +25,16 @@ type Table struct {
 	// YAGNI?
 	// TODO: ChildrenInsertionOrder?
 	// TODO: DeletionOrder?
+}
+
+func GetTableName( override string, ourDefault string ) string {
+	var name string
+	if override != "" {
+		name = override
+	} else {
+		name = ourDefault
+	}
+	return name
 }
 
 // Field represents a single column in a SQL table

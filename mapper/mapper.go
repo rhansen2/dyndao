@@ -97,7 +97,6 @@ func ToObjectFromJSON(sch *schema.Schema, consumedPath string, tbl string, json 
 	}
 	values := gjson.GetMany(json, sources...)
 	for i, v := range values {
-
 		if v.Exists() {
 			obj.Set(keys[i], v.Value())
 		}
