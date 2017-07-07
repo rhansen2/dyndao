@@ -12,7 +12,7 @@ type Generator interface {
 	BindingInsert(sch *schema.Schema, table string, data map[string]interface{}) (string, []interface{}, error)
 	BindingUpdate(sch *schema.Schema, obj *object.Object) (string, []interface{}, []interface{}, error)
 	BindingRetrieve(sch *schema.Schema, obj *object.Object) (string, []string, []interface{}, error)
-	BindingDelete(sch *schema.Schema, obj *object.Object) (string, []interface{}, []interface{}, error)
+	BindingDelete(sch *schema.Schema, obj *object.Object) (string, []interface{}, error)
 	CreateTable(sch *schema.Schema, table string) (string, error)
 	DropTable(name string) string
 

@@ -3,6 +3,8 @@ package orm
 import (
 	"context"
 	"database/sql"
+	"os"
+	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -15,9 +17,12 @@ func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	if objTable == nil {
 		return 0, errors.New("Delete: unknown object table " + obj.Type)
 	}
-	sqlStr, bindArgs, bindWhere, err := o.sqlGen.BindingDelete(o.s, obj)
+	sqlStr, bindWhere, err := o.sqlGen.BindingDelete(o.s, obj)
 	if err != nil {
 		return 0, err
+	}
+	if os.Getenv("DEBUG") != "" {
+		fmt.Printf("Delete: sqlStr->%s, bindWhere->%v\n", sqlStr, bindWhere)
 	}
 
 	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)
@@ -26,8 +31,8 @@ func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	}
 	defer stmt.Close()
 
-	allBind := append(bindArgs, bindWhere...)
-	res, err := stmt.ExecContext(ctx, allBind...)
+	//allBind := append(bindArgs, bindWhere...)
+	res, err := stmt.ExecContext(ctx, bindWhere...)
 	if err != nil {
 		return 0, errors.Wrap(err, "Delete")
 	}
