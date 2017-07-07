@@ -60,15 +60,18 @@ func (o Object) Get(k string) interface{} {
 	return o.KV[k]
 }
 
-func (o Object) GetString(k string) string {
-	return o.KV[k].(string)
+func (o Object) GetString(k string) (string, bool) {
+	v, ok := o.KV[k].(string)
+	return v, ok
 }
 
-func (o Object) GetInt(k string) int64 {
-	return o.KV[k].(int64)
+func (o Object) GetInt(k string) (int64, bool) {
+	v, ok := o.KV[k].(int64)
+	return v, ok
 }
-func (o Object) GetFloat(k string) float64 {
-	return o.KV[k].(float64)
+func (o Object) GetFloat(k string) (float64, bool) {
+	v, ok := o.KV[k].(float64)
+	return v, ok
 }
 
 func (o Object) GetIntAlways(k string) (int64, error) {
