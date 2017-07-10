@@ -42,7 +42,7 @@ func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (o
 	return parentObjs, nil
 }
 
-// TODO: For foreign key filling, we do not check to see if there are conflicts
+// NOTE: For foreign key filling, we do not check to see if there are conflicts
 // with regards to the uniqueness of primary key names.
 
 // RetrieveWithChildren function will fleshen an *entire* object structure, given some primary keys
