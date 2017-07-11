@@ -20,6 +20,8 @@ func TestObject(t *testing.T) {
 
 	obj.Set("age", 31)
 
+	obj.Set("id", NewSqlValue("SYS_GUID()"))
+
 	fmt.Println(obj.ChangedFields)
 	fmt.Println(obj.KV)
 }
