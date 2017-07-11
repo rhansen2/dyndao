@@ -46,7 +46,7 @@ func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (stri
 
 	sqlStr := fmt.Sprintf("SELECT %s FROM %s %s %s", columns, tableName, whereStr, whereClause)
 	if os.Getenv("DEBUG") != "" {
-		fmt.Println(sqlStr)
+		fmt.Println("BindingRetrieve:", sqlStr)
 	}
 	return sqlStr, schTable.EssentialFields, bindWhere, nil
 }

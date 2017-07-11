@@ -9,7 +9,7 @@ import (
 )
 
 // BindingDelete generates the SQL for a given UPDATE statement for SQLite with binding parameter values
-func (g Generator) BindingDelete(sch *schema.Schema, obj * object.Object) (string, []interface{}, error) {
+func (g Generator) BindingDelete(sch *schema.Schema, obj *object.Object) (string, []interface{}, error) {
 	schTable, ok := sch.Tables[obj.Type]
 	if !ok {
 		return "", nil, errors.New("BindingDelete: Table map unavailable for table " + obj.Type)
@@ -24,7 +24,6 @@ func (g Generator) BindingDelete(sch *schema.Schema, obj * object.Object) (strin
 	if err != nil {
 		return "", nil, err
 	}
-
 
 	// TODO: use schema name from object lookup type, fix in other places...
 	sqlStr := fmt.Sprintf("DELETE FROM %s WHERE %s", obj.Type, whereClause)

@@ -16,7 +16,7 @@ func (g Generator) CreateTable(s *schema.Schema, table string) (string, error) {
 	if !ok {
 		return "", errors.New("unknown schema for table with name " + table)
 	}
-	tableName := schema.GetTableName( tbl.Name, table )
+	tableName := schema.GetTableName(tbl.Name, table)
 
 	fieldsMap := tbl.Fields
 

@@ -155,8 +155,9 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		}
 		return 0, err
 	}
-	log15.Info("orm/save received:", "sqlStr->", sqlStr)
-	log15.Info("orm/save received", "bindArgs->", bindArgs)
+	if os.Getenv("DEBUG") != "" {
+		fmt.Println("Insert/sqlStr=", sqlStr, "bindArgs=", bindArgs)
+	}
 
 	// FIXME: Possible bug in rana ora.v4? I wouldn't have expected that I'd
 	// have to append a parameter like this, based on reading the code.

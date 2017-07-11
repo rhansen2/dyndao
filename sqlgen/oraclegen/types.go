@@ -1,9 +1,9 @@
 package oraclegen
 
 var stringTypes map[string]bool = map[string]bool{
-	"CLOB": true,
+	"CLOB":     true,
 	"VARCHAR2": true,
-	"clob": true,
+	"clob":     true,
 	"varchar2": true,
 }
 

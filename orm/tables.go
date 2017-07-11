@@ -66,7 +66,7 @@ func prepareAndExecSQL(db *sql.DB, sqlStr string) (sql.Result, error) {
 	defer stmt.Close()
 	r, err := stmt.ExecContext(context.TODO())
 	if err != nil {
-		return nil, errors.Wrap(err, "prepareAndExecSQL (" + sqlStr +")")
+		return nil, errors.Wrap(err, "prepareAndExecSQL ("+sqlStr+")")
 	}
 	return r, nil
 }

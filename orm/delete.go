@@ -3,8 +3,8 @@ package orm
 import (
 	"context"
 	"database/sql"
-	"os"
 	"fmt"
+	"os"
 
 	"github.com/pkg/errors"
 

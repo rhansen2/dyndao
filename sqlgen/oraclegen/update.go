@@ -43,7 +43,7 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 		i++
 	}
 
-	tableName := schema.GetTableName( schTable.Name, obj.Type )
+	tableName := schema.GetTableName(schTable.Name, obj.Type)
 	sqlStr := fmt.Sprintf("UPDATE %s SET %s WHERE %s", tableName, strings.Join(newValuesAry, ","), whereClause)
 	return sqlStr, bindArgs, bindWhere, nil
 }

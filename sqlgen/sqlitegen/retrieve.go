@@ -37,7 +37,7 @@ func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (stri
 	if whereClause != "" {
 		whereStr = "WHERE"
 	}
-	tableName := schema.GetTableName( schTable.Name, table )
+	tableName := schema.GetTableName(schTable.Name, table)
 	sqlStr := fmt.Sprintf("SELECT %s FROM %s %s %s", columns, tableName, whereStr, whereClause)
 	//fmt.Println(sqlStr)
 
