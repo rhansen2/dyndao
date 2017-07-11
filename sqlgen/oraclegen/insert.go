@@ -3,14 +3,11 @@ package oraclegen
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 )
-
-// TODO: Refactor common code... later. A lot of overall work remains.
 
 func (g Generator) setPKifNeeded(data map[string]interface{}, identityCol string) {
 	if g.CallerSuppliesPK {
@@ -46,7 +43,7 @@ func (g Generator) coreBindingInsert(data map[string]interface{}, identityCol st
 				r = thing.Value
 				v = nil
 			default:
-				panic(fmt.Sprintf("Unknown type [%v] in switch", typ))
+				panic(fmt.Sprintf("coreBindingInsert: Unknown type [%v] in switch", typ))
 			}
 		}
 		if r == "" {
@@ -63,7 +60,6 @@ func (g Generator) coreBindingInsert(data map[string]interface{}, identityCol st
 			bindArgs[i] = barg
 
 		}
-		fmt.Printf("i=%v bindNames[i]=%v bindArgs[i]=%v\n", i, bindNames[i], bindArgs[i])
 		i++
 	}
 	return bindNames, colNames, bindArgs
@@ -127,14 +123,25 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 
 	bindNames, colNames, bindArgs := g.coreBindingInsert(data, identityCol, fieldsMap)
 	bindArgs = removeNilsIfNeeded(bindArgs)
-	fmt.Println("bindArgs->", bindArgs)
-	sqlStr := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING %s /*LASTINSERTID*/ INTO :%s",
-		tableName,
-		strings.Join(colNames, ","),
-		strings.Join(bindNames, ","),
-		identityCol,
-		identityCol)
 
+	for _, v := range bindArgs {
+		identifyValueType(v)
+	}
+
+	var sqlStr string
+	if g.CallerSuppliesPK {
+		sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
+			tableName,
+			strings.Join(colNames, ","),
+			strings.Join(bindNames, ","))
+	} else {
+		sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING %s /*LASTINSERTID*/ INTO :%s",
+			tableName,
+			strings.Join(colNames, ","),
+			strings.Join(bindNames, ","),
+			identityCol,
+			identityCol)
+	}
 	fmt.Println("DEBUG: INSERT sqlStr->", sqlStr, "bindArgs->", bindArgs)
 	return sqlStr, bindArgs, nil
 }
@@ -153,13 +160,38 @@ func renderBindingRetrieve(f *schema.Field) string {
 	return renderBindingUpdateValue(f)
 }
 
-func renderInsertValue(f *schema.Field, value interface{}) (string, error) {
+func identifyValueType(value interface{}) {
 	// TODO do we need the schema.Field for more than debugging information?
 	switch typ := value.(type) {
 	case string:
-		str := value.(string)
-		if str == "" {
-			return "", errors.New("renderInsertField: unable to turn the value of " + f.Name + " into string")
+		fmt.Printf("%v is a string\n", value)
+	case int32:
+		fmt.Printf("%v is a int32\n", value)
+	case int:
+		fmt.Printf("%v is a int\n", value)
+	case int64:
+		fmt.Printf("%v is an int64\n", value)
+	case uint64:
+		fmt.Printf("%v is a uint64\n", value)
+	case float64:
+		fmt.Printf("%v is a float64", value)
+		// TODO: when we support more than regular integers, we'll need to care about this more
+	case *object.SqlValue:
+		fmt.Printf("%v is a pointer to an object.SqlValue", value)
+	case object.SqlValue:
+		fmt.Printf("%v is an object.SqlValue", value)
+	default:
+		fmt.Printf("%v is an unrecognized type: %v", value, typ)
+	}
+}
+
+func renderInsertValue(f *schema.Field, value interface{}) (interface{}, error) {
+	// TODO do we need the schema.Field for more than debugging information?
+	switch typ := value.(type) {
+	case string:
+		str, ok := value.(string)
+		if !ok {
+			return "", errors.New("renderInsertValue: unable to turn the value of " + f.Name + " into string")
 		}
 		return str, nil
 	case int32:
@@ -167,20 +199,21 @@ func renderInsertValue(f *schema.Field, value interface{}) (string, error) {
 		return string(num), nil
 	case int:
 		num := value.(int)
-		return strconv.Itoa(num), nil
+		return num, nil
 	case int64:
 		num := value.(int64)
-		return fmt.Sprintf("%d", num), nil
+		return num, nil
 	case uint64:
 		num := value.(uint64)
 		return fmt.Sprintf("%d", num), nil
 	case float64:
 		num := value.(float64)
 		if f.IsNumber {
-			return fmt.Sprintf("%d", int64(num)), nil
+			return int64(num), nil
+		} else {
+			// TODO: when we support more than regular integers, we'll need to care about this more
+			return fmt.Sprintf("%f", num), nil
 		}
-		// TODO: when we support more than regular integers, we'll need to care about this more
-		return fmt.Sprintf("%f", num), nil
 	case *object.SqlValue:
 		val := value.(*object.SqlValue)
 		return val.String(), nil
@@ -188,8 +221,6 @@ func renderInsertValue(f *schema.Field, value interface{}) (string, error) {
 		val := value.(object.SqlValue)
 		return val.String(), nil
 	default:
-		return "", fmt.Errorf("renderInsertField: unknown type %v for the value of %s", typ, f.Name)
+		return "", fmt.Errorf("renderInsertValue: unknown type %v for the value of %s", typ, f.Name)
 	}
 }
-
-// TODO: InsertBinding
