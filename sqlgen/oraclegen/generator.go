@@ -22,3 +22,7 @@ func New(name string, sch *schema.Schema, callerSuppliesPK bool) *Generator {
 func (g Generator) FixLastInsertIDbug() bool {
 	return true
 }
+
+func (g Generator) CallerSuppliesPrimaryKey() bool {
+	return g.CallerSuppliesPK
+}

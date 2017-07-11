@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 )
 
@@ -25,13 +26,24 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 		return "", nil, errors.New("BindingInsert: Table map unavailable for table " + table)
 	}
 
-	tableName := schema.GetTableName( schTable.Name, table )
+	tableName := schema.GetTableName(schTable.Name, table)
 
 	fieldsMap := schTable.Fields
 	if fieldsMap == nil {
 		return "", nil, errors.New("BindingInsert: Field map unavailable for table " + table)
 	}
 	identityCol := schTable.Primary
+
+	if g.CallerSuppliesPK {
+		// NOTE: Currently we support this as a SYS_GUID implementation,
+		// and technically, /we/ aren't the caller ... maybe I will rename
+		// this as ORMSuppliesPK ... but I don't have another reference
+		// point to compare against yet. YAGNI applies.
+		_, ok := data[identityCol]
+		if !ok {
+			data[identityCol] = object.NewSqlValue("SYS_GUID()")
+		}
+	}
 
 	dataLen := len(data)
 	bindNames := make([]string, dataLen)
@@ -43,11 +55,19 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 		colNames[i] = fmt.Sprintf(`%s`, k)
 		//fmt.Println("k=", k, "fieldsMap[k]=", fieldsMap[k], "v=", v)
 		r := renderBindingInsertValue(fieldsMap[k])
+
+		if g.CallerSuppliesPK {
+			if k == identityCol {
+				r = v.(object.SqlValue).Value
+			}
+		}
 		bindNames[i] = fmt.Sprintf(`%s`, r)
 		bindArgs[i] = v
 		i++
 	}
 	sqlStr := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING %s /*LASTINSERTID*/ INTO :%s", tableName, strings.Join(colNames, ","), strings.Join(bindNames, ","), identityCol, identityCol)
+		fmt.Println("DEBUG: INSERT sqlStr->", sqlStr)
+		fmt.Println("DEBUG: INSERT bindArgs->", bindArgs)
 	return sqlStr, bindArgs, nil
 }
 

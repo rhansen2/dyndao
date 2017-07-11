@@ -3,7 +3,10 @@ package orm
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"os"
 
+	"github.com/inconshreveable/log15"
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
@@ -114,7 +117,13 @@ func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (in
 	// Check the primary key to see if we should insert or update
 	_, ok := obj.KV[f.Name]
 	if !ok {
+		if os.Getenv("DEBUG") != "" {
+			fmt.Println("SaveObject chose Insert", obj)
+		}
 		return o.Insert(ctx, tx, obj)
+	}
+	if os.Getenv("DEBUG") != "" {
+		fmt.Println("SaveObject chose Update")
 	}
 	return o.Update(ctx, tx, obj)
 }
@@ -134,39 +143,69 @@ func stmtFromDbOrTx(ctx context.Context, o ORM, tx *sql.Tx, sqlStr string) (*sql
 func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	objTable := o.s.Tables[obj.Type]
 	if objTable == nil {
+		if os.Getenv("DEBUG") != "" {
+			log15.Info("orm/save error", "error", "thing was unknown")
+		}
 		return 0, errors.New("Insert: unknown object table " + obj.Type)
 	}
 	sqlStr, bindArgs, err := o.sqlGen.BindingInsert(o.s, obj.Type, obj.KV)
 	if err != nil {
+		if os.Getenv("DEBUG") != "" {
+			log15.Info("orm/save error", "error", err)
+		}
 		return 0, err
 	}
+	log15.Info("orm/save received:", "sqlStr->", sqlStr)
+	log15.Info("orm/save received", "bindArgs->", bindArgs)
 
 	// FIXME: Possible bug in rana ora.v4? I wouldn't have expected that I'd
 	// have to append a parameter like this, based on reading the code.
-	if o.sqlGen.FixLastInsertIDbug() {
-		var lastID int64
+	if !o.sqlGen.CallerSuppliesPrimaryKey() {
+		if o.sqlGen.FixLastInsertIDbug() {
+			var lastID int64
+			bindArgs = append(bindArgs, &lastID)
+		}
+	} else {
+		var lastID string
 		bindArgs = append(bindArgs, &lastID)
 	}
-
 	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)
 	if err != nil {
+		if os.Getenv("DEBUG") != "" {
+			log15.Info("orm/save error", "error", err)
+		}
+
 		return 0, err
 	}
 	defer stmt.Close()
 
 	res, err := stmt.ExecContext(ctx, bindArgs...)
 	if err != nil {
+		if os.Getenv("DEBUG") != "" {
+			fmt.Println("orm/save error", err)
+		}
+
 		return 0, errors.Wrap(err, "Insert/ExecContext")
 	}
 	newID, err := res.LastInsertId()
 	if err != nil {
+
+		if os.Getenv("DEBUG") != "" {
+			fmt.Println("orm/save error", err)
+		}
 		return 0, err
 	}
 	rowsAff, err := res.RowsAffected()
 	if err != nil {
+
+		if os.Getenv("DEBUG") != "" {
+			fmt.Println("orm/save error", err)
+		}
 		return 0, err
 	}
-
+	if os.Getenv("DEBUG") != "" {
+		fmt.Println("DEBUG Insert received newID=", newID)
+	}
 	obj.Set(objTable.Primary, newID) // Set the new primary key in the object
 	obj.SetSaved(true)               // Note that the object has been recently saved
 	obj.ResetChangedFields()         // Reset the 'changed fields', if any

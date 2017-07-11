@@ -26,6 +26,7 @@ type Generator interface {
 	// This option will turn MODE_LAST_INSERT_ID off? Start naming these
 	// things all mode? Same with FixLastInsertIDbug()?
 	FixLastInsertIDbug() bool
+	CallerSuppliesPrimaryKey() bool
 }
 
 // ORM is the primary object we expect the caller to operate on.
