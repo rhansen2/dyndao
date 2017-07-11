@@ -1,5 +1,9 @@
 package orm
 
+// The ORM package is designed to tie everything together: a database connection, schema,
+// relevant objects, etc. The current design is a WIP. While not finished, it is serviceable
+// and can be used effectively.
+
 import (
 	"database/sql"
 
@@ -18,17 +22,22 @@ type Generator interface {
 
 	IsStringType(string) bool
 	IsNumberType(string) bool
-
+	// TODO: Name supplying our primary key as CallerSuppliesPrimaryKey?
+	// This option will turn MODE_LAST_INSERT_ID off? Start naming these
+	// things all mode? Same with FixLastInsertIDbug()?
 	FixLastInsertIDbug() bool
 }
 
-// ORM is the abstraction that results from combining a sql generator, schema, and a database connection.
+// ORM is the primary object we expect the caller to operate on.
+// Construct one with orm.New( ... ) and be on your merry way.
 type ORM struct {
 	sqlGen  Generator
 	s       *schema.Schema
 	RawConn *sql.DB
 }
 
+// GetSchema returns the current schema object that is stored within
+// a given ORM object.
 func (o ORM) GetSchema() *schema.Schema {
 	return o.s
 }

@@ -1,10 +1,5 @@
 package orm
 
-// The ORM package is designed to tie everything together: a database connection, schema,
-// relevant objects, etc. The current design is a WIP. While not finished, it is serviceable
-// and can be used effectively.
-//
-
 import (
 	"context"
 	"database/sql"

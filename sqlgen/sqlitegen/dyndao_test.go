@@ -32,7 +32,7 @@ func TestSaveBasicObject(t *testing.T) {
 	sch := schema.MockBasicSchema()
 	db := getDB()
 	defer db.Close()
-	sqliteORM := orm.New(New("test", sch), sch, db)
+	sqliteORM := orm.New(New("test", sch, false), sch, db)
 
 	table := PeopleObjectType
 
@@ -125,7 +125,7 @@ func TestSaveNestedObject(t *testing.T) {
 	sch := schema.MockNestedSchema()
 	db := getDB()
 	defer db.Close()
-	sqliteORM := orm.New(New("test", sch), sch, db)
+	sqliteORM := orm.New(New("test", sch, false), sch, db)
 	rootTable := "people"
 
 	obj := object.New(rootTable)
@@ -238,7 +238,7 @@ func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
 // TODO: use contexts down here also?
 
 func createTables(db *sql.DB, sch *schema.Schema) error {
-	gen := New("test", sch)
+	gen := New("test", sch, false)
 
 	for k := range sch.Tables {
 		fmt.Println("Creating table ", k)
@@ -255,7 +255,7 @@ func createTables(db *sql.DB, sch *schema.Schema) error {
 }
 
 func dropTables(db *sql.DB, sch *schema.Schema) error {
-	gen := New("test", sch)
+	gen := New("test", sch, false)
 
 	for k := range sch.Tables {
 		fmt.Println("Dropping table ", k)
