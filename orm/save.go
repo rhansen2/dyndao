@@ -1,5 +1,10 @@
 package orm
 
+// The ORM package is designed to tie everything together: a database connection, schema,
+// relevant objects, etc. The current design is a WIP. While not finished, it is serviceable
+// and can be used effectively.
+//
+
 import (
 	"context"
 	"database/sql"
@@ -9,7 +14,7 @@ import (
 	"github.com/rbastic/dyndao/schema"
 )
 
-// TODO: For foreign key filling, we do not check to see if there are conflicts
+// NOTE: For foreign key filling, we do not check to see if there are conflicts
 // with regards to the uniqueness of primary key names.
 func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName string) (map[string]interface{}, error) {
 	qv := make(map[string]interface{})
@@ -130,9 +135,6 @@ func stmtFromDbOrTx(ctx context.Context, o ORM, tx *sql.Tx, sqlStr string) (*sql
 	return stmt, err
 }
 
-// TODO: Read this post for more info on the above...
-// https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
-
 // Insert function will INSERT a record depending on various values
 func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	objTable := o.s.Tables[obj.Type]
@@ -144,7 +146,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, err
 	}
 
-	// TODO: Possible bug in rana ora.v4? I wouldn't have expected that I'd
+	// FIXME: Possible bug in rana ora.v4? I wouldn't have expected that I'd
 	// have to append a parameter like this, based on reading the code.
 	if o.sqlGen.FixLastInsertIDbug() {
 		var lastID int64
@@ -208,5 +210,4 @@ func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	obj.ResetChangedFields() // Reset the 'changed fields', if any
 
 	return rowsAff, nil
-
 }

@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
-
 	"github.com/rbastic/dyndao/object"
 )
 
@@ -42,7 +41,7 @@ func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (o
 	return parentObjs, nil
 }
 
-// NOTE: For foreign key filling, we do not check to see if there are conflicts
+// NOTE: For foreign key filling, we do not (yet?) check to see if there are conflicts
 // with regards to the uniqueness of primary key names.
 
 // RetrieveWithChildren function will fleshen an *entire* object structure, given some primary keys
@@ -61,7 +60,6 @@ func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues ma
 		childPkValues := make(map[string]interface{})
 
 		childSchemaTable := o.s.Tables[name]
-
 		pVal, ok := pkValues[childSchemaTable.Primary]
 		if ok {
 			childPkValues[childSchemaTable.Primary] = pVal
@@ -72,7 +70,6 @@ func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues ma
 				childPkValues[fk] = pkValues[fk]
 			}
 		}
-		// TODO: Should we do anything else with pkValues?
 		childObj, err := o.RetrieveObject(ctx, name, childPkValues)
 		if err != nil {
 			return nil, errors.Wrap(err, "RetrieveWithChildren/RetrieveObject("+name+")")
@@ -104,8 +101,11 @@ func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.O
 	pkKey := schemaTable.Primary
 	pkVal := obj.Get(pkKey)
 
+	// If this table is configured with child tables, then we iterate over them and
+	// call RetrieveObjects using the singular primary key value.
+	// FIXME: We need to support multikey in this instance if we are going to consider
+	// this complete.
 	if len(schemaTable.Children) > 0 {
-		// Does this table have child tables?
 		for childTableName := range schemaTable.Children {
 			m := map[string]interface{}{}
 			m[pkKey] = pkVal
@@ -189,6 +189,9 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 	return objectArray, nil
 }
 
+// NOTE: Read this post for more info on why the code below is written this way:
+// https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
+
 func (o ORM) dynamicObjectSetter(columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error {
 	sqlGen := o.sqlGen
 	for i, v := range columnPointers {
@@ -259,6 +262,3 @@ func (o ORM) makeColumnPointers(sliceLen int, columnTypes []*sql.ColumnType) ([]
 	}
 	return columnPointers, nil
 }
-
-// TODO: Read this post for more info on the above...
-// https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
