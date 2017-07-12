@@ -167,10 +167,10 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 			var lastID int64
 			bindArgs = append(bindArgs, &lastID)
 		}
-	} else {
-		/*		var lastID string
-				bindArgs = append(bindArgs, &lastID)*/
-	}
+	} /*else {
+				var lastID string
+				bindArgs = append(bindArgs, &lastID)
+	}*/
 	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)
 	if err != nil {
 		if os.Getenv("DEBUG") != "" {

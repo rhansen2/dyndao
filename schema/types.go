@@ -42,15 +42,15 @@ func GetTableName(override string, ourDefault string) string {
 
 // Field represents a single column in a SQL table
 type Field struct {
-	Name         string `json:"Name"`
 	AllowNull    bool   `json:"AllowNull"`
-	DefaultValue string `json:"DefaultValue"` // Converts to integer if IsNumber is set
 	IsNumber     bool   `json:"IsNumber"`
 	IsIdentity   bool   `json:"IsIdentity"`
 	IsForeignKey bool   `json:"IsForeignKey"`
-	DBType       string `json:"DBType"`
-	Length       int    `json:"Length"`
 	IsUnique     bool   `json:"IsUnique"`
+	Length       int    `json:"Length"`
+	Name         string `json:"Name"`
+	DefaultValue string `json:"DefaultValue"` // Converts to integer if IsNumber is set
+	DBType       string `json:"DBType"`
 	Source       string `json:"Source"` // Could be JSON source, could be something else...
 }
 
