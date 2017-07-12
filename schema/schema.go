@@ -12,6 +12,7 @@ func DefaultSchema() *Schema {
 	return sch
 }
 
+// ToJSON converts a schema into a JSON string.
 func (s *Schema) ToJSON() (string, error) {
 	buf, err := s.ToJSONBytes()
 	if err != nil {
@@ -20,6 +21,7 @@ func (s *Schema) ToJSON() (string, error) {
 	return string(buf), err
 }
 
+// ToJSONBytes converts a schema into a JSON byte array.
 func (s *Schema) ToJSONBytes() ([]byte, error) {
 	buf, err := json.Marshal(s)
 	if err != nil {
@@ -28,6 +30,7 @@ func (s *Schema) ToJSONBytes() ([]byte, error) {
 	return buf, nil
 }
 
+// FromJSON unmarshals a JSON string into a Schema object.
 func FromJSON(jsonStr string) (*Schema, error) {
 	sch := DefaultSchema()
 	err := json.Unmarshal([]byte(jsonStr), &sch)
@@ -37,9 +40,10 @@ func FromJSON(jsonStr string) (*Schema, error) {
 	return sch, nil
 }
 
+// FromJSONBytes unmarshals a JSON byte array into a Schema object.
 func FromJSONBytes(jsonBytes []byte) (*Schema, error) {
 	sch := DefaultSchema()
-	err := json.Unmarshal([]byte(jsonBytes), &sch)
+	err := json.Unmarshal(jsonBytes, &sch)
 	if err != nil {
 		return nil, err
 	}

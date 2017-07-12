@@ -53,7 +53,7 @@ func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (stri
 
 func renderUpdateWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {
 	var bindArgs []interface{}
-	whereClause := ""
+	var whereClause string
 
 	if len(obj.KV) == 0 {
 		return "", nil, nil
@@ -112,7 +112,7 @@ func renderUpdateWhereClause(schTable *schema.Table, fieldsMap map[string]*schem
 }
 
 func renderWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {
-	whereClause := ""
+	var whereClause string
 
 	if len(obj.KV) == 0 {
 		return "", nil, nil

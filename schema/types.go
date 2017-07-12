@@ -27,6 +27,9 @@ type Table struct {
 	// TODO: DeletionOrder?
 }
 
+// GetTableName returns either ourDefault or the override string. It is assumed
+// that you'll pass in the table key (schema.Tables[key]) and the table name
+// (schema.Tables[key].Name), so that this wrapper function can decide.
 func GetTableName(override string, ourDefault string) string {
 	var name string
 	if override != "" {

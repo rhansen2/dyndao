@@ -10,19 +10,19 @@ type Generator struct {
 	CallerSuppliesPK bool
 }
 
-func bindingParam(v string) string {
-	return ":" + v
-}
-
 // New is our Oracle 'code-generator' constructor.
 func New(name string, sch *schema.Schema, callerSuppliesPK bool) *Generator {
 	return &Generator{Database: "oracle", Name: name, CallerSuppliesPK: callerSuppliesPK}
 }
 
+// FixLastInsertIDbug is a nasty hack to deal with some bugs I found in rana's
+// ora.v4 oracle driver. FIXME Add more information here.
 func (g Generator) FixLastInsertIDbug() bool {
 	return true
 }
 
+// CallerSuppliesPrimaryKey is a boolean accessor that returns the current global
+// primary key mode. FIXME: Add more notes on this.
 func (g Generator) CallerSuppliesPrimaryKey() bool {
 	return g.CallerSuppliesPK
 }

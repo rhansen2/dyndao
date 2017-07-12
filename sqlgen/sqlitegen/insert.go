@@ -86,26 +86,21 @@ func (g Generator) Insert(sch *schema.Schema, table string, data map[string]inte
 }
 
 func quotedString(value string) string {
-	return fmt.Sprintf(`"%s"`, string(value))
+	return fmt.Sprintf(`"%s"`, value)
 }
 
 func renderBindingInsertValue(f *schema.Field) string {
 	return ":" + f.Name
 }
 
-func renderBindingRetrieve(f *schema.Field) string {
-	return renderBindingUpdateValue(f)
-}
-
 func renderInsertValue(f *schema.Field, value interface{}) (string, error) {
 	// TODO do we need the schema.Field for more than debugging information?
 	switch v := value.(type) {
 	case string:
-		str := string(v)
-		if str == "" {
+		if v == "" {
 			return "", errors.New("renderInsertField: unable to turn the value of " + f.Name + " into string")
 		}
-		return quotedString(str), nil
+		return quotedString(v), nil
 	case int32:
 		num := value.(int32)
 		return string(num), nil

@@ -60,20 +60,26 @@ func (o Object) Get(k string) interface{} {
 	return o.KV[k]
 }
 
+// GetString is a safe, typed string accessor
 func (o Object) GetString(k string) (string, bool) {
 	v, ok := o.KV[k].(string)
 	return v, ok
 }
 
+// GetInt is a safe, typed int64 accessor
 func (o Object) GetInt(k string) (int64, bool) {
 	v, ok := o.KV[k].(int64)
 	return v, ok
 }
+
+// GetFloat is a safe, typed int64 accessor
 func (o Object) GetFloat(k string) (float64, bool) {
 	v, ok := o.KV[k].(float64)
 	return v, ok
 }
 
+// GetIntAlways is a safe, typed int64 accessor. It will force conversion away
+// from float64 and uint64 values.
 func (o Object) GetIntAlways(k string) (int64, error) {
 	switch v := o.KV[k].(type) {
 	case float64:
@@ -90,6 +96,8 @@ func (o Object) GetIntAlways(k string) (int64, error) {
 	}
 }
 
+// GetUintAlways is a safe, typed uint64 accessor. It will force conversion away
+// from float64 and int64 values.
 func (o Object) GetUintAlways(k string) (uint64, error) {
 	switch v := o.KV[k].(type) {
 	case float64:

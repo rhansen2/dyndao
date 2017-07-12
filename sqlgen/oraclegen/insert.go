@@ -18,7 +18,7 @@ func (g Generator) setPKifNeeded(data map[string]interface{}, identityCol string
 		// point to compare against yet. YAGNI applies.
 		_, ok := data[identityCol]
 		if !ok {
-			data[identityCol] = object.NewSqlValue("SYS_GUID()")
+			data[identityCol] = object.NewSQLValue("SYS_GUID()")
 		}
 	}
 }
@@ -30,7 +30,7 @@ func (g Generator) coreBindingInsert(data map[string]interface{}, identityCol st
 	bindArgs := make([]interface{}, dataLen)
 	i := 0
 	for k, v := range data {
-		colNames[i] = fmt.Sprintf(`%s`, k)
+		colNames[i] = k
 		var r string
 
 		if g.CallerSuppliesPK && k == identityCol {
@@ -39,8 +39,8 @@ func (g Generator) coreBindingInsert(data map[string]interface{}, identityCol st
 				r = string(v.(int64))
 			case string:
 				r = v.(string)
-			case *object.SqlValue:
-				thing := v.(*object.SqlValue)
+			case *object.SQLValue:
+				thing := v.(*object.SQLValue)
 				r = thing.Value
 				v = nil
 			default:
@@ -50,7 +50,7 @@ func (g Generator) coreBindingInsert(data map[string]interface{}, identityCol st
 		if r == "" {
 			r = renderBindingInsertValue(fieldsMap[k])
 		}
-		bindNames[i] = fmt.Sprintf(`%s`, r)
+		bindNames[i] = r
 		if v == nil {
 			bindArgs[i] = v
 		} else {
@@ -85,7 +85,6 @@ func removeNils(someNils []interface{}, count int) []interface{} {
 			noNils[j] = v
 			j++
 		}
-
 	}
 	return noNils
 }
@@ -150,20 +149,19 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 	return sqlStr, bindArgs, nil
 }
 
+/*
 func quotedString(value string) string {
 	// TODO: Quote the data according to semantics of local database. This should be provided by dyndao's sql generator?
 	// ( TODO: Research what something like xorm might provide already in this area... )
-	return fmt.Sprintf(`"%s"`, string(value))
+	return fmt.Sprintf(`"%s"`, value)
 }
+*/
 
 func renderBindingInsertValue(f *schema.Field) string {
 	return ":" + f.Name
 }
 
-func renderBindingRetrieve(f *schema.Field) string {
-	return renderBindingUpdateValue(f)
-}
-
+/*
 func identifyValueType(value interface{}) {
 	// TODO do we need the schema.Field for more than debugging information?
 	switch typ := value.(type) {
@@ -180,14 +178,15 @@ func identifyValueType(value interface{}) {
 	case float64:
 		fmt.Printf("%v is a float64", value)
 		// TODO: when we support more than regular integers, we'll need to care about this more
-	case *object.SqlValue:
-		fmt.Printf("%v is a pointer to an object.SqlValue", value)
-	case object.SqlValue:
-		fmt.Printf("%v is an object.SqlValue", value)
+	case *object.SQLValue:
+		fmt.Printf("%v is a pointer to an object.SQLValue", value)
+	case object.SQLValue:
+		fmt.Printf("%v is an object.SQLValue", value)
 	default:
 		fmt.Printf("%v is an unrecognized type: %v", value, typ)
 	}
 }
+*/
 
 func renderInsertValue(f *schema.Field, value interface{}) (interface{}, error) {
 	// TODO do we need the schema.Field for more than debugging information?
@@ -214,15 +213,14 @@ func renderInsertValue(f *schema.Field, value interface{}) (interface{}, error) 
 		num := value.(float64)
 		if f.IsNumber {
 			return int64(num), nil
-		} else {
-			// TODO: when we support more than regular integers, we'll need to care about this more
-			return fmt.Sprintf("%f", num), nil
 		}
-	case *object.SqlValue:
-		val := value.(*object.SqlValue)
+		// TODO: when we support more than regular integers, we'll need to care about this more
+		return fmt.Sprintf("%f", num), nil
+	case *object.SQLValue:
+		val := value.(*object.SQLValue)
 		return val.String(), nil
-	case object.SqlValue:
-		val := value.(object.SqlValue)
+	case object.SQLValue:
+		val := value.(object.SQLValue)
 		return val.String(), nil
 	default:
 		return "", fmt.Errorf("renderInsertValue: unknown type %v for the value of %s", typ, f.Name)

@@ -48,6 +48,7 @@ func TestCreateTables(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// TODO: Error return value not checked?
 	defer db.Close()
 
 	sqlGen := New("test", sch, false)
@@ -243,8 +244,8 @@ func validateChildrenSaved(t *testing.T, obj *object.Object) {
 			if !v.GetSaved() {
 				t.Fatal("Child object wasn't saved")
 			}
-			addrId := v.Get("AddressID").(int64)
-			if addrId < 1 {
+			addrID := v.Get("AddressID").(int64)
+			if addrID < 1 {
 				t.Fatal("AddressID was not what we expected")
 			}
 		}
@@ -384,10 +385,13 @@ func TestDropTables(t *testing.T) {
 
 func prepareAndExecSQL(db *sql.DB, sqlStr string) (sql.Result, error) {
 	stmt, err := db.PrepareContext(context.TODO(), sqlStr)
+	if err != nil {
+		return nil, errors.Wrap(err, "prepareAndExecSQL/PrepareContext")
+	}
 	defer stmt.Close()
 	r, err := stmt.ExecContext(context.TODO())
 	if err != nil {
-		return nil, errors.Wrap(err, "prepareAndExecSQL")
+		return nil, errors.Wrap(err, "prepareAndExecSQL/ExecContext")
 	}
 	return r, nil
 }

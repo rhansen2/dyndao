@@ -149,12 +149,14 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 	if err != nil {
 		return nil, err
 	}
+	// TODO: Error not checked.
 	defer stmt.Close()
 
 	res, err := stmt.QueryContext(ctx, bindArgs...)
 	if err != nil {
 		return nil, err
 	}
+	// TODO: Error not checked.
 	defer res.Close()
 	columnTypes, err := res.ColumnTypes()
 	if err != nil {

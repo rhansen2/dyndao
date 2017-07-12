@@ -129,35 +129,6 @@ func walkChildrenFromJSON(sch *schema.Schema, table *schema.Table, obj *object.O
 	return nil
 }
 
-func unmarshalObject(sch *schema.Schema, unm interface{}, objType string, rootLevel bool) (*object.Object, error) {
-	m := unm.(map[string]interface{})
-	var objAry object.Array
-	obj := object.New(objType)
-
-	for k, v := range m {
-		switch v.(type) {
-		case []interface{}:
-			vi := v.([]interface{})
-			objs, err := mapValToObjAry(sch, k, vi, false)
-			if err != nil {
-				return nil, err
-			}
-			objAry = append(objAry, objs...)
-			continue
-		case map[string]interface{}:
-			oary, err := unmarshalToObjects(sch, v, false)
-			if err != nil {
-				return nil, err
-			}
-			objAry = append(objAry, oary...)
-		default:
-			obj.Set(k, v)
-		}
-
-	}
-	return obj, nil
-}
-
 func unmarshalToObjects(sch *schema.Schema, unm interface{}, rootLevel bool) (object.Array, error) {
 	// top level is map
 	m := unm.(map[string]interface{})

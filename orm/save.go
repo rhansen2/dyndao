@@ -58,9 +58,9 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 				childObj.Set(table.Primary, pkVal)
 			}
 
-			rowsAff, err := o.recurseAndSave(ctx, tx, childObj)
+			aff, err := o.recurseAndSave(ctx, tx, childObj)
 			if err != nil {
-				return rowsAff, err
+				return rowsAff + aff, err
 			}
 		}
 	}
@@ -88,6 +88,7 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 
 	err = tx.Commit()
 	if err != nil {
+		// TODO: Error is not checked.
 		tx.Rollback()
 		return 0, err
 	}
@@ -178,6 +179,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 		return 0, err
 	}
+	// TODO: Error return value not checked.
 	defer stmt.Close()
 
 	res, err := stmt.ExecContext(ctx, bindArgs...)

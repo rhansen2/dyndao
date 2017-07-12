@@ -38,10 +38,7 @@ func (g Generator) CreateTable(s *schema.Schema, table string) (string, error) {
 }
 
 func renderCreateField(f *schema.Field) string {
-	dataType := ""
-	notNull := ""
-	identity := ""
-	unique := ""
+	var dataType, notNull, identity, unique string
 	if f.IsIdentity {
 		identity = "PRIMARY KEY"
 	}
@@ -51,9 +48,11 @@ func renderCreateField(f *schema.Field) string {
 	if f.IsNumber {
 		dataType = f.DBType // not relevant here?
 	} else {
+/*
 		if f.Length > 0 {
 			// TODO: Needed?
 		}
+*/
 		dataType = f.DBType
 	}
 	if f.IsUnique {
