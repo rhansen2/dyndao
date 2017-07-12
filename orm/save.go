@@ -188,14 +188,27 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 		return 0, errors.Wrap(err, "Insert/ExecContext")
 	}
-	newID, err := res.LastInsertId()
-	if err != nil {
 
-		if os.Getenv("DEBUG") != "" {
-			fmt.Println("orm/save error", err)
+	// If we are not expecting the caller to supply the primary key,
+	// then we should not try to capture the last value (for example,
+	// using LAST_INSERT_ID() with MySQL..)
+	// TODO: Should CallerSuppliesPrimaryKey be per-table?
+	if !o.sqlGen.CallerSuppliesPrimaryKey() {
+		newID, err := res.LastInsertId()
+		if err != nil {
+
+			if os.Getenv("DEBUG") != "" {
+				fmt.Println("orm/save error", err)
+			}
+			return 0, err
 		}
-		return 0, err
+		if os.Getenv("DEBUG") != "" {
+			fmt.Println("DEBUG Insert received newID=", newID)
+		}
+
+		obj.Set(objTable.Primary, newID) // Set the new primary key in the object
 	}
+
 	rowsAff, err := res.RowsAffected()
 	if err != nil {
 
@@ -204,12 +217,8 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		}
 		return 0, err
 	}
-	if os.Getenv("DEBUG") != "" {
-		fmt.Println("DEBUG Insert received newID=", newID)
-	}
-	obj.Set(objTable.Primary, newID) // Set the new primary key in the object
-	obj.SetSaved(true)               // Note that the object has been recently saved
-	obj.ResetChangedFields()         // Reset the 'changed fields', if any
+	obj.SetSaved(true)       // Note that the object has been recently saved
+	obj.ResetChangedFields() // Reset the 'changed fields', if any
 	return rowsAff, nil
 }
 

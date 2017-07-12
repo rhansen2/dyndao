@@ -3,6 +3,7 @@ package oraclegen
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/rbastic/dyndao/object"
@@ -123,11 +124,11 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 
 	bindNames, colNames, bindArgs := g.coreBindingInsert(data, identityCol, fieldsMap)
 	bindArgs = removeNilsIfNeeded(bindArgs)
-
-	for _, v := range bindArgs {
-		identifyValueType(v)
-	}
-
+	/*
+		for _, v := range bindArgs {
+			identifyValueType(v)
+		}
+	*/
 	var sqlStr string
 	if g.CallerSuppliesPK {
 		sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
@@ -142,7 +143,10 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 			identityCol,
 			identityCol)
 	}
-	fmt.Println("DEBUG: INSERT sqlStr->", sqlStr, "bindArgs->", bindArgs)
+	if os.Getenv("DEBUG") != "" {
+		fmt.Println("DEBUG: INSERT sqlStr->", sqlStr, "bindArgs->", bindArgs)
+
+	}
 	return sqlStr, bindArgs, nil
 }
 
