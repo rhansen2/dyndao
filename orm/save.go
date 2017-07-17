@@ -118,13 +118,7 @@ func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (in
 	// Check the primary key to see if we should insert or update
 	_, ok := obj.KV[f.Name]
 	if !ok {
-		if os.Getenv("DEBUG") != "" {
-			fmt.Println("SaveObject chose Insert", obj)
-		}
 		return o.Insert(ctx, tx, obj)
-	}
-	if os.Getenv("DEBUG") != "" {
-		fmt.Println("SaveObject chose Update")
 	}
 	return o.Update(ctx, tx, obj)
 }
