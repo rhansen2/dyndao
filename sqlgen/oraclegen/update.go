@@ -31,15 +31,28 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 	newValuesAry := make([]string, len(obj.KV)-1)
 	i := 0
 
-	for k := range obj.ChangedFields {
-		f := fieldsMap[k]
-		if f.IsIdentity {
-			continue
-		}
-		newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, renderBindingUpdateValue(f), i)
-		bindArgs[i] = obj.KV[k]
+	if len(obj.ChangedFields) > 0 {
+		for k := range obj.ChangedFields {
+			f := fieldsMap[k]
+			if f.IsIdentity {
+				continue
+			}
+			newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, renderBindingUpdateValue(f), i)
+			bindArgs[i] = obj.KV[k]
 
-		i++
+			i++
+		}
+	} else {
+		for k, v := range obj.KV {
+			f := fieldsMap[k]
+			if f.IsIdentity {
+				continue
+			}
+			newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, renderBindingUpdateValue(f), i)
+			bindArgs[i] = v
+
+			i++
+		}
 	}
 
 	tableName := schema.GetTableName(schTable.Name, obj.Type)
