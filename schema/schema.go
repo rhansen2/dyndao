@@ -67,6 +67,22 @@ func (s *Schema) GetTable(n string) *Table {
 	return s.Tables[n]
 }
 
+// GetField returns the correct field in a potentially aliased environment.
+func (t *Table) GetField(n string) *Field {
+	if t.FieldAliases != nil {
+		realName, ok := t.FieldAliases[n]
+		if !ok {
+			// Perhaps it is not an alias
+			//fmt.Println("Returning ", n)
+			return t.Fields[n]
+		}
+		//fmt.Println("Returning ", realName)
+		return t.Fields[realName]
+	}
+	//fmt.Println("Returning ", n)
+	return t.Fields[n]
+}
+
 // DefaultTable returns an empty table ready to be populated
 func DefaultTable() *Table {
 	fieldsMap := make(map[string]*Field)

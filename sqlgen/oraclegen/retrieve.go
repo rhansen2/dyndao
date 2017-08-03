@@ -123,7 +123,7 @@ func renderWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Fiel
 
 	i := 0
 	for k, v := range obj.KV {
-		f := fieldsMap[k]
+		f := schTable.GetField(k)
 		if f == nil {
 			return "", nil, errors.New("renderWhereClause: unknown field " + k + " in table " + obj.Type)
 		}
