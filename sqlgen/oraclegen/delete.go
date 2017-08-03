@@ -13,8 +13,8 @@ import (
 // to execute the requested delete operation. 'obj' is not required to be a
 func (g Generator) BindingDelete(sch *schema.Schema, queryVals *object.Object) (string, []interface{}, error) {
 	table := queryVals.Type
-	schTable, ok := sch.Tables[table]
-	if !ok {
+	schTable := sch.GetTable(table)
+	if schTable == nil {
 		return "", nil, errors.New("BindingDelete: Table map unavailable for table " + table)
 	}
 	tableName := schema.GetTableName(schTable.Name, table)
