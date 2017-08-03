@@ -18,8 +18,8 @@ import (
 // TODO: We may consider using a different name in the future.
 func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (string, []string, []interface{}, error) {
 	table := obj.Type // TODO: we may want to map this
-	schTable, ok := sch.Tables[table]
-	if !ok {
+	schTable := sch.GetTable(table)
+	if schTable == nil {
 		return "", nil, nil, errors.New("BindingRetrieve: Table map unavailable for table " + table)
 	}
 
