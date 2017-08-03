@@ -48,11 +48,11 @@ func renderCreateField(f *schema.Field) string {
 	if f.IsNumber {
 		dataType = f.DBType // not relevant here?
 	} else {
-/*
-		if f.Length > 0 {
-			// TODO: Needed?
-		}
-*/
+		/*
+			if f.Length > 0 {
+				// TODO: Needed?
+			}
+		*/
 		dataType = f.DBType
 	}
 	if f.IsUnique {

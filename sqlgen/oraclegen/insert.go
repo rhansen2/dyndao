@@ -48,7 +48,12 @@ func (g Generator) coreBindingInsert(data map[string]interface{}, identityCol st
 			}
 		}
 		if r == "" {
-			r = renderBindingInsertValue(fieldsMap[k])
+			f := fieldsMap[k]
+			if f != nil {
+				r = renderBindingInsertValue(fieldsMap[k])
+			} else {
+				panic(fmt.Sprintf("coreBindingInsert: Unknown field for key: [%s]", k))
+			}
 		}
 		bindNames[i] = r
 		if v == nil {
@@ -106,12 +111,13 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 		return "", nil, errors.New("BindingInsert: Empty data passed")
 	}
 
-	schTable, ok := sch.Tables[table]
-	if !ok {
+	schTable := sch.GetTable(table)
+	if schTable == nil {
 		return "", nil, errors.New("BindingInsert: Table map unavailable for table " + table)
 	}
 
 	tableName := schema.GetTableName(schTable.Name, table)
+	//fmt.Println("tableName=",tableName,"schTable=",schTable)
 
 	fieldsMap := schTable.Fields
 	if fieldsMap == nil {

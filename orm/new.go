@@ -22,6 +22,8 @@ type Generator interface {
 
 	IsStringType(string) bool
 	IsNumberType(string) bool
+	IsTimestampType(string) bool
+
 	// TODO: Name supplying our primary key as CallerSuppliesPrimaryKey?
 	// This option will turn MODE_LAST_INSERT_ID off? Start naming these
 	// things all mode? Same with FixLastInsertIDbug()?

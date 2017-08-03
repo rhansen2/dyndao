@@ -20,8 +20,8 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 		return "", nil, errors.New("BindingInsert: Empty data passed")
 	}
 
-	schTable, ok := sch.Tables[table]
-	if !ok {
+	schTable := sch.GetTable(table)
+	if schTable == nil {
 		return "", nil, errors.New("BindingInsert: Table map unavailable for table " + table)
 	}
 	fieldsMap := schTable.Fields
@@ -114,7 +114,4 @@ func renderInsertValue(f *schema.Field, value interface{}) (string, error) {
 		return "", errors.New("renderInsertField: unknown type " + fmt.Sprintf("%v", v) + " for the value of " + f.Name)
 
 	}
-	//return "", nil
 }
-
-// TODO: InsertBinding

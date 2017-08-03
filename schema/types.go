@@ -3,19 +3,23 @@ package schema
 // Schema is the metadata container for a schema definition
 type Schema struct {
 	Tables map[string]*Table `json:"Tables"`
+	// For get ops
+	TableAliases map[string]string `json:"TableAliases"`
 }
 
 // Table is the metadata container for a SQL table definition
 type Table struct {
-	MultiKey bool   `json:"MultiKey"` // Use Primary or Primary + ForeignKeys
-	Primary  string `json:"Primary"`
-	Name     string `json:"Name"`
+	MultiKey  bool   `json:"MultiKey"` // Use Primary or Primary + ForeignKeys
+	Primary   string `json:"Primary"`
+	Name      string `json:"Name"`
+	AliasName string `json:"AliasName"` // Combined with AliasName - for set op	s
 
 	// MultiKey must be set to true if a table has
 	// foreign keys.
 	ForeignKeys []string `json:"ForeignKeys"`
 	// Fields is the column definitions for the SQL table
-	Fields map[string]*Field `json:"Fields"`
+	Fields       map[string]*Field `json:"Fields"`
+	FieldAliases map[string]string `json:"FieldAliases"`
 
 	EssentialFields []string `json:"EssentialFields"`
 

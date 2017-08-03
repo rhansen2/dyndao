@@ -16,7 +16,7 @@ import (
 func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (object.Array, error) {
 	table := childObj.Type
 
-	objTable := o.s.Tables[table]
+	objTable := o.s.GetTable(table)
 	if objTable == nil {
 		return nil, errors.New("GetParentsViaChild: unknown object table " + table)
 	}
@@ -46,7 +46,7 @@ func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (o
 
 // RetrieveWithChildren function will fleshen an *entire* object structure, given some primary keys
 func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues map[string]interface{}) (*object.Object, error) {
-	objTable := o.s.Tables[table]
+	objTable := o.s.GetTable(table)
 	if objTable == nil {
 		return nil, errors.New("RetrieveWithChildren: unknown object table " + table)
 	}
@@ -97,7 +97,8 @@ func (o ORM) RetrieveObject(ctx context.Context, table string, queryVals map[str
 
 // FleshenChildren function accepts an object and resets it's children.
 func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.Object, error) {
-	schemaTable := o.s.Tables[obj.Type]
+	schemaTable := o.s.GetTable(obj.Type)
+
 	pkKey := schemaTable.Primary
 	pkVal := obj.Get(pkKey)
 
@@ -122,12 +123,12 @@ func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.O
 // RetrieveObjects function will fleshen an object structure, given some primary keys
 func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[string]interface{}) (object.Array, error) {
 	if o.s == nil {
-		return nil, errors.New("RetrieveObjects: why is ORM schema set to nil?")
+		return nil, errors.New("RetrieveObjects: ORM schema set to nil?")
 	}
 	if o.s.Tables == nil {
-		return nil, errors.New("RetrieveObjects: why is Tables nil?")
+		return nil, errors.New("RetrieveObjects: ORM schema.Tables is set to nil?")
 	}
-	objTable := o.s.Tables[table]
+	objTable := o.s.GetTable(table)
 	if objTable == nil {
 		return nil, errors.New("RetrieveObjects: unknown object table " + table)
 	}
@@ -229,6 +230,7 @@ func (o ORM) dynamicObjectSetter(columnNames []string, columnPointers []interfac
 		} else {
 			return errors.New("dynamicObjectSetter: Unrecognized type: " + typeName)
 		}
+		// TODO: add timestamp support.
 	}
 	return nil
 }
@@ -258,6 +260,7 @@ func (o ORM) makeColumnPointers(sliceLen int, columnTypes []*sql.ColumnType) ([]
 				columnPointers[i] = &j
 
 			}
+			// TODO: add timestamp support
 		} else {
 			return nil, errors.New("makeColumnPointers: Unrecognized type: " + typeName)
 		}

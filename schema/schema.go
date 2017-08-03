@@ -2,12 +2,13 @@ package schema
 
 import (
 	"encoding/json"
+	//	"fmt"
 )
 
 // DefaultSchema returns an empty schema ready to be populated
 func DefaultSchema() *Schema {
 	tables := make(map[string]*Table)
-	sch := &Schema{Tables: tables}
+	sch := &Schema{Tables: tables, TableAliases: nil}
 
 	return sch
 }
@@ -48,6 +49,22 @@ func FromJSONBytes(jsonBytes []byte) (*Schema, error) {
 		return nil, err
 	}
 	return sch, nil
+}
+
+// GetTable returns the correct table in a potentially aliased environment.
+func (s *Schema) GetTable(n string) *Table {
+	if s.TableAliases != nil {
+		realName, ok := s.TableAliases[n]
+		if !ok {
+			// Perhaps it is not an alias
+			//fmt.Println("Returning ", n)
+			return s.Tables[n]
+		}
+		//fmt.Println("Returning ", realName)
+		return s.Tables[realName]
+	}
+	//fmt.Println("Returning ", n)
+	return s.Tables[n]
 }
 
 // DefaultTable returns an empty table ready to be populated

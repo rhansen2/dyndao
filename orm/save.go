@@ -17,7 +17,8 @@ import (
 func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName string) (map[string]interface{}, error) {
 	qv := make(map[string]interface{})
 
-	schemaTable := sch.Tables[parentTableName]
+	schemaTable := sch.GetTable(parentTableName)
+
 	if schemaTable == nil {
 		return nil, errors.New("pkQueryValsFromKV: no schemaTable for table " + parentTableName)
 	}
@@ -38,7 +39,7 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 		return 0, err
 	}
 
-	table := o.s.Tables[obj.Type]
+	table := o.s.GetTable(obj.Type)
 	pkVal := obj.Get(table.Primary)
 
 	for _, v := range obj.Children {
@@ -99,7 +100,7 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 // save any of the children. If given a transaction, it will use that to
 // attempt to insert the data.
 func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
-	objTable := o.s.Tables[obj.Type]
+	objTable := o.s.GetTable(obj.Type)
 	if objTable == nil {
 		return 0, errors.New("SaveObject: unknown object table " + obj.Type)
 	}
@@ -136,7 +137,7 @@ func stmtFromDbOrTx(ctx context.Context, o ORM, tx *sql.Tx, sqlStr string) (*sql
 
 // Insert function will INSERT a record depending on various values
 func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
-	objTable := o.s.Tables[obj.Type]
+	objTable := o.s.GetTable(obj.Type)
 	if objTable == nil {
 		if os.Getenv("DEBUG") != "" {
 			log15.Info("orm/save error", "error", "thing was unknown")
@@ -220,7 +221,8 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 // Update function will UPDATE a record ...
 func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
-	objTable := o.s.Tables[obj.Type]
+	objTable := o.s.GetTable(obj.Type)
+
 	if objTable == nil {
 		return 0, errors.New("Update: unknown object table " + obj.Type)
 	}
