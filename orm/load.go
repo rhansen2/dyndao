@@ -120,6 +120,76 @@ func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.O
 	return obj, nil
 }
 
+// RetrieveObjectsFromCustomSQL will fleshen an object structure, given a SQL string.
+func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sqlStr string, columnNames []string, bindArgs []interface{}) (object.Array, error) {
+	if o.s == nil {
+		return nil, errors.New("RetrieveObjectsFromCustomSQL: ORM schema set to nil?")
+	}
+	if o.s.Tables == nil {
+		return nil, errors.New("RetrieveObjectsFromCustomSQL: ORM schema.Tables is set to nil?")
+	}
+	objTable := o.s.GetTable(table)
+	if objTable == nil {
+		return nil, errors.New("RetrieveObjectsFromCustomSQL: unknown object table " + table)
+	}
+	var objectArray object.Array
+
+	if os.Getenv("DEBUG") != "" {
+		fmt.Println("RetrieveObjectsFromCustomSQL/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
+	}
+
+/*
+	if err != nil {
+		return nil, err
+	}
+*/
+	stmt, err := o.RawConn.PrepareContext(ctx, sqlStr)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: Error not checked.
+	defer stmt.Close()
+
+	res, err := stmt.QueryContext(ctx, bindArgs...)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: Error not checked.
+	defer res.Close()
+	columnTypes, err := res.ColumnTypes()
+	if err != nil {
+		return nil, err
+	}
+
+	for res.Next() {
+		columnPointers, err := o.makeColumnPointers(len(columnNames), columnTypes)
+		if err != nil {
+			return nil, err
+		}
+
+		obj := object.New(table)
+		if err := res.Scan(columnPointers...); err != nil {
+			return nil, err
+		}
+
+		err = o.dynamicObjectSetter(columnNames, columnPointers, columnTypes, obj)
+		if err != nil {
+			return nil, err
+		}
+		obj.SetSaved(true)
+		obj.ResetChangedFields()
+
+		objectArray = append(objectArray, obj)
+	}
+
+	err = res.Err()
+	if err != nil {
+		return nil, err
+	}
+	return objectArray, nil
+}
+
+
 // RetrieveObjects function will fleshen an object structure, given some primary keys
 func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[string]interface{}) (object.Array, error) {
 	if o.s == nil {
