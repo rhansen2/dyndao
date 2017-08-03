@@ -8,6 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
+	"github.com/rbastic/dyndao/schema"
 )
 
 // GetParentsViaChild retrieves all direct (one-level 'up') parents for a given child object.
@@ -138,11 +139,11 @@ func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sql
 		fmt.Println("RetrieveObjectsFromCustomSQL/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
 	}
 
-/*
-	if err != nil {
-		return nil, err
-	}
-*/
+	/*
+		if err != nil {
+			return nil, err
+		}
+	*/
 	stmt, err := o.RawConn.PrepareContext(ctx, sqlStr)
 	if err != nil {
 		return nil, err
@@ -189,6 +190,24 @@ func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sql
 	return objectArray, nil
 }
 
+func (o ORM) makeQueryObj(objTable *schema.Table, queryVals map[string]interface{}) *object.Object {
+	queryObj := object.New(objTable.Name)
+
+	if objTable.FieldAliases == nil {
+		queryObj.KV = queryVals
+		return queryObj
+	}
+	fa := objTable.FieldAliases
+	for k, v := range queryVals {
+		realName, ok := fa[k]
+		if !ok {
+			queryObj.KV[k] = v
+		} else {
+			queryObj.KV[realName] = v
+		}
+	}
+	return queryObj
+}
 
 // RetrieveObjects function will fleshen an object structure, given some primary keys
 func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[string]interface{}) (object.Array, error) {
@@ -204,8 +223,7 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 	}
 	var objectArray object.Array
 
-	queryObj := object.New(table)
-	queryObj.KV = queryVals
+	queryObj := o.makeQueryObj(objTable, queryVals)
 
 	sqlStr, columnNames, bindArgs, err := o.sqlGen.BindingRetrieve(o.s, queryObj)
 	if os.Getenv("DEBUG") != "" {
@@ -271,7 +289,7 @@ func (o ORM) dynamicObjectSetter(columnNames []string, columnPointers []interfac
 		ct := columnTypes[i]
 
 		typeName := ct.DatabaseTypeName()
-		if sqlGen.IsStringType(typeName) {
+		if sqlGen.IsStringType(typeName) || sqlGen.IsTimestampType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
 				val := v.(*sql.NullString)
@@ -330,7 +348,16 @@ func (o ORM) makeColumnPointers(sliceLen int, columnTypes []*sql.ColumnType) ([]
 				columnPointers[i] = &j
 
 			}
-			// TODO: add timestamp support
+		} else if sqlGen.IsTimestampType(typeName) {
+			nullable, _ := ct.Nullable()
+			if nullable {
+				var j sql.NullString
+				columnPointers[i] = &j
+			} else {
+				var j string
+				columnPointers[i] = &j
+
+			}
 		} else {
 			return nil, errors.New("makeColumnPointers: Unrecognized type: " + typeName)
 		}
