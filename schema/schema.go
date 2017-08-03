@@ -67,6 +67,24 @@ func (s *Schema) GetTable(n string) *Table {
 	return s.Tables[n]
 }
 
+// GetFieldName returns the correct field name in a potentially aliased environment.
+// This is useful in situations where you aren't sure what the 'real' key name
+// may potentially be.
+func (t * Table) GetFieldName(n string) string {
+	if t.FieldAliases != nil {
+		realName, ok := t.FieldAliases[n]
+		if !ok {
+			// Perhaps it is not an alias
+			//fmt.Println("Returning ", n)
+			return n
+		}
+		//fmt.Println("Returning ", realName)
+		return realName
+	}
+	//fmt.Println("Returning ", n)
+	return n
+}
+
 // GetField returns the correct field in a potentially aliased environment.
 func (t *Table) GetField(n string) *Field {
 	if t.FieldAliases != nil {
