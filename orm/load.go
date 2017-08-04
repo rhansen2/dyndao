@@ -197,14 +197,9 @@ func (o ORM) makeQueryObj(objTable *schema.Table, queryVals map[string]interface
 		queryObj.KV = queryVals
 		return queryObj
 	}
-	fa := objTable.FieldAliases
 	for k, v := range queryVals {
-		realName, ok := fa[k]
-		if !ok {
-			queryObj.KV[k] = v
-		} else {
-			queryObj.KV[realName] = v
-		}
+		realName := objTable.GetFieldName(k)
+		queryObj.KV[realName] = v
 	}
 	return queryObj
 }
