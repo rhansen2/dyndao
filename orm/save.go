@@ -68,14 +68,8 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 	return rowsAff, err
 }
 
-// SaveAll will attempt to save an entire nested object structure inside of a single transaction.
-// It begins the transaction, attempts to recursively save the object and all of it's children,
-// and any of the children's children, and then will finally rollback/commit as necessary.
-func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
-	tx, err := o.RawConn.BeginTx(ctx, nil)
-	if err != nil {
-		return 0, err
-	}
+// SaveAllInsideTx will attempt to save an entire nested object structure inside of a single transaction.
+func (o ORM) SaveAllInsideTx(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	// TODO: Review this code for how it uses transactions / rollbacks.
 	rowsAff, err := o.recurseAndSave(ctx, tx, obj)
 	if err != nil {
@@ -86,6 +80,18 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 		}
 		return 0, err
 	}
+	return rowsAff, nil
+}
+
+// SaveAll will attempt to save an entire nested object structure inside of a single transaction.
+// It begins the transaction, attempts to recursively save the object and all of it's children,
+// and any of the children's children, and then will finally rollback/commit as necessary.
+func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
+	tx, err := o.RawConn.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+	rowsAff, err := o.SaveAllInsideTx(ctx, tx, obj)
 
 	err = tx.Commit()
 	if err != nil {
