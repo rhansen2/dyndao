@@ -18,12 +18,8 @@ func (g Generator) BindingDelete(sch *schema.Schema, queryVals *object.Object) (
 		return "", nil, errors.New("BindingDelete: Table map unavailable for table " + table)
 	}
 	tableName := schema.GetTableName(schTable.Name, table)
-	fieldsMap := schTable.Fields
-	if fieldsMap == nil {
-		return "", nil, errors.New("BindingDelete: Field map unavailable for table " + table)
-	}
 
-	whereClause, bindWhere, err := renderWhereClause(schTable, fieldsMap, queryVals)
+	whereClause, bindWhere, err := renderWhereClause(schTable, queryVals)
 	if err != nil {
 		return "", nil, err
 	}

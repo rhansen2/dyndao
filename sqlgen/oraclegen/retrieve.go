@@ -23,12 +23,7 @@ func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (stri
 		return "", nil, nil, errors.New("BindingRetrieve: Table map unavailable for table " + table)
 	}
 
-	fieldsMap := schTable.Fields
-	if fieldsMap == nil {
-		return "", nil, nil, errors.New("BindingRetrieve: Field map unavailable for table " + table)
-	}
-
-	whereClause, bindWhere, err := renderWhereClause(schTable, fieldsMap, obj)
+	whereClause, bindWhere, err := renderWhereClause(schTable, obj)
 	if err != nil {
 		return "", nil, nil, errors.Wrap(err, "BindingRetrieve")
 	}
@@ -111,7 +106,7 @@ func renderUpdateWhereClause(schTable *schema.Table, fieldsMap map[string]*schem
 	return whereClause, bindArgs, nil
 }
 
-func renderWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {
+func renderWhereClause(schTable *schema.Table, obj *object.Object) (string, []interface{}, error) {
 	var whereClause string
 
 	if len(obj.KV) == 0 {
