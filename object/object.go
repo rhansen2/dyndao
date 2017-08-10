@@ -17,7 +17,6 @@ type Array []*Object
 // of the previous value stored for a given key.
 type Object struct {
 	Type          string
-	KVOnlyUpper   bool
 	KV            map[string]interface{} `json:"KV"`
 	ChangedFields map[string]interface{} `json:"ChangedFields"`
 	Children      map[string]Array
