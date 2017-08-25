@@ -7,6 +7,7 @@ package object
 
 import (
 	"fmt"
+	"strconv"
 )
 
 // Array is our object array container to facilitate a couple of instances
@@ -91,6 +92,9 @@ func (o Object) GetIntAlways(k string) (int64, error) {
 	case uint64:
 		fl := o.KV[k].(uint64)
 		return int64(fl), nil
+	case string:
+		fl := o.KV[k].(string)
+		return strconv.ParseInt(fl, 10, 64)
 	default:
 		return 0, fmt.Errorf("GetIntAlways: unrecognized type %v", v)
 	}
@@ -109,6 +113,9 @@ func (o Object) GetUintAlways(k string) (uint64, error) {
 	case uint64:
 		fl := o.KV[k].(uint64)
 		return fl, nil
+	case string:
+		fl := o.KV[k].(string)
+		return strconv.ParseUint(fl, 10, 64)
 	default:
 		return 0, fmt.Errorf("GetIntAlways: unrecognized type %v", v)
 	}

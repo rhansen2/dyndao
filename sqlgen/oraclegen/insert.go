@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
+	"github.com/tidwall/gjson"
 )
 
 func (g Generator) setPKifNeeded(data map[string]interface{}, identityCol string) {
@@ -210,7 +212,7 @@ func identifyValueType(value interface{}) {
 
 func renderInsertValue(f *schema.Field, value interface{}) (interface{}, error) {
 	// TODO do we need the schema.Field for more than debugging information?
-	switch typ := value.(type) {
+	switch value.(type) {
 	case string:
 		str, ok := value.(string)
 		if !ok {
@@ -242,7 +244,9 @@ func renderInsertValue(f *schema.Field, value interface{}) (interface{}, error) 
 	case object.SQLValue:
 		val := value.(object.SQLValue)
 		return val.String(), nil
+	case gjson.Result:
+		panic("gjson.Result is not currently supported for renderInsertValue")
 	default:
-		return "", fmt.Errorf("renderInsertValue: unknown type %v for the value of %s", typ, f.Name)
+		return "", fmt.Errorf("renderInsertValue: unknown type %v for the value of %s", reflect.TypeOf(value), f.Name)
 	}
 }
