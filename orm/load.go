@@ -91,7 +91,7 @@ func (o ORM) RetrieveObject(ctx context.Context, table string, queryVals map[str
 		return nil, err
 	}
 	if objAry == nil {
-		return nil, errors.New("RetrieveObject: received empty object array from RetrieveObjects")
+		return nil, nil
 	}
 	return objAry[0], nil
 }
