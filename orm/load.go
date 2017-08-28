@@ -103,10 +103,10 @@ func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.O
 	pkKey := schemaTable.Primary
 	pkVal := obj.Get(pkKey)
 
-	// If this table is configured with child tables, then we iterate over them and
-	// call RetrieveObjects using the singular primary key value.
-	// FIXME: We need to support multikey in this instance if we are going to consider
-	// this complete.
+	// If this table is configured with child tables, then we iterate over
+	// them and call RetrieveObjects using the singular primary key value.
+	// FIXME: We need to support multikey in this instance if we are going
+	// to consider this complete.
 	if len(schemaTable.Children) > 0 {
 		for childTableName := range schemaTable.Children {
 			m := map[string]interface{}{}
@@ -123,12 +123,6 @@ func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.O
 
 // RetrieveObjectsFromCustomSQL will fleshen an object structure, given a SQL string.
 func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sqlStr string, columnNames []string, bindArgs []interface{}) (object.Array, error) {
-	if o.s == nil {
-		return nil, errors.New("RetrieveObjectsFromCustomSQL: ORM schema set to nil?")
-	}
-	if o.s.Tables == nil {
-		return nil, errors.New("RetrieveObjectsFromCustomSQL: ORM schema.Tables is set to nil?")
-	}
 	objTable := o.s.GetTable(table)
 	if objTable == nil {
 		return nil, errors.New("RetrieveObjectsFromCustomSQL: unknown object table " + table)
@@ -139,11 +133,6 @@ func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sql
 		fmt.Println("RetrieveObjectsFromCustomSQL/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
 	}
 
-	/*
-		if err != nil {
-			return nil, err
-		}
-	*/
 	stmt, err := o.RawConn.PrepareContext(ctx, sqlStr)
 	if err != nil {
 		return nil, err
@@ -206,18 +195,11 @@ func (o ORM) makeQueryObj(objTable *schema.Table, queryVals map[string]interface
 
 // RetrieveObjects function will fleshen an object structure, given some primary keys
 func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[string]interface{}) (object.Array, error) {
-	if o.s == nil {
-		return nil, errors.New("RetrieveObjects: ORM schema set to nil?")
-	}
-	if o.s.Tables == nil {
-		return nil, errors.New("RetrieveObjects: ORM schema.Tables is set to nil?")
-	}
 	objTable := o.s.GetTable(table)
 	if objTable == nil {
 		return nil, errors.New("RetrieveObjects: unknown object table " + table)
 	}
 	var objectArray object.Array
-
 	queryObj := o.makeQueryObj(objTable, queryVals)
 
 	sqlStr, columnNames, bindArgs, err := o.sqlGen.BindingRetrieve(o.s, queryObj)
@@ -265,6 +247,9 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 		obj.SetSaved(true)
 		obj.ResetChangedFields()
 
+		if os.Getenv("DEBUG") != "" {
+			fmt.Println("RetrieveObjects ... obj ->", obj)
+		}
 		objectArray = append(objectArray, obj)
 	}
 
