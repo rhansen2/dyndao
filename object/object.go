@@ -1,8 +1,8 @@
-// Package object is an abstract data record which tracks state changes.
-// It's meant to make it easier to map key-value records into ORM / RDBMS
-// structures.
-// The state change tracking can be useful when the values of primary keys
-// need to change. (Changing a foreign key on a table with a composite key, for example)
+// Package object is an abstract data record which tracks state changes.  It's
+// meant to make it easier to map key-value records into ORM / RDBMS
+// structures.  The state change tracking can be useful when the values of
+// primary keys need to change. (Changing a foreign key on a table with a
+// composite key, for example)
 package object
 
 import (
@@ -15,12 +15,16 @@ var (
 	ErrValueWasNil = errors.New("object: value was nil")
 )
 
-// Array is our object array container to facilitate a couple of instances
+// Array is our 'object array container' to assist with a couple of instances
 // where slices are needed.
 type Array []*Object
 
-// Object struct encapsulates our key-value pairs and a single-item per-key history
-// of the previous value stored for a given key.
+// Object struct encapsulates our key-value pairs (KV) and a single-item
+// per-key history of the previous value stored for a given key
+// (ChangedFields).  We also store any instances of 'child records' which may
+// be relevant (for instance, when saving with nested transactions).  'saved'
+// is used to track the internal state of whether an object was recently
+// retrieved or remapped from internal database state.
 type Object struct {
 	Type          string
 	KV            map[string]interface{} `json:"KV"`
@@ -53,6 +57,7 @@ func NewEmptyArray() Array {
 	return objAry
 }
 
+// just a bit of shorthand for the methods below
 func makeEmptyMap() map[string]interface{} {
 	return make(map[string]interface{})
 }
@@ -61,7 +66,8 @@ func makeEmptyChildrenMap() map[string]Array {
 	return make(map[string]Array)
 }
 
-// Get is our accessor
+// Get is the most basic accessor, for cases
+// that may not be handled by other methods
 func (o Object) Get(k string) interface{} {
 	return o.KV[k]
 }
@@ -78,14 +84,15 @@ func (o Object) GetInt(k string) (int64, bool) {
 	return v, ok
 }
 
-// GetFloat is a safe, typed int64 accessor
+// GetFloat is a safe, typed float64 accessor
 func (o Object) GetFloat(k string) (float64, bool) {
 	v, ok := o.KV[k].(float64)
 	return v, ok
 }
 
 // GetIntAlways is a safe, typed int64 accessor. It will force conversion away
-// from float64 and uint64 values.
+// from float64, uint64, and string values. Nils and unrecognized values are
+// marked as an error (nil values will return 0 and ErrValueWasNil)
 func (o Object) GetIntAlways(k string) (int64, error) {
 	switch v := o.KV[k].(type) {
 	case float64:
@@ -107,8 +114,9 @@ func (o Object) GetIntAlways(k string) (int64, error) {
 	}
 }
 
-// GetUintAlways is a safe, typed uint64 accessor. It will force conversion away
-// from float64 and int64 values.
+// GetUintAlways is a safe, typed uint64 accessor. It will force conversion
+// away from float64, int64, and string values. Nils and unrecognized values
+// are marked as an error (nil values will return 0 and ErrValueWasNil)
 func (o Object) GetUintAlways(k string) (uint64, error) {
 	switch v := o.KV[k].(type) {
 	case float64:
@@ -130,7 +138,9 @@ func (o Object) GetUintAlways(k string) (uint64, error) {
 	}
 }
 
-// Set is our setter
+// Set is our typical setter. It attempts to track changes in records and the
+// current state of whether an object appears to have been modified from what
+// the database had (or should have).
 func (o *Object) Set(k string, v interface{}) {
 	oldVal := o.Get(k)
 
@@ -144,15 +154,18 @@ func (o *Object) Set(k string, v interface{}) {
 	if o.GetSaved() {
 		o.SetSaved(false)
 	}
-	o.rawSet(k, v)
+	o.SetCore(k, v)
 }
 
-// FieldChanged records the previous value for something that is about to be set
-func (o Object) FieldChanged(k string, oldVal interface{}) {
+// FieldChanged records the previous value for something that is about to be
+// set
+func (o *Object) FieldChanged(k string, oldVal interface{}) {
 	o.ChangedFields[k] = oldVal
 }
 
-func (o Object) rawSet(k string, v interface{}) {
+// SetCore just mutates the internal object KV without any of the usual
+// tracking that occurs when Set is called.
+func (o *Object) SetCore(k string, v interface{}) {
 	o.KV[k] = v
 }
 
