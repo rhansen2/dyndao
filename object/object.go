@@ -95,6 +95,8 @@ func (o Object) GetIntAlways(k string) (int64, error) {
 	case string:
 		fl := o.KV[k].(string)
 		return strconv.ParseInt(fl, 10, 64)
+	case nil:
+		return 0, nil
 	default:
 		return 0, fmt.Errorf("GetIntAlways: unrecognized type %v", v)
 	}
