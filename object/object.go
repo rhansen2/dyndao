@@ -6,8 +6,13 @@
 package object
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
+)
+
+var (
+	ErrValueWasNil = errors.New("object: value was nil")
 )
 
 // Array is our object array container to facilitate a couple of instances
@@ -96,7 +101,7 @@ func (o Object) GetIntAlways(k string) (int64, error) {
 		fl := o.KV[k].(string)
 		return strconv.ParseInt(fl, 10, 64)
 	case nil:
-		return 0, nil
+		return 0, ErrValueWasNil
 	default:
 		return 0, fmt.Errorf("GetIntAlways: unrecognized type %v", v)
 	}
@@ -118,6 +123,8 @@ func (o Object) GetUintAlways(k string) (uint64, error) {
 	case string:
 		fl := o.KV[k].(string)
 		return strconv.ParseUint(fl, 10, 64)
+	case nil:
+		return uint64(0), ErrValueWasNil
 	default:
 		return 0, fmt.Errorf("GetIntAlways: unrecognized type %v", v)
 	}
