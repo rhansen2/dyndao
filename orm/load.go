@@ -121,15 +121,13 @@ func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.O
 	return obj, nil
 }
 
-// RetrieveObjectsFromCustomSQL will fleshen an object structure, given a SQL string.
+// RetrieveObjectsFromCustomSQL will fleshen an object structure, given a custom SQL string. It must still be told
+// the column names and the binding arguments in addition to the SQL string, so that it can dynamically map
+// the column types accordingly to the destination object. (Mainly, so we know the array length..)
 func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sqlStr string, columnNames []string, bindArgs []interface{}) (object.Array, error) {
-	objTable := o.s.GetTable(table)
-	if objTable == nil {
-		return nil, errors.New("RetrieveObjectsFromCustomSQL: unknown object table " + table)
-	}
 	var objectArray object.Array
 
-	if os.Getenv("DEBUG") != "" {
+	if os.Getenv("DEBUG_RETRIEVECUSTOM") != "" {
 		fmt.Println("RetrieveObjectsFromCustomSQL/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
 	}
 
@@ -203,7 +201,7 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 	queryObj := o.makeQueryObj(objTable, queryVals)
 
 	sqlStr, columnNames, bindArgs, err := o.sqlGen.BindingRetrieve(o.s, queryObj)
-	if os.Getenv("DEBUG") != "" {
+	if os.Getenv("DEBUG_RETRIEVEOBJS") != "" {
 		fmt.Println("RetrieveObjects/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
 	}
 
@@ -247,9 +245,11 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 		obj.SetSaved(true)
 		obj.ResetChangedFields()
 
-		if os.Getenv("DEBUG") != "" {
-			fmt.Println("RetrieveObjects ... obj ->", obj)
-		}
+		/*
+			if os.Getenv("DEBUG") != "" {
+				fmt.Println("RetrieveObjects ... obj ->", obj)
+			}
+		*/
 		objectArray = append(objectArray, obj)
 	}
 

@@ -2,7 +2,6 @@ package oraclegen
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -40,9 +39,6 @@ func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (stri
 	tableName := schema.GetTableName(schTable.Name, table)
 
 	sqlStr := fmt.Sprintf("SELECT %s FROM %s %s %s", columns, tableName, whereStr, whereClause)
-	if os.Getenv("DEBUG") != "" {
-		fmt.Println("BindingRetrieve:", sqlStr)
-	}
 	return sqlStr, schTable.EssentialFields, bindWhere, nil
 }
 

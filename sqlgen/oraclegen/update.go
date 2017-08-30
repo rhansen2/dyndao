@@ -1,6 +1,7 @@
 package oraclegen
 
 import (
+	"os"
 	"errors"
 	"fmt"
 	"strings"
@@ -78,6 +79,9 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 
 	tableName := schema.GetTableName(schTbl.Name, obj.Type)
 	sqlStr := fmt.Sprintf("UPDATE %s SET %s WHERE %s", tableName, strings.Join(newValuesAry, ","), whereClause)
+	if os.Getenv("DEBUG_UPDATE") != "" {
+		fmt.Println("BindingUpdate/sqlStr->",sqlStr)
+	}
 	return sqlStr, bindArgs, bindWhere, nil
 }
 

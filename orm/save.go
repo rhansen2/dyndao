@@ -145,19 +145,19 @@ func stmtFromDbOrTx(ctx context.Context, o ORM, tx *sql.Tx, sqlStr string) (*sql
 func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	objTable := o.s.GetTable(obj.Type)
 	if objTable == nil {
-		if os.Getenv("DEBUG") != "" {
+		if os.Getenv("DEBUG_INSERT") != "" {
 			log15.Info("orm/save error", "error", "thing was unknown")
 		}
 		return 0, errors.New("Insert: unknown object table " + obj.Type)
 	}
 	sqlStr, bindArgs, err := o.sqlGen.BindingInsert(o.s, obj.Type, obj.KV)
 	if err != nil {
-		if os.Getenv("DEBUG") != "" {
+		if os.Getenv("DEBUG_INSERT") != "" {
 			log15.Info("orm/save error", "error", err)
 		}
 		return 0, err
 	}
-	if os.Getenv("DEBUG") != "" {
+	if os.Getenv("DEBUG_INSERT") != "" {
 		fmt.Println("Insert/sqlStr=", sqlStr, "bindArgs=", bindArgs)
 	}
 
@@ -174,7 +174,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	}*/
 	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)
 	if err != nil {
-		if os.Getenv("DEBUG") != "" {
+		if os.Getenv("DEBUG_INSERT") != "" {
 			log15.Info("orm/save error", "error", err)
 		}
 
@@ -185,7 +185,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	res, err := stmt.ExecContext(ctx, bindArgs...)
 	if err != nil {
-		if os.Getenv("DEBUG") != "" {
+		if os.Getenv("DEBUG_INSERT") != "" {
 			fmt.Println("orm/save error", err)
 		}
 
@@ -199,13 +199,12 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	if !o.sqlGen.CallerSuppliesPrimaryKey() {
 		newID, err := res.LastInsertId()
 		if err != nil {
-
-			if os.Getenv("DEBUG") != "" {
+			if os.Getenv("DEBUG_INSERT") != "" {
 				fmt.Println("orm/save error", err)
 			}
 			return 0, err
 		}
-		if os.Getenv("DEBUG") != "" {
+		if os.Getenv("DEBUG_INSERT") != "" {
 			fmt.Println("DEBUG Insert received newID=", newID)
 		}
 
@@ -214,8 +213,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	rowsAff, err := res.RowsAffected()
 	if err != nil {
-
-		if os.Getenv("DEBUG") != "" {
+		if os.Getenv("DEBUG_INSERT") != "" {
 			fmt.Println("orm/save error", err)
 		}
 		return 0, err
@@ -227,16 +225,14 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 // Update function will UPDATE a record ...
 func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
-	objTable := o.s.GetTable(obj.Type)
-
-	if objTable == nil {
-		return 0, errors.New("Update: unknown object table " + obj.Type)
-	}
 	sqlStr, bindArgs, bindWhere, err := o.sqlGen.BindingUpdate(o.s, obj)
 	if err != nil {
+		if os.Getenv("DEBUG_UPDATE") != "" {
+			fmt.Println("Update/sqlStr, err=", err)
+		}
 		return 0, err
 	}
-	if os.Getenv("DEBUG") != "" {
+	if os.Getenv("DEBUG_UPDATE") != "" {
 		fmt.Println("Update/sqlStr=", sqlStr, "bindArgs=", bindArgs, "bindWhere=", bindWhere)
 	}
 
