@@ -10,26 +10,25 @@ import (
 	"github.com/rbastic/dyndao/schema"
 )
 
-// BindingRetrieve is a simple binding retrieve.
+// BindingRetrieve accepts a schema and an object, constructing the appropriate SELECT
+// statement to retrieve the object. It will return sqlStr, the EssentialFields used, and the
+// binding where clause.
+// DEBUG mode may be turned on by setting an environment parameter, "DEBUG".
+// TODO: We may consider using a different name in the future.
 func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (string, []string, []interface{}, error) {
 	table := obj.Type // TODO: we may want to map this
-	schTable, ok := sch.Tables[table]
-	if !ok {
+	schTable := sch.GetTable(table)
+	if schTable == nil {
 		return "", nil, nil, errors.New("BindingRetrieve: Table map unavailable for table " + table)
 	}
 
-	fieldsMap := schTable.Fields
-	if fieldsMap == nil {
-		return "", nil, nil, errors.New("BindingRetrieve: Field map unavailable for table " + table)
-	}
-
-	whereClause, bindWhere, err := renderWhereClause(schTable, fieldsMap, obj)
+	whereClause, bindWhere, err := renderWhereClause(schTable, obj)
 	if err != nil {
 		return "", nil, nil, errors.Wrap(err, "BindingRetrieve")
 	}
 
 	if schTable.EssentialFields == nil || len(schTable.EssentialFields) == 0 {
-		return "", nil, nil, errors.New("BindingRetrieve: EssentialFields is empty")
+		return "", nil, nil, errors.New("BindingRetrieve: EssentialFields is empty for table " + table)
 	}
 	columns := strings.Join(schTable.EssentialFields, ",")
 
@@ -38,9 +37,8 @@ func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (stri
 		whereStr = "WHERE"
 	}
 	tableName := schema.GetTableName(schTable.Name, table)
-	sqlStr := fmt.Sprintf("SELECT %s FROM %s %s %s", columns, tableName, whereStr, whereClause)
-	//fmt.Println(sqlStr)
 
+	sqlStr := fmt.Sprintf("SELECT %s FROM %s %s %s", columns, tableName, whereStr, whereClause)
 	return sqlStr, schTable.EssentialFields, bindWhere, nil
 }
 
@@ -104,7 +102,7 @@ func renderUpdateWhereClause(schTable *schema.Table, fieldsMap map[string]*schem
 	return whereClause, bindArgs, nil
 }
 
-func renderWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {
+func renderWhereClause(schTable *schema.Table, obj *object.Object) (string, []interface{}, error) {
 	var whereClause string
 
 	if len(obj.KV) == 0 {
@@ -116,12 +114,11 @@ func renderWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Fiel
 
 	i := 0
 	for k, v := range obj.KV {
-		f := fieldsMap[k]
+		f := schTable.GetField(k)
 		if f == nil {
 			return "", nil, errors.New("renderWhereClause: unknown field " + k + " in table " + obj.Type)
 		}
 		sqlName := f.Name
-		// TODO: Re-implement using IsForeignKey....
 		whereKeys[i] = fmt.Sprintf("%s = %s", sqlName, renderBindingUpdateValue(f))
 		bindArgs[i] = v
 

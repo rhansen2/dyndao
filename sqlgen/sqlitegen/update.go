@@ -11,8 +11,8 @@ import (
 
 // BindingUpdate generates the SQL for a given UPDATE statement for SQLite with binding parameter values
 func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string, []interface{}, []interface{}, error) {
-	schTable, ok := sch.Tables[obj.Type]
-	if !ok {
+	schTbl := sch.GetTable(obj.Type)
+	if schTbl == nil {
 		return "", nil, nil, errors.New("BindingUpdate: Table map unavailable for table " + obj.Type)
 	}
 
@@ -36,9 +36,8 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 		i++
 	}
 
-	// TODO: use schema name from object lookup type, fix in other places...
-	sqlStr := fmt.Sprintf("UPDATE %s SET %s WHERE %s", obj.Type, strings.Join(newValuesAry, ","), whereClause)
-	//fmt.Println(sqlStr)
+	tableName := schema.GetTableName(schTbl.Name, obj.Type)
+	sqlStr := fmt.Sprintf("UPDATE %s SET %s WHERE %s", tableName, strings.Join(newValuesAry, ","), whereClause)
 	return sqlStr, bindArgs, bindWhere, nil
 }
 
