@@ -131,7 +131,7 @@ func (o ORM) SaveObjectButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *ob
 	// Check the primary key to see if we should insert or update
 	_, ok := obj.KV[f.Name]
 	if !ok {
-		return 0, fmt.Errorf("SaveObjectButErrorIfInsert: Expected to perform Update on obj:", obj)
+		return 0, fmt.Errorf("SaveObjectButErrorIfInsert: Expected to perform Update on obj: %s", obj)
 	}
 	return o.Update(ctx, tx, obj)
 }
