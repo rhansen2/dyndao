@@ -31,7 +31,4 @@ TODO
 
 --
 
-* use ChildTable to determine whether we'll have an Intermediate Linking table or we will just use a more 
-denormalized approach? Both are typical and should be able to be supported.
-
 * review trello board (private)
