@@ -2,7 +2,7 @@ package schema
 
 import (
 	"encoding/json"
-	//	"fmt"
+	//"fmt"
 )
 
 // DefaultSchema returns an empty schema ready to be populated
@@ -53,24 +53,25 @@ func FromJSONBytes(jsonBytes []byte) (*Schema, error) {
 
 // GetTable returns the correct table in a potentially aliased environment.
 func (s *Schema) GetTable(n string) *Table {
+	//fmt.Println("RYAN n->",n)
 	if s.TableAliases != nil {
 		realName, ok := s.TableAliases[n]
 		if !ok {
 			// Perhaps it is not an alias
-			//fmt.Println("Returning ", n)
+			//fmt.Println("RYAN Returning ", n)
 			return s.Tables[n]
 		}
-		//fmt.Println("Returning ", realName)
+		//fmt.Println("RYAN Returning ", realName)
 		return s.Tables[realName]
 	}
-	//fmt.Println("Returning ", n)
+	//fmt.Println("RYAN Returning ", n)
 	return s.Tables[n]
 }
 
 // GetFieldName returns the correct field name in a potentially aliased environment.
 // This is useful in situations where you aren't sure what the 'real' key name
 // may potentially be.
-func (t * Table) GetFieldName(n string) string {
+func (t *Table) GetFieldName(n string) string {
 	if t.FieldAliases != nil {
 		realName, ok := t.FieldAliases[n]
 		if !ok {

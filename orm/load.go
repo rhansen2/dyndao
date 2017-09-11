@@ -48,6 +48,7 @@ func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (o
 // RetrieveWithChildren function will fleshen an *entire* object structure, given some primary keys
 func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues map[string]interface{}) (*object.Object, error) {
 	objTable := o.s.GetTable(table)
+	fmt.Println("RYAN table->", table, ",objTable->", objTable)
 	if objTable == nil {
 		return nil, errors.New("RetrieveWithChildren: unknown object table " + table)
 	}
@@ -60,7 +61,11 @@ func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues ma
 	for name := range objTable.Children {
 		childPkValues := make(map[string]interface{})
 
-		childSchemaTable := o.s.Tables[name]
+		childSchemaTable := o.s.GetTable(name)
+		if childSchemaTable == nil {
+			return nil, fmt.Errorf("RetrieveWithChildren: unknown object table for child type %s", name)
+		}
+
 		pVal, ok := pkValues[childSchemaTable.Primary]
 		if ok {
 			childPkValues[childSchemaTable.Primary] = pVal
@@ -80,12 +85,12 @@ func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues ma
 		}
 		obj.Children[name][0] = childObj
 	}
+
 	return obj, nil
 }
 
 // RetrieveObject function will fleshen an object structure, given some primary keys
 func (o ORM) RetrieveObject(ctx context.Context, table string, queryVals map[string]interface{}) (*object.Object, error) {
-	// TODO: Implement LIMIT... That's all a singular retrieve should be underneath the hood that's different.
 	objAry, err := o.RetrieveObjects(ctx, table, queryVals)
 	if err != nil {
 		return nil, err
@@ -178,6 +183,7 @@ func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sql
 }
 
 func (o ORM) makeQueryObj(objTable *schema.Table, queryVals map[string]interface{}) *object.Object {
+	fmt.Println("makeQueryObj: objTable.Name->", objTable.Name)
 	queryObj := object.New(objTable.Name)
 
 	if objTable.FieldAliases == nil {
@@ -197,6 +203,10 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 	if objTable == nil {
 		return nil, errors.New("RetrieveObjects: unknown object table " + table)
 	}
+	if objTable.Name == "" {
+		return nil, errors.New("RetrieveObjects: schema table object has unset 'Name' property")
+	}
+
 	var objectArray object.Array
 	queryObj := o.makeQueryObj(objTable, queryVals)
 

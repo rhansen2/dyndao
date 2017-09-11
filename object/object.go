@@ -12,6 +12,9 @@ import (
 )
 
 var (
+	// ErrValueWasNil is returned by the Get* family of functions in
+	// situations where a value must be returned, but we would like to
+	// signal that it was originally nil.
 	ErrValueWasNil = errors.New("object: value was nil")
 )
 

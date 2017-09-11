@@ -48,6 +48,7 @@ func fkField(name string) *Field {
 // Very simple person table initially
 func peopleTable() *Table {
 	tbl := DefaultTable()
+	tbl.Name = "people"
 	tbl.MultiKey = false
 	tbl.Primary = "PersonID"
 	tbl.Fields["PersonID"] = primaryField("PersonID") //fieldID("PersonID")
@@ -60,6 +61,7 @@ func peopleTable() *Table {
 // Very simple address table initially
 func addressTable() *Table {
 	tbl := DefaultTable()
+	tbl.Name = "addresses"
 	tbl.Primary = "AddressID"
 	tbl.MultiKey = true
 	tbl.ForeignKeys = []string{"PersonID"}
@@ -93,14 +95,9 @@ func MockNestedSchema() *Schema {
 	personTable := sch.Tables["people"]
 
 	childTable := DefaultChildTable()
-	/*	childTable.ParentTable = "people"
-		childTable.LocalField = ""           // TODO: Not needed here?
-		childTable.ForeignField = "PersonID" // Field to store our ParentTable record's primary key into
-	*/
 	personTable.Children["addresses"] = childTable
 
 	addrTable := addressTable()
-
 	sch.Tables["addresses"] = addrTable
 	return sch
 }

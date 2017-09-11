@@ -92,6 +92,11 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 		return 0, err
 	}
 	rowsAff, err := o.SaveAllInsideTx(ctx, tx, obj)
+	if err != nil {
+		// TODO: Error is not checked.
+		tx.Rollback()
+		return 0, err
+	}
 
 	err = tx.Commit()
 	if err != nil {

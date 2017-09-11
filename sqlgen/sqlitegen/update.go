@@ -16,12 +16,12 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 		return "", nil, nil, errors.New("BindingUpdate: Table map unavailable for table " + obj.Type)
 	}
 
-	fieldsMap := schTable.Fields
+	fieldsMap := schTbl.Fields
 	if fieldsMap == nil {
 		return "", nil, nil, errors.New("BindingUpdate: Field map unavailable for table " + obj.Type)
 	}
 
-	whereClause, bindWhere, err := renderUpdateWhereClause(schTable, fieldsMap, obj)
+	whereClause, bindWhere, err := renderUpdateWhereClause(schTbl, fieldsMap, obj)
 	if err != nil {
 		return "", nil, nil, err
 	}

@@ -12,12 +12,11 @@ import (
 
 // CreateTable determines the SQL to create a given table within a schema
 func (g Generator) CreateTable(s *schema.Schema, table string) (string, error) {
-	tbl, ok := s.Tables[table]
-	if !ok {
+	tbl := s.GetTable(table)
+	if tbl == nil {
 		return "", errors.New("unknown schema for table with name " + table)
 	}
 	tableName := schema.GetTableName(tbl.Name, table)
-
 	fieldsMap := tbl.Fields
 
 	sqlFields := make([]string, len(fieldsMap))
@@ -49,9 +48,11 @@ func renderCreateField(f *schema.Field) string {
 		notNull = "NOT NULL"
 	}
 	if f.IsNumber {
-		dataType = f.DBType // not relevant here?
-	} else {
 		dataType = f.DBType
+	} else {
+		if f.Length > 0 {
+			dataType = fmt.Sprintf("%s(%d)", f.DBType, f.Length)
+		}
 	}
 	if f.IsUnique {
 		unique = "UNIQUE"

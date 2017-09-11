@@ -15,19 +15,19 @@ TODO
 	- sqlite support for cascading key constraints on table schema
 	- oracle text->CLOB mapper... what about adding constraints? aka IS JSON constraints.
 
-	* use ChangedFields in update code so that we only update the values that changed....
-	* Sort out the float64 (JSON mapper) vs int64 (database code) debacle happening internally.
+	- use ChangedFields in update code so that we only update the values that changed....
 
-	--
-	* TODO: oracle, add tests for varchar2 database type?
-	* TODO: oracle, support JSON BLOB constraint on table
-	* TODO: what do other databases (cough, sqlite) do in this area?
+	- TODO: oracle, add tests for varchar2 database type?
+	- TODO: oracle, support JSON BLOB constraint on table
+	- TODO: what do other databases (cough, sqlite) do in this area?
 
-	-> Review TODOs in code, in particular the transactions. Review the code overall.
+	- Review TODOs in code, in particular the transactions. Review the code overall.
 
-	: consider sync.Map for object.Object
+	- consider sync.Map for object.Object
 
-	. use schema.Field.IsNumber more ?
+	- (With RetrieveObjects)
+		Implement LIMIT... That's all a singular retrieve should be underneath the hood that's different.
+	- use schema.Field.IsNumber more ?
 
 --
 
