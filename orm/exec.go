@@ -13,9 +13,9 @@ func prepareAndExecSQL(db *sql.DB, sqlStr string) (sql.Result, error) {
 		return nil, errors.Wrap(err, "prepareAndExecSQL/PrepareContext ("+sqlStr+")")
 	}
 	defer func() {
-		err := stmt.Close()
-		if err != nil {
-			fmt.Println(err) // TODO: logging implementation
+		stmtErr := stmt.Close()
+		if stmtErr != nil {
+			fmt.Println(stmtErr) // TODO: logging implementation
 		}
 	}()
 	r, err := stmt.ExecContext(context.TODO())

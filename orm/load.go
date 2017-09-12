@@ -157,9 +157,9 @@ func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sql
 		return nil, err
 	}
 	defer func() {
-		err := stmt.Close()
-		if err != nil {
-			fmt.Println(err) // TODO: logger implementation
+		stmtErr := stmt.Close()
+		if stmtErr != nil {
+			fmt.Println(stmtErr) // TODO: logger implementation
 		}
 	}()
 
@@ -168,9 +168,9 @@ func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sql
 		return nil, err
 	}
 	defer func() {
-		err := res.Close() // TODO: logger implementation
-		if err != nil {
-			fmt.Println(err)
+		resErr := res.Close() // TODO: logger implementation
+		if resErr != nil {
+			fmt.Println(resErr)
 		}
 	}()
 

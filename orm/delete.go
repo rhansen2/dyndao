@@ -30,9 +30,9 @@ func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, err
 	}
 	defer func() {
-		err := stmt.Close()
-		if err != nil {
-			fmt.Println(err) // TODO: logger implementation
+		stmtErr := stmt.Close()
+		if stmtErr != nil {
+			fmt.Println(stmtErr) // TODO: logger implementation
 		}
 	}()
 
