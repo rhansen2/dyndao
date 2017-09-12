@@ -36,7 +36,12 @@ func TestSaveBasicObject(t *testing.T) {
 
 	// Retrieve database connection
 	db := getDB()
-	defer db.Close() // TODO: Check error.
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	// Initialize ORM
 	sqliteORM := orm.New(New("test", sch, false), sch, db)
@@ -133,7 +138,12 @@ func sampleAddressObject() *object.Object {
 func TestSaveNestedObject(t *testing.T) {
 	sch := schema.MockNestedSchema()
 	db := getDB()
-	defer db.Close()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	sqliteORM := orm.New(New("test", sch, false), sch, db)
 	rootTable := PeopleObjectType
@@ -175,7 +185,6 @@ func TestSaveNestedObject(t *testing.T) {
 	{
 		nobj := object.New(rootTable)
 		nobj.KV["PersonID"] = obj.Get("PersonID")
-		fmt.Println("RYAN rootTable->", rootTable)
 		latestRyan, err := sqliteORM.RetrieveWithChildren(context.TODO(), rootTable, obj.KV)
 		if err != nil {
 			t.Fatal("retrieve failed: " + err.Error())

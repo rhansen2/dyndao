@@ -29,10 +29,13 @@ func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	if err != nil {
 		return 0, err
 	}
-	// TODO: Error is not checked
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			fmt.Println(err) // TODO: logger implementation
+		}
+	}()
 
-	//allBind := append(bindArgs, bindWhere...)
 	res, err := stmt.ExecContext(ctx, bindWhere...)
 	if err != nil {
 		return 0, errors.Wrap(err, "Delete")
@@ -43,7 +46,7 @@ func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, err
 	}
 
-	obj.SetSaved(true)       // Note that the object has been recently saved
+	obj.SetSaved(true)       // Flag that the object has been recently saved
 	obj.ResetChangedFields() // Reset the 'changed fields', if any
 
 	return rowsAff, nil

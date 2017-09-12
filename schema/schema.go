@@ -53,18 +53,14 @@ func FromJSONBytes(jsonBytes []byte) (*Schema, error) {
 
 // GetTable returns the correct table in a potentially aliased environment.
 func (s *Schema) GetTable(n string) *Table {
-	//fmt.Println("RYAN n->",n)
 	if s.TableAliases != nil {
 		realName, ok := s.TableAliases[n]
 		if !ok {
 			// Perhaps it is not an alias
-			//fmt.Println("RYAN Returning ", n)
 			return s.Tables[n]
 		}
-		//fmt.Println("RYAN Returning ", realName)
 		return s.Tables[realName]
 	}
-	//fmt.Println("RYAN Returning ", n)
 	return s.Tables[n]
 }
 
@@ -76,13 +72,10 @@ func (t *Table) GetFieldName(n string) string {
 		realName, ok := t.FieldAliases[n]
 		if !ok {
 			// Perhaps it is not an alias
-			//fmt.Println("Returning ", n)
 			return n
 		}
-		//fmt.Println("Returning ", realName)
 		return realName
 	}
-	//fmt.Println("Returning ", n)
 	return n
 }
 
@@ -92,13 +85,10 @@ func (t *Table) GetField(n string) *Field {
 		realName, ok := t.FieldAliases[n]
 		if !ok {
 			// Perhaps it is not an alias
-			//fmt.Println("Returning ", n)
 			return t.Fields[n]
 		}
-		//fmt.Println("Returning ", realName)
 		return t.Fields[realName]
 	}
-	//fmt.Println("Returning ", n)
 	return t.Fields[n]
 }
 

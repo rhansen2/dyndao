@@ -48,8 +48,12 @@ func TestCreateTables(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// TODO: Error return value not checked?
-	defer db.Close()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
 
 	sqlGen := New("test", sch, false)
 	o := orm.New(sqlGen, sch, db)
@@ -88,7 +92,12 @@ func TestSuiteNested(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
 	// Setup our ORM
 	o := orm.New(New("test", sch, false), sch, db)
 	// Construct our default mock object
@@ -372,7 +381,12 @@ func TestDropTables(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	sqlGen := New("test", sch, false)
 	o := orm.New(sqlGen, sch, db)
@@ -388,7 +402,12 @@ func prepareAndExecSQL(db *sql.DB, sqlStr string) (sql.Result, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "prepareAndExecSQL/PrepareContext")
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
 	r, err := stmt.ExecContext(context.TODO())
 	if err != nil {
 		return nil, errors.Wrap(err, "prepareAndExecSQL/ExecContext")

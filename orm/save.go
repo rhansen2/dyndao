@@ -83,6 +83,11 @@ func (o ORM) SaveAllInsideTx(ctx context.Context, tx *sql.Tx, obj *object.Object
 	return rowsAff, nil
 }
 
+func (o ORM) rollBackTrapErrors(ctx context.Context, tx *sql.Tx) error {
+	err := tx.Rollback()
+	return err
+}
+
 // SaveAll will attempt to save an entire nested object structure inside of a single transaction.
 // It begins the transaction, attempts to recursively save the object and all of it's children,
 // and any of the children's children, and then will finally rollback/commit as necessary.
@@ -93,15 +98,21 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 	}
 	rowsAff, err := o.SaveAllInsideTx(ctx, tx, obj)
 	if err != nil {
-		// TODO: Error is not checked.
-		tx.Rollback()
+		rollErr := o.rollBackTrapErrors(ctx, tx)
+		if rollErr != nil {
+			// TODO: Not sure if this wrap is right.
+			return 0, errors.Wrap(err, rollErr.Error())
+		}
 		return 0, err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		// TODO: Error is not checked.
-		tx.Rollback()
+		rollErr := o.rollBackTrapErrors(ctx, tx)
+		if rollErr != nil {
+			// TODO: Not sure if this wrap is right.
+			return 0, errors.Wrap(err, rollErr.Error())
+		}
 		return 0, err
 	}
 	return rowsAff, nil
@@ -175,7 +186,8 @@ func stmtFromDbOrTx(ctx context.Context, o ORM, tx *sql.Tx, sqlStr string) (*sql
 	return stmt, err
 }
 
-// Insert function will INSERT a record depending on various values
+// Insert function will INSERT a record, given an optional transaction and an object.
+// It returns the number of rows affected (int64) and any error that may have occurred.
 func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	objTable := o.s.GetTable(obj.Type)
 	if objTable == nil {
@@ -202,10 +214,8 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 			var lastID int64
 			bindArgs = append(bindArgs, &lastID)
 		}
-	} /*else {
-				var lastID string
-				bindArgs = append(bindArgs, &lastID)
-	}*/
+	}
+
 	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)
 	if err != nil {
 		if os.Getenv("DEBUG_INSERT") != "" {
@@ -214,8 +224,12 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 		return 0, err
 	}
-	// TODO: Error return value not checked.
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			fmt.Println(err) // TODO: logging implementation
+		}
+	}()
 
 	res, err := stmt.ExecContext(ctx, bindArgs...)
 	if err != nil {
@@ -274,7 +288,12 @@ func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	if err != nil {
 		return 0, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			fmt.Println(err) // TODO logging implementation
+		}
+	}()
 
 	allBind := append(bindArgs, bindWhere...)
 	res, err := stmt.ExecContext(ctx, allBind...)

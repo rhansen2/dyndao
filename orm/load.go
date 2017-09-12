@@ -47,39 +47,49 @@ func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (o
 
 // RetrieveWithChildren function will fleshen an *entire* object structure, given some primary keys
 func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues map[string]interface{}) (*object.Object, error) {
+	// Retrieve schema.Table object
 	objTable := o.s.GetTable(table)
-	fmt.Println("RYAN table->", table, ",objTable->", objTable)
 	if objTable == nil {
 		return nil, errors.New("RetrieveWithChildren: unknown object table " + table)
 	}
 
+	// Retrieve single object from database
 	obj, err := o.RetrieveObject(ctx, table, pkValues)
 	if err != nil {
 		return nil, errors.Wrap(err, "RetrieveWithChildren/RetrieveObject")
 	}
 
+	// Iterate the configured 'children' for this particular object type
 	for name := range objTable.Children {
 		childPkValues := make(map[string]interface{})
 
+		// Retrieve the active 'schema table' for this child
 		childSchemaTable := o.s.GetTable(name)
 		if childSchemaTable == nil {
 			return nil, fmt.Errorf("RetrieveWithChildren: unknown object table for child type %s", name)
 		}
 
+		// (For each child...) Propagate the 'primary key value' from the parent object if needed.
 		pVal, ok := pkValues[childSchemaTable.Primary]
 		if ok {
 			childPkValues[childSchemaTable.Primary] = pVal
 		}
 
+		// Propagate foreign key values for retrieval
 		if childSchemaTable.MultiKey && childSchemaTable.ForeignKeys != nil {
 			for _, fk := range childSchemaTable.ForeignKeys {
+				// TODO: Check that value exists before we
+				// attempt to set?
 				childPkValues[fk] = pkValues[fk]
 			}
 		}
+
+		// Retrieve a single child (TODO: Implement RetrieveMany options as well)
 		childObj, err := o.RetrieveObject(ctx, name, childPkValues)
 		if err != nil {
 			return nil, errors.Wrap(err, "RetrieveWithChildren/RetrieveObject("+name+")")
 		}
+		// Populate single child inside parent
 		if obj.Children[name] == nil {
 			obj.Children[name] = make(object.Array, 1)
 		}
@@ -89,7 +99,10 @@ func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues ma
 	return obj, nil
 }
 
-// RetrieveObject function will fleshen an object structure, given some primary keys
+// RetrieveObject function will fleshen an object structure, given some primary keys.
+// Technically, we call RetrieveObjects internally. Since we do not have LIMIT implemented yet,
+// it's just a cheap implementation that returns the zeroeth value.
+// TODO: Implement LIMIT so that we can improve this.
 func (o ORM) RetrieveObject(ctx context.Context, table string, queryVals map[string]interface{}) (*object.Object, error) {
 	objAry, err := o.RetrieveObjects(ctx, table, queryVals)
 	if err != nil {
@@ -103,8 +116,10 @@ func (o ORM) RetrieveObject(ctx context.Context, table string, queryVals map[str
 
 // FleshenChildren function accepts an object and resets it's children.
 func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.Object, error) {
+	// Retrieve schema configuration for this object type (schema.Table)
 	schemaTable := o.s.GetTable(obj.Type)
 
+	// Retrieve primary key
 	pkKey := schemaTable.Primary
 	pkVal := obj.Get(pkKey)
 
@@ -114,6 +129,7 @@ func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.O
 	// to consider this complete.
 	if len(schemaTable.Children) > 0 {
 		for childTableName := range schemaTable.Children {
+			// TODO: multi-key support here...
 			m := map[string]interface{}{}
 			m[pkKey] = pkVal
 			childObjs, err := o.RetrieveObjects(ctx, childTableName, m)
@@ -140,15 +156,24 @@ func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sql
 	if err != nil {
 		return nil, err
 	}
-	// TODO: Error not checked.
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			fmt.Println(err) // TODO: logger implementation
+		}
+	}()
 
 	res, err := stmt.QueryContext(ctx, bindArgs...)
 	if err != nil {
 		return nil, err
 	}
-	// TODO: Error not checked.
-	defer res.Close()
+	defer func() {
+		err := res.Close() // TODO: logger implementation
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+
 	columnTypes, err := res.ColumnTypes()
 	if err != nil {
 		return nil, err
@@ -183,7 +208,6 @@ func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sql
 }
 
 func (o ORM) makeQueryObj(objTable *schema.Table, queryVals map[string]interface{}) *object.Object {
-	fmt.Println("makeQueryObj: objTable.Name->", objTable.Name)
 	queryObj := object.New(objTable.Name)
 
 	if objTable.FieldAliases == nil {
@@ -223,15 +247,25 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 	if err != nil {
 		return nil, err
 	}
-	// TODO: Error not checked.
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			fmt.Println(err) // TODO logger implementation
+		}
+	}()
 
 	res, err := stmt.QueryContext(ctx, bindArgs...)
 	if err != nil {
 		return nil, err
 	}
-	// TODO: Error not checked.
-	defer res.Close()
+
+	defer func() {
+		err := res.Close()
+		if err != nil {
+			fmt.Println(err) // TODO logger implementation
+		}
+	}()
+
 	columnTypes, err := res.ColumnTypes()
 	if err != nil {
 		return nil, err
