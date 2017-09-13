@@ -12,6 +12,12 @@ var numTypes = map[string]bool{
 	"number": true,
 }
 
+var floatTypes = map[string]bool{
+	// Haha, of course, Oracle...
+	"float": true,
+	"FLOAT": true,
+}
+
 var timestampTypes = map[string]bool{
 	"timestamp": true,
 	"TIMESTAMP": true,
@@ -28,6 +34,13 @@ func (g Generator) IsStringType(k string) bool {
 func (g Generator) IsNumberType(k string) bool {
 	return numTypes[k]
 }
+
+// IsFloatingType can be used to help determine whether a certain data type is a float type.
+// Note that it is case-sensitive.
+func (g Generator) IsFloatingType(k string) bool {
+	return floatTypes[k]
+}
+
 
 // IsTimestampType can be used to help determine whether a certain data type is a number type.
 // Note that it is case-sensitive.

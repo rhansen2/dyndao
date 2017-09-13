@@ -75,6 +75,12 @@ func (o Object) Get(k string) interface{} {
 	return o.KV[k]
 }
 
+// GetBool is a safe, typed bool accessor
+func (o Object) GetBool(k string) (bool, bool) {
+	v, ok := o.KV[k].(bool)
+	return v, ok
+}
+
 // GetString is a safe, typed string accessor
 func (o Object) GetString(k string) (string, bool) {
 	v, ok := o.KV[k].(string)
@@ -93,8 +99,60 @@ func (o Object) GetFloat(k string) (float64, bool) {
 	return v, ok
 }
 
+// TODO: GetStringAlways
+
+// GetStringAlways is a safe, typed string accessor. It will force conversion away
+// from float64, int64, uint64, string, and nil values. Nils and unrecognized values
+// are marked as an error (nil values will return 0 and ErrValueWasNil)
+func (o Object) GetStringAlways(k string) (string, error) {
+	switch v := o.KV[k].(type) {
+	case float64:
+		fl := o.KV[k].(float64)
+		return fmt.Sprintf("%f", fl), nil
+	case int64:
+		fl := o.KV[k].(int64)
+		return fmt.Sprintf("%d", fl), nil
+	case uint64:
+		fl := o.KV[k].(uint64)
+		return fmt.Sprintf("%d", fl), nil
+	case string:
+		fl := o.KV[k].(string)
+		return fl, nil
+	case nil:
+		return "", ErrValueWasNil
+	// TODO: what about booleans?
+	default:
+		return "", fmt.Errorf("GetStringAlways: unrecognized type %v", v)
+	}
+}
+
+// GetFloatAlways is a safe, typed float64 accessor. It will force conversion away
+// from float64, int64, uint64, string, and nil values. Nils and unrecognized values
+// are marked as an error (nil values will return 0 and ErrValueWasNil)
+func (o Object) GetFloatAlways(k string) (float64, error) {
+	switch v := o.KV[k].(type) {
+	case float64:
+		fl := o.KV[k].(float64)
+		return fl, nil
+	case int64:
+		fl := o.KV[k].(float64)
+		return fl, nil
+	case uint64:
+		fl := o.KV[k].(uint64)
+		return float64(fl), nil
+	case string:
+		fl := o.KV[k].(string)
+		return strconv.ParseFloat(fl, 64)
+	case nil:
+		return 0, ErrValueWasNil
+	// TODO: what about booleans?
+	default:
+		return 0, fmt.Errorf("GetFloatAlways: unrecognized type %v", v)
+	}
+}
+
 // GetIntAlways is a safe, typed int64 accessor. It will force conversion away
-// from float64, uint64, and string values. Nils and unrecognized values are
+// from float64, uint64, int64 and string values. Nils and unrecognized values are
 // marked as an error (nil values will return 0 and ErrValueWasNil)
 func (o Object) GetIntAlways(k string) (int64, error) {
 	switch v := o.KV[k].(type) {
@@ -112,6 +170,7 @@ func (o Object) GetIntAlways(k string) (int64, error) {
 		return strconv.ParseInt(fl, 10, 64)
 	case nil:
 		return 0, ErrValueWasNil
+	// TODO: what about booleans?
 	default:
 		return 0, fmt.Errorf("GetIntAlways: unrecognized type %v", v)
 	}
@@ -136,8 +195,9 @@ func (o Object) GetUintAlways(k string) (uint64, error) {
 		return strconv.ParseUint(fl, 10, 64)
 	case nil:
 		return uint64(0), ErrValueWasNil
+	// TODO: what about booleans?
 	default:
-		return 0, fmt.Errorf("GetIntAlways: unrecognized type %v", v)
+		return 0, fmt.Errorf("GetUintAlways: unrecognized type %v", v)
 	}
 }
 
@@ -151,7 +211,7 @@ func (o *Object) Set(k string, v interface{}) {
 		// Avoid redundant Set()s
 		if oldVal == v {
 			return
-	}
+		}
 		o.FieldChanged(k, oldVal)
 	}
 	if o.GetSaved() {

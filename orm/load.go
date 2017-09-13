@@ -1,5 +1,9 @@
 package orm
 
+// The ORM package is designed to tie everything together: a database connection, schema,
+// relevant objects, etc. The current design is a WIP. While not finished, it is serviceable
+// and can be used effectively.
+
 import (
 	"context"
 	"database/sql"
@@ -17,21 +21,24 @@ import (
 func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (object.Array, error) {
 	table := childObj.Type
 
+	// Retrieve schema table object
 	objTable := o.s.GetTable(table)
 	if objTable == nil {
 		return nil, errors.New("GetParentsViaChild: unknown object table " + table)
 	}
 
 	var parentObjs object.Array
-
+	// This method can only work if the schema is configured hierarchically
 	if objTable.ParentTables == nil {
 		return nil, errors.New("GetParentsViaChild: cannot retrieve parents for table " + table + ", schema ParentTables is nil")
 	}
 	for _, pt := range objTable.ParentTables {
+		// 'Capture' the primary key(s)
 		pkQueryVals, err := pkQueryValsFromKV(childObj, o.s, pt)
 		if err != nil {
 			return nil, err
 		}
+		// Retrieve + append the relevant parent objs
 		objs, err := o.RetrieveObjects(ctx, pt, pkQueryVals)
 		if err != nil {
 			return nil, err
@@ -42,10 +49,10 @@ func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (o
 	return parentObjs, nil
 }
 
-// NOTE: For foreign key filling, we do not (yet?) check to see if there are conflicts
-// with regards to the uniqueness of primary key names.
-
 // RetrieveWithChildren function will fleshen an *entire* object structure, given some primary keys
+// By entire, we mean that we also retrieve any relevant children objects. However, we do not call RetrieveWithChildren
+// when fleshening the children structures -- when retrieving the children, we do a single-level retrieve, ignoring
+// any child structures that may be configured at two levels of depth.
 func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues map[string]interface{}) (*object.Object, error) {
 	// Retrieve schema.Table object
 	objTable := o.s.GetTable(table)
@@ -70,9 +77,10 @@ func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues ma
 		}
 
 		// (For each child...) Propagate the 'primary key value' from the parent object if needed.
-		pVal, ok := pkValues[childSchemaTable.Primary]
+		childPkName := childSchemaTable.Primary
+		pVal, ok := pkValues[childPkName]
 		if ok {
-			childPkValues[childSchemaTable.Primary] = pVal
+			childPkValues[childPkName] = pVal
 		}
 
 		// Propagate foreign key values for retrieval
@@ -80,6 +88,15 @@ func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues ma
 			for _, fk := range childSchemaTable.ForeignKeys {
 				// TODO: Check that value exists before we
 				// attempt to set?
+				/*
+					v, ok := pkValues[fk]
+					if ok {
+						childPkValues[fk] = v
+					} else {
+						// TODO: is this an error condition?
+					}
+				*/
+
 				childPkValues[fk] = pkValues[fk]
 			}
 		}
@@ -101,13 +118,16 @@ func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues ma
 
 // RetrieveObject function will fleshen an object structure, given some primary keys.
 // Technically, we call RetrieveObjects internally. Since we do not have LIMIT implemented yet,
-// it's just a cheap implementation that returns the zeroeth value.
+// it's just a cheap implementation that returns the zeroeth value. Nil will be returned
+// for both the object and the error if a row is unable to be matched by the underlying
+// datastore.
 // TODO: Implement LIMIT so that we can improve this.
 func (o ORM) RetrieveObject(ctx context.Context, table string, queryVals map[string]interface{}) (*object.Object, error) {
 	objAry, err := o.RetrieveObjects(ctx, table, queryVals)
 	if err != nil {
 		return nil, err
 	}
+	// We return nil, nil to indicate a lack of result.
 	if objAry == nil {
 		return nil, nil
 	}
@@ -313,6 +333,7 @@ func (o ORM) dynamicObjectSetter(columnNames []string, columnPointers []interfac
 		ct := columnTypes[i]
 
 		typeName := ct.DatabaseTypeName()
+		// TODO: Not sure this is actually correct?
 		if sqlGen.IsStringType(typeName) || sqlGen.IsTimestampType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
@@ -327,7 +348,7 @@ func (o ORM) dynamicObjectSetter(columnNames []string, columnPointers []interfac
 
 			}
 		} else if sqlGen.IsNumberType(typeName) {
-			// TODO: support more than 'int64' for integer...
+			// TODO: support more than 'int64' for integer...?
 			nullable, _ := ct.Nullable()
 			if nullable {
 				val := v.(*sql.NullInt64)
@@ -339,10 +360,23 @@ func (o ORM) dynamicObjectSetter(columnNames []string, columnPointers []interfac
 				val := v.(*int64)
 				obj.Set(columnNames[i], *val)
 			}
+		} else if sqlGen.IsFloatingType(typeName) {
+			// TODO: support more than 'int64' for integer...?
+			nullable, _ := ct.Nullable()
+			if nullable {
+				val := v.(*sql.NullFloat64)
+				if val.Valid {
+					obj.Set(columnNames[i], val.Float64)
+				}
+				// TODO: We don't set keys for null values. How else can we support this?
+			} else {
+				val := v.(*float64)
+				obj.Set(columnNames[i], *val)
+			}
 		} else {
 			return errors.New("dynamicObjectSetter: Unrecognized type: " + typeName)
 		}
-		// TODO: add timestamp support.
+		// TODO: add timestamp support.?
 	}
 	return nil
 }

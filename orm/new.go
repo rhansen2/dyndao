@@ -22,6 +22,7 @@ type Generator interface {
 
 	IsStringType(string) bool
 	IsNumberType(string) bool
+	IsFloatingType(string) bool
 	IsTimestampType(string) bool
 
 	// TODO: Name supplying our primary key as CallerSuppliesPrimaryKey?

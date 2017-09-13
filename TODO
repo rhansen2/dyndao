@@ -29,6 +29,7 @@ TODO
 	- (With RetrieveObjects)
 		Implement LIMIT... That's all a singular retrieve should be underneath the hood that's different.
 	- use schema.Field.IsNumber more ?
+	- type affinity
 
 --
 

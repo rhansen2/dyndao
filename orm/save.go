@@ -18,9 +18,8 @@ func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName s
 	qv := make(map[string]interface{})
 
 	schemaTable := sch.GetTable(parentTableName)
-
 	if schemaTable == nil {
-		return nil, errors.New("pkQueryValsFromKV: no schemaTable for table " + parentTableName)
+		return nil, fmt.Errorf("pkQueryValsFromKV: no schema table for table named %s", parentTableName)
 	}
 	schemaPrimary := schemaTable.Primary
 
@@ -32,7 +31,6 @@ func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName s
 	return qv, nil
 }
 
-// TODO: add a queryVals struct containing all new LastInsertIDs
 func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	rowsAff, err := o.SaveObject(ctx, tx, obj)
 	if err != nil {
@@ -47,7 +45,7 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 			// set the primary key in the child object, if it exists in the child object's table
 			childTable, ok := o.s.Tables[childObj.Type]
 			if !ok {
-				return 0, errors.New("recurseAndSave: Unknown child object type " + childObj.Type + " for parent type " + obj.Type)
+				return 0, fmt.Errorf("recurseAndSave: Unknown child object type %s for parent type %s", childObj.Type, obj.Type)
 			}
 			// TODO: support propagation of additional primary keys that are
 			// saved from previous recursive saves
@@ -83,11 +81,6 @@ func (o ORM) SaveAllInsideTx(ctx context.Context, tx *sql.Tx, obj *object.Object
 	return rowsAff, nil
 }
 
-func (o ORM) rollBackTrapErrors(ctx context.Context, tx *sql.Tx) error {
-	err := tx.Rollback()
-	return err
-}
-
 // SaveAll will attempt to save an entire nested object structure inside of a single transaction.
 // It begins the transaction, attempts to recursively save the object and all of it's children,
 // and any of the children's children, and then will finally rollback/commit as necessary.
@@ -98,7 +91,7 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 	}
 	rowsAff, err := o.SaveAllInsideTx(ctx, tx, obj)
 	if err != nil {
-		rollErr := o.rollBackTrapErrors(ctx, tx)
+		rollErr := tx.Rollback()
 		if rollErr != nil {
 			// TODO: Not sure if this wrap is right.
 			return 0, errors.Wrap(err, rollErr.Error())
@@ -108,7 +101,7 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 
 	err = tx.Commit()
 	if err != nil {
-		rollErr := o.rollBackTrapErrors(ctx, tx)
+		rollErr := tx.Rollback()
 		if rollErr != nil {
 			// TODO: Not sure if this wrap is right.
 			return 0, errors.Wrap(err, rollErr.Error())
