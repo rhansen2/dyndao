@@ -117,17 +117,21 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 // given a transaction, it will use that to attempt to insert the data.
 func (o ORM) SaveObjectButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	objTable := o.s.GetTable(obj.Type)
+	// skip if object has invalid type
 	if objTable == nil {
 		return 0, errors.New("SaveObjectButErrorIfInsert: unknown object table " + obj.Type)
 	}
+	// skip objects that are saved
 	if obj.GetSaved() {
 		return 0, nil
 	}
-	fieldMap := objTable.Fields
+	// ensure we have a primary key
 	pk := objTable.Primary
 	if pk == "" {
 		return 0, errors.New("SaveObjectButErrorIfInsert: empty primary key for " + obj.Type)
 	}
+	// ensure the primary key has a field config
+	fieldMap := objTable.Fields
 	f := fieldMap[pk]
 	if f == nil {
 		return 0, errors.New("SaveObjectButErrorIfInsert: empty field " + pk + " for " + obj.Type)
@@ -145,17 +149,21 @@ func (o ORM) SaveObjectButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *ob
 // attempt to insert the data.
 func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	objTable := o.s.GetTable(obj.Type)
+	// skip if object has invalid type
 	if objTable == nil {
 		return 0, errors.New("SaveObject: unknown object table " + obj.Type)
 	}
+	// skip if object is saved
 	if obj.GetSaved() {
 		return 0, nil
 	}
-	fieldMap := objTable.Fields
+	// retrieve primary key value
 	pk := objTable.Primary
 	if pk == "" {
 		return 0, errors.New("SaveObject: empty primary key for " + obj.Type)
 	}
+	// skip if primary key has no field configuration in table schema
+	fieldMap := objTable.Fields
 	f := fieldMap[pk]
 	if f == nil {
 		return 0, errors.New("SaveObject: empty field " + pk + " for " + obj.Type)
@@ -168,6 +176,7 @@ func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (in
 	return o.Update(ctx, tx, obj)
 }
 
+// use transaction if needed, otherwise just execute a non-transactionalized operation
 func stmtFromDbOrTx(ctx context.Context, o ORM, tx *sql.Tx, sqlStr string) (*sql.Stmt, error) {
 	var stmt *sql.Stmt
 	var err error
