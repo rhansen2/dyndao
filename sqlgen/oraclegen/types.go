@@ -1,9 +1,7 @@
 package oraclegen
 
 var stringTypes = map[string]bool{
-	"CLOB":     true,
 	"VARCHAR2": true,
-	"clob":     true,
 	"varchar2": true,
 }
 
@@ -21,6 +19,11 @@ var floatTypes = map[string]bool{
 var timestampTypes = map[string]bool{
 	"timestamp": true,
 	"TIMESTAMP": true,
+}
+
+var lobTypes = map[string]bool{
+	"CLOB": true,
+	"clob": true,
 }
 
 // IsStringType can be used to help determine whether a certain data type is a string type.
@@ -41,11 +44,14 @@ func (g Generator) IsFloatingType(k string) bool {
 	return floatTypes[k]
 }
 
-
 // IsTimestampType can be used to help determine whether a certain data type is a number type.
 // Note that it is case-sensitive.
 func (g Generator) IsTimestampType(k string) bool {
 	return timestampTypes[k]
+}
+
+func (g Generator) IsLOBType(k string) bool {
+	return lobTypes[k]
 }
 
 // TODO: strings.ToUpper on key name? just in case?
