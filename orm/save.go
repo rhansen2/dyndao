@@ -215,12 +215,14 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		fmt.Println("Insert/sqlStr=", sqlStr, "bindArgs=", bindArgs)
 	}
 
+	var lastID int64
 	// FIXME: Possible bug in rana ora.v4? I wouldn't have expected that I'd
 	// have to append a parameter like this, based on reading the code.
 	if !o.sqlGen.CallerSuppliesPrimaryKey() {
 		if o.sqlGen.FixLastInsertIDbug() {
-			var lastID int64
-			bindArgs = append(bindArgs, &lastID)
+			bindArgs = append(bindArgs, sql.Named(o.s.GetTable(obj.Type).Primary, sql.Out{
+				Dest: &lastID,
+			}))
 		}
 	}
 
@@ -259,11 +261,14 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	// TODO: Should CallerSuppliesPrimaryKey be per-table?
 	if !o.sqlGen.CallerSuppliesPrimaryKey() {
 		newID, err := res.LastInsertId()
-		if err != nil {
+		if err != nil && lastID == 0 {
 			if os.Getenv("DEBUG_INSERT") != "" {
 				fmt.Println("orm/save error", err)
 			}
 			return 0, err
+		}
+		if lastID != 0 {
+			newID = lastID
 		}
 		if os.Getenv("DEBUG_INSERT") != "" {
 			fmt.Println("DEBUG Insert received newID=", newID)
