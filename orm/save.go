@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/inconshreveable/log15"
 	"github.com/pkg/errors"
@@ -188,6 +189,11 @@ func stmtFromDbOrTx(ctx context.Context, o ORM, tx *sql.Tx, sqlStr string) (*sql
 	return stmt, err
 }
 
+func maybeDereferenceArgs(arg interface{}) interface{} {
+	v := reflect.ValueOf(arg)
+	return reflect.Indirect(v).Interface()
+}
+
 // Insert function will INSERT a record, given an optional transaction and an object.
 // It returns the number of rows affected (int64) and any error that may have occurred.
 func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
@@ -233,7 +239,12 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		}
 	}()
 
-	res, err := stmt.ExecContext(ctx, bindArgs...)
+	newBindArgs := make([]interface{}, len(bindArgs))
+	for i, arg := range bindArgs {
+		newBindArgs[i] = maybeDereferenceArgs(arg)
+	}
+
+	res, err := stmt.ExecContext(ctx, newBindArgs...)
 	if err != nil {
 		if os.Getenv("DEBUG_INSERT") != "" {
 			fmt.Println("orm/save error", err)
@@ -298,7 +309,11 @@ func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	}()
 
 	allBind := append(bindArgs, bindWhere...)
-	res, err := stmt.ExecContext(ctx, allBind...)
+	newAllBind := make([]interface{}, len(allBind))
+	for i, arg := range allBind {
+		newAllBind[i] = maybeDereferenceArgs(arg)
+	}
+	res, err := stmt.ExecContext(ctx, newAllBind...)
 	if err != nil {
 		return 0, errors.Wrap(err, "Update")
 	}
