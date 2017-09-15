@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	goracle "gopkg.in/goracle.v2"
 
@@ -337,7 +338,10 @@ func (o ORM) dynamicObjectSetter(columnNames []string, columnPointers []interfac
 
 		typeName := ct.DatabaseTypeName()
 		// TODO: Not sure this is actually correct?
-		if sqlGen.IsStringType(typeName) || sqlGen.IsTimestampType(typeName) {
+		if sqlGen.IsTimestampType(typeName) {
+			val := v.(*time.Time)
+			obj.Set(columnNames[i], *val)
+		} else if sqlGen.IsStringType(typeName) || sqlGen.IsTimestampType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
 				//val := v.(*sql.NullString)
@@ -433,10 +437,10 @@ func (o ORM) makeColumnPointers(sliceLen int, columnTypes []*sql.ColumnType) ([]
 		} else if sqlGen.IsTimestampType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
-				var j string
+				var j time.Time
 				columnPointers[i] = &j
 			} else {
-				var j string
+				var j time.Time
 				columnPointers[i] = &j
 
 			}
