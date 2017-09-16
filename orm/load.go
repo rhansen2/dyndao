@@ -341,9 +341,10 @@ func (o ORM) dynamicObjectSetter(columnNames []string, columnPointers []interfac
 		if sqlGen.IsTimestampType(typeName) {
 			val := v.(*time.Time)
 			obj.Set(columnNames[i], *val)
-		} else if sqlGen.IsStringType(typeName) || sqlGen.IsTimestampType(typeName) {
+		} else if sqlGen.IsStringType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
+				// TODO: Does this work properly across databases?
 				//val := v.(*sql.NullString)
 				val := v.(*string)
 				obj.Set(columnNames[i], *val)
