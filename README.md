@@ -10,8 +10,7 @@ a generic key-value object structure, and a relational database mapping layer
 This package is incomplete and a work in progress. Suggestions and support are
 welcome.
 
---
-MOTIVATION
+*MOTIVATION*
 
 Most ORMs are stuck in a relatively static state of affairs. Go's relatively
 static nature further complicates this situation. Code generators alleviate
@@ -41,8 +40,7 @@ So, instead of representing rows as structs like other ORMs, you represent them
 as pointers to object.Object (see github.com/rbastic/dyndao/object for
 details). Almost everything is an object in dyndao.
 
---
-MISC.
+*MISC.*
 
 JSON leaves much to be desired due to Go's type model. Mapping reliably between
 JSON and an ORM is fraught with issues due to assumptions that Go makes with
@@ -56,8 +54,7 @@ avoid the issues hinted at above. At least one such issue has resulted from
 unsigned integer hash values that needed to be stored as strings (to avoid
 being converted to Go's float64 type)
 
---
-CODE LAYOUT
+*CODE LAYOUT*
 
 mapper - JSON mapping layer (WIP)
 object - object.Object and object.Array
@@ -66,8 +63,7 @@ schema - dynamic schema packages: declare your schema using these, or write and
          share a schema parser / generator with us for your database of choice!
 sqlgen - code generators for various database implementations
 
---
-DISCLAIMER
+*DISCLAIMER*
 
 Please note that the current code layout and design is the result of deadlines,
 hackathons, corporate feature requirements, and metric quantities of caffeine,
