@@ -21,8 +21,8 @@ ORMs that are built on top of code generators cannot flexibly accommodate
 dynamic schema changes. See github.com/rbastic/dyndao/schema for how
 dyndao handles dynamic schemas.
 
-Another example: since most Go ORMs use code generators and structs, you are
-never able to easily write an UPDATE that mentions a SQL function call:
+Additionally, since most Go ORMs use code generators and structs, you are never
+able to easily write an UPDATE that mentions a SQL function call:
 
 ```code
 UPDATE fooTable SET ..., UPDATE_TIMESTAMP=NOW() WHERE fooTable_ID = 1;
