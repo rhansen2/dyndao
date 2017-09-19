@@ -32,9 +32,13 @@ Every other Go ORM that currently exists would require you to handle this
 situation by hand, AFAIK. Please file an issue if you are aware of one that
 doesn't. Presently, the way dyndao is written, you could do something like:
 
+```code
 // code to retrieve row as 'obj' from database
+
 obj.Set("UPDATE_TIMESTAMP", object.NewSQLValue("NOW()"))
+
 // call orm.Save()....
+```
 
 So, instead of representing rows as structs like other ORMs, you represent them
 as pointers to object.Object (see github.com/rbastic/dyndao/object for
