@@ -62,6 +62,7 @@ being converted to Go's float64 type)
 
 *CODE LAYOUT*
 
+```code
 mapper - JSON mapping layer (WIP)
 
 object - object.Object and object.Array
@@ -72,6 +73,7 @@ schema - dynamic schema packages: declare your schema using these, or write and
          share a schema parser / generator with us for your database of choice!
 
 sqlgen - code generators for various database implementations
+```
 
 *DISCLAIMER*
 
