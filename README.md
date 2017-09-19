@@ -12,10 +12,13 @@ welcome.
 
 *MOTIVATION*
 
-Most ORMs are stuck in a relatively static state of affairs. Go's relatively
-static nature further complicates this situation. Code generators alleviate
-some of the pain but in some situations, there is still much left to be
-desired.
+Most ORMs perceive the database world as a static state of affairs. Go's
+relatively static nature further complicates this situation. Code generators
+alleviate some of the pain but in some situations, there is still much left to
+be desired. dyndao is driven by the need and preference for schemas to be
+dynamic. By pursuing dynamic solutions to database problems, we can handle many
+situations more flexibly than otherwise possible. This does comes at a cost to
+performance.
 
 ORMs that are built on top of code generators cannot flexibly accommodate
 dynamic schema changes. See github.com/rbastic/dyndao/schema for how
@@ -35,11 +38,9 @@ situation by hand, AFAIK. Please file an issue if you are aware of one that
 doesn't. Presently, the way dyndao is written, you could do something like:
 
 ```code
-// code to retrieve row as 'obj' from database
-
+// ...code to retrieve row as 'obj' from database
 obj.Set("UPDATE_TIMESTAMP", object.NewSQLValue("NOW()"))
-
-// call orm.Save()....
+// ...call orm.Save()....
 ```
 
 So, instead of representing rows as structs like other ORMs, you represent them
