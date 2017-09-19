@@ -24,7 +24,9 @@ dyndao handles dynamic schemas.
 Another example: since most Go ORMs use code generators and structs, you are
 never able to easily write an UPDATE that mentions a SQL function call:
 
+```code
 UPDATE fooTable SET ..., UPDATE_TIMESTAMP=NOW() WHERE fooTable_ID = 1;
+```
 
 NOW() is the timestamp function call (at least in MySQL, not sure of others).
 
@@ -61,10 +63,14 @@ being converted to Go's float64 type)
 *CODE LAYOUT*
 
 mapper - JSON mapping layer (WIP)
+
 object - object.Object and object.Array
+
 orm    - ORM class, combines object, schema, and sqlgen
+
 schema - dynamic schema packages: declare your schema using these, or write and
          share a schema parser / generator with us for your database of choice!
+
 sqlgen - code generators for various database implementations
 
 *DISCLAIMER*
@@ -75,7 +81,6 @@ compounded over years of experience and multiple jaded developers. While humor
 is intended, the author(s) can take no responsibility for damages that one may
 incur by viewing or utilizing this source code.
 
---
-LICENSE
+*LICENSE*
 
-MIT license.
+MIT license. See LICENSE file.
