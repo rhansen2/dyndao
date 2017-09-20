@@ -8,7 +8,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"time"
+
+	goracle "gopkg.in/goracle.v2"
 
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
@@ -334,13 +338,20 @@ func (o ORM) dynamicObjectSetter(columnNames []string, columnPointers []interfac
 
 		typeName := ct.DatabaseTypeName()
 		// TODO: Not sure this is actually correct?
-		if sqlGen.IsStringType(typeName) || sqlGen.IsTimestampType(typeName) {
+		if sqlGen.IsTimestampType(typeName) {
+			val := v.(*time.Time)
+			obj.Set(columnNames[i], *val)
+		} else if sqlGen.IsStringType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
-				val := v.(*sql.NullString)
-				if val.Valid {
-					obj.Set(columnNames[i], val.String)
-				}
+				// TODO: Does this work properly across databases?
+				//val := v.(*sql.NullString)
+				val := v.(*string)
+				obj.Set(columnNames[i], *val)
+				/*
+					if val.Valid {
+					}
+				*/
 				// TODO: We don't set keys for null values. How else can we support this?
 			} else {
 				val := v.(*string)
@@ -373,11 +384,29 @@ func (o ORM) dynamicObjectSetter(columnNames []string, columnPointers []interfac
 				val := v.(*float64)
 				obj.Set(columnNames[i], *val)
 			}
+		} else if sqlGen.IsLOBType(typeName) {
+			val := v.(*LobDST)
+			obj.Set(columnNames[i], string(*val))
 		} else {
 			return errors.New("dynamicObjectSetter: Unrecognized type: " + typeName)
 		}
 		// TODO: add timestamp support.?
 	}
+	return nil
+}
+
+type LobDST string
+
+func (l *LobDST) Scan(src interface{}) error {
+	lob, ok := src.(*goracle.Lob)
+	if !ok {
+		return errors.New("LobDST can only be used with goracle.Lib")
+	}
+	res, err := ioutil.ReadAll(lob)
+	if err != nil {
+		return errors.Wrap(err, "failed to read son")
+	}
+	*l = LobDST(res)
 	return nil
 }
 
@@ -390,7 +419,7 @@ func (o ORM) makeColumnPointers(sliceLen int, columnTypes []*sql.ColumnType) ([]
 		if sqlGen.IsStringType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
-				var s sql.NullString
+				var s string
 				columnPointers[i] = &s
 			} else {
 				var s string
@@ -409,12 +438,23 @@ func (o ORM) makeColumnPointers(sliceLen int, columnTypes []*sql.ColumnType) ([]
 		} else if sqlGen.IsTimestampType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
-				var j sql.NullString
+				var j time.Time
 				columnPointers[i] = &j
 			} else {
-				var j string
+				var j time.Time
 				columnPointers[i] = &j
 
+			}
+		} else if sqlGen.IsLOBType(typeName) {
+			nullable, _ := ct.Nullable()
+			if nullable {
+				var s *LobDST
+				s = new(LobDST)
+				columnPointers[i] = s
+			} else {
+				var s *LobDST
+				s = new(LobDST)
+				columnPointers[i] = s
 			}
 		} else {
 			return nil, errors.New("makeColumnPointers: Unrecognized type: " + typeName)

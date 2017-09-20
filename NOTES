@@ -1,0 +1,30 @@
+Today, I learned about context propagation.  — I re-learned some things about
+NSQ and requeueing. I think it would be wise to study the code.
+
+Definitely, have to remember to not lose my head. Don’t lose my cool, don’t
+lose my zen.
+
+-> add mysql support.
+
+-> haha, then add postgresql support.
+
+-> we can also brush up the sqlite support, test type affinity, and blobs, etc.
+
+-> code tons more tests and examples, it’ll help you with writing the
+documentation.
+
+THIS SHOULD BE EASY..
+
+-> we should be able to write something that does say… an oracle to mysql
+mapper.
+
+:)
+
+-> spend the day writing documentation, also. it’ll help for the release.
+
+dyndao: can bump schema_test.go file, improve it and add a better comment
+because the current one when you view it the schema folder in folder-mode in
+github is “almost working nested object save”, which is no longer true - it’s
+fully working :-)
+
+—

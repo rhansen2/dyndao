@@ -4,10 +4,45 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 )
+
+func zeroTime(arg interface{}) bool {
+	switch t := arg.(type) {
+	case time.Time:
+		if t.IsZero() {
+			return true
+		}
+	case *time.Time:
+		if t == nil {
+			return true
+		}
+		if t.IsZero() {
+			return true
+		}
+	}
+	return false
+}
+
+func safeConvert(arg interface{}) time.Time {
+	switch t := arg.(type) {
+	case string:
+		tt, err := time.Parse(time.RFC3339, t)
+		if err != nil {
+			panic(err)
+		}
+		return tt
+	case time.Time:
+		return t
+	case *time.Time:
+		return *t
+	default:
+		panic("unkown type in safe convert")
+	}
+}
 
 // BindingUpdate generates the SQL for a given UPDATE statement for oracle with binding parameter values
 func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string, []interface{}, []interface{}, error) {
@@ -42,7 +77,10 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 				continue
 			}
 			v := obj.KV[k]
-			if v == nil {
+			if g.IsTimestampType(schTbl.GetField(k).DBType) {
+				v = safeConvert(v)
+			}
+			if v == nil || zeroTime(v) {
 				newValuesAry[i] = fmt.Sprintf("%s = NULL", f.Name)
 				bindArgs[i] = nil
 			} else {
@@ -63,7 +101,10 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 			if f.IsIdentity {
 				continue
 			}
-			if v == nil {
+			if g.IsTimestampType(schTbl.GetField(k).DBType) {
+				v = safeConvert(v)
+			}
+			if v == nil || zeroTime(v) {
 				newValuesAry[i] = fmt.Sprintf("%s = NULL", f.Name)
 				bindArgs[i] = nil
 			} else {

@@ -24,6 +24,7 @@ type Generator interface {
 	IsNumberType(string) bool
 	IsFloatingType(string) bool
 	IsTimestampType(string) bool
+	IsLOBType(string) bool
 
 	// TODO: Name supplying our primary key as CallerSuppliesPrimaryKey?
 	// This option will turn MODE_LAST_INSERT_ID off? Start naming these
