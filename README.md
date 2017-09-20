@@ -38,9 +38,25 @@ situation by hand, AFAIK. Please file an issue if you are aware of one that
 doesn't. Presently, the way dyndao is written, you could do something like:
 
 ```code
-// ...code to retrieve row as 'obj' from database
-obj.Set("UPDATE_TIMESTAMP", object.NewSQLValue("NOW()"))
-// ...call orm.Save()....
+// 'o' is an instantiation of the ORM package
+obj, err := o.RetrieveObject(ctx, tableString, pkValues)
+if err != nil {
+	panic(err)
+}
+// Lack of result is not considered an error in dyndao - "nil, nil" would be
+// returned
+if obj == nil {
+	panic("no object available to update")
+} else {
+	obj.Set("UPDATE_TIMESTAMP", object.NewSQLValue("NOW()"))
+	// nil means 'transactionless save', otherwise you can pass
+	// a *sql.Tx
+	r, err := o.SaveObject(ctx, nil, obj)
+	if err != nil {
+		panic(err)
+	}
+	// ...
+}
 ```
 
 So, instead of representing rows as structs like other ORMs, you represent them
