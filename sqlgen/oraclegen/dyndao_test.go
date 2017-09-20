@@ -9,9 +9,9 @@ import (
 	"context"
 	// Load preferred Oracle driver. Mattn's oci8 had race conditions
 	// during testing
-	_ "gopkg.in/rana/ora.v4"
-
 	"database/sql"
+	_ "gopkg.in/goracle.v2"
+
 	"os"
 	"testing"
 
@@ -35,7 +35,7 @@ func GetDB() (*sql.DB, error) {
 	if dsn == "" {
 		return nil, errors.New("oracle DSN is not set, cannot initialize database")
 	}
-	db, err := sql.Open("ora", dsn)
+	db, err := sql.Open("goracle", dsn)
 	if err != nil {
 		return nil, err
 	}
@@ -238,7 +238,10 @@ func saveMockObject(t *testing.T, o *orm.ORM, obj *object.Object) {
 }
 
 func validatePersonID(t *testing.T, obj *object.Object) {
-	personID := obj.Get("PersonID").(int64)
+	personID, err := obj.GetIntAlways("PersonID")
+	if err != nil {
+		t.Fatalf("Had problems retrieving PersonID as int: %s", err.Error())
+	}
 	if personID != 1 {
 		if personID == 2 {
 			t.Fatal("Tests are not in a ready state. Pre-existing data is present.")
