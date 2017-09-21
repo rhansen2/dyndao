@@ -4,8 +4,7 @@ DYNamic Data Access Object (in Go)
 JSON <-> object.Object <-> RDBMS
 
 dyndao is a collection of Golang packages which comprise a JSON mapping layer,
-a generic key-value object structure, and a relational database mapping layer
-(ORM).
+a generic key-value object structure, and an ORM.
 
 This package is a work in progress. While the package is regularly tested on
 production workloads, please use it at your own risk. Suggestions and patches
