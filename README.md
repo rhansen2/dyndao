@@ -67,19 +67,12 @@ details). Almost everything is an object in dyndao.
 
 *MISC.*
 
-JSON leaves much to be desired due to Go's type model. Mapping reliably between
-JSON and an ORM is fraught with issues due to assumptions that Go makes with
-regards to map[string]interface{}. Please take the opinions here with a grain of
-salt, as one of the authors is originally a Perl programmer.
-
-Nonetheless, the authors of this package have attempted to manage these issues
-where possible.
-
-It may be necessary in some situations to store certain values as strings to
-avoid the issues hinted at above. At least one such issue has resulted from
-unsigned integer hash values that needed to be stored as strings within
-object.Object (to avoid being converted to Go's float64 type), only to later be
-mapped to number fields in the relevant database tables.
+JSON leaves much to be desired due to Go's type model.  It may be necessary in
+some situations to store certain values as strings to avoid the issues hinted
+at above. At least one such issue has resulted from unsigned integer hash
+values that needed to be stored as strings within object.Object (to avoid being
+converted to Go's float64 type), only to later be mapped to number fields in
+the relevant database tables.
 
 *CODE LAYOUT*
 
