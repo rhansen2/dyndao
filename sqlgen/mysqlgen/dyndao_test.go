@@ -1,16 +1,14 @@
-// Package oraclegen is a set of tests that put the various components together and
+// Package mysqlgen is a set of tests that put the various components together and
 // demonstrate how they can be combined. (As well as serving as a bit of a test suite...)
 //
 // In other words, we run database tests, use the generator, use the ORM, etc.
 // TODO: More complex test schemas.
-package oraclegen
+package mysqlgen
 
 import (
 	"context"
-	// Load preferred Oracle driver. Mattn's oci8 had race conditions
-	// during testing
 	"database/sql"
-	_ "gopkg.in/goracle.v2"
+	_ "github.com/go-sql-driver/mysql"
 
 	"os"
 	"testing"
@@ -29,22 +27,47 @@ const AddressesObjectType string = "addresses"
 
 // GetDB is a simple wrapper over sql.Open(), the main purpose being
 // to abstract the DSN
-func GetDB() *sql.DB {
+func GetDB() (*sql.DB, error) {
 	// TODO: externalize the DSN and store it in vault
 	dsn := os.Getenv("DSN")
 	if dsn == "" {
-		panic("oracle DSN is not set, cannot initialize database")
+		return nil, errors.New("mysql DSN is not set, cannot initialize database")
 	}
-	db, err := sql.Open("goracle", dsn)
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return db
+	return db, err
+}
+
+func TestDropTables(t *testing.T) {
+	sch := schema.MockNestedSchema()
+	db, err := GetDB()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	sqlGen := New("test", sch, false)
+	o := orm.New(sqlGen, sch, db)
+
+	err = dropTables(o.RawConn, sch)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestCreateTables(t *testing.T) {
 	sch := schema.MockNestedSchema()
-	db := GetDB()
+	db, err := GetDB()
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer func() {
 		err := db.Close()
 		if err != nil {
@@ -55,7 +78,7 @@ func TestCreateTables(t *testing.T) {
 	sqlGen := New("test", sch, false)
 	o := orm.New(sqlGen, sch, db)
 
-	err := createTables(o.RawConn, sch)
+	err = createTables(o.RawConn, sch)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,7 +108,10 @@ func TestSuiteNested(t *testing.T) {
 	// Test schema
 	sch := schema.MockNestedSchema()
 	// Grab database connection
-	db := GetDB()
+	db, err := GetDB()
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer func() {
 		err := db.Close()
 		if err != nil {
@@ -234,13 +260,13 @@ func saveMockObject(t *testing.T, o *orm.ORM, obj *object.Object) {
 func validatePersonID(t *testing.T, obj *object.Object) {
 	personID, err := obj.GetIntAlways("PersonID")
 	if err != nil {
-		t.Fatalf("Had problems retrieving PersonID as int: %s", err.Error())
+		t.Fatalf("validatePersonID: error when calling GetIntAlways: %s", err.Error())
 	}
 	if personID != 1 {
 		if personID == 2 {
-			t.Fatal("Tests are not in a ready state. Pre-existing data is present.")
+			t.Fatal("validatePersonID: Tests are not in a ready state. Pre-existing data is present.")
 		}
-		t.Fatalf("PersonID has the wrong value, has value %d", personID)
+		t.Fatalf("validatePersonID: PersonID has the wrong value, has value %d", personID)
 	}
 }
 
@@ -369,25 +395,6 @@ func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
 	}
 	if fleshened.Children["addresses"][0].Get("Address1") != "Test" {
 		t.Fatal("expected 'Test' for 'Address1'")
-	}
-}
-
-func TestDropTables(t *testing.T) {
-	sch := schema.MockNestedSchema()
-	db := GetDB()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			panic(err)
-		}
-	}()
-
-	sqlGen := New("test", sch, false)
-	o := orm.New(sqlGen, sch, db)
-
-	err := dropTables(o.RawConn, sch)
-	if err != nil {
-		t.Fatal(err)
 	}
 }
 

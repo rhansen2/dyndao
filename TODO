@@ -19,17 +19,19 @@ TODO
 	- use ChangedFields in update code so that we only update the values that changed....
 
 	- TODO: oracle, add tests for varchar2 database type?
-	- TODO: oracle, support JSON BLOB constraint on table
+	- TODO: oracle, support JSON BLOB constraint on table. support constraints for other databases.
 	- TODO: what do other databases (cough, sqlite) do in this area?
 
-	- Review TODOs in code, in particular the transactions. Review the code overall.
+	- Review TODOs in code, in particular the transactions.
+	- Review the code overall.
 
 	- consider sync.Map for object.Object
 
 	- (With RetrieveObjects)
 		Implement LIMIT... That's all a singular retrieve should be underneath the hood that's different.
+
 	- use schema.Field.IsNumber more ?
-	- type affinity
+	- type affinity ? type aliasing ?
 
 --
 

@@ -82,3 +82,8 @@ func (g Generator) IsNumberType(k string) bool {
 func (g Generator) IsTimestampType(k string) bool {
 	return timestampTypes[k]
 }
+
+// IsLOBType remains unimplemented for SQLite.
+func (g Generator) IsLOBType(k string) bool {
+	return false
+}

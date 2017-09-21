@@ -216,14 +216,10 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	}
 
 	var lastID int64
-	// FIXME: Possible bug in rana ora.v4? I wouldn't have expected that I'd
-	// have to append a parameter like this, based on reading the code.
-	if !o.sqlGen.CallerSuppliesPrimaryKey() {
-		if o.sqlGen.FixLastInsertIDbug() {
-			bindArgs = append(bindArgs, sql.Named(o.s.GetTable(obj.Type).Primary, sql.Out{
-				Dest: &lastID,
-			}))
-		}
+	if o.sqlGen.FixLastInsertIDbug() {
+		bindArgs = append(bindArgs, sql.Named(o.s.GetTable(obj.Type).Primary, sql.Out{
+			Dest: &lastID,
+		}))
 	}
 
 	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)

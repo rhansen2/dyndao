@@ -31,6 +31,9 @@ type Generator interface {
 	// things all mode? Same with FixLastInsertIDbug()?
 	FixLastInsertIDbug() bool
 	CallerSuppliesPrimaryKey() bool
+
+	DynamicObjectSetter(columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error
+	MakeColumnPointers(sliceLen int, columnTypes []*sql.ColumnType) ([]interface{}, error)
 }
 
 // ORM is the primary object we expect the caller to operate on.
