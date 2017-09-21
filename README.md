@@ -13,16 +13,14 @@ welcome.
 *MOTIVATION*
 
 Most ORMs perceive the database world as a static state of affairs. Go's
-relatively static nature further complicates this situation. Code generators
-alleviate some of the pain but in some situations, there is still much left to
-be desired. dyndao is driven by the need and preference for schemas to be
-dynamic. By pursuing dynamic solutions to database problems, we can handle many
-situations more flexibly than otherwise possible. This does comes at a cost to
+relatively static nature further complicates this situation.
+
+Code generators alleviate some of the pain but in some situations, there is
+still much left to be desired. dyndao is driven by the requirement for schemas
+to be completely dynamic. This offers additionally flexibility at a cost to
 performance.
 
-ORMs that are built on top of code generators cannot flexibly accommodate
-dynamic schema changes. See github.com/rbastic/dyndao/schema for how
-dyndao handles dynamic schemas.
+See github.com/rbastic/dyndao/schema for how dyndao handles dynamic schemas.
 
 Additionally, since most Go ORMs use code generators and structs, you are never
 able to easily write an UPDATE that mentions a SQL function call:
@@ -33,9 +31,7 @@ UPDATE fooTable SET ..., UPDATE_TIMESTAMP=NOW() WHERE fooTable_ID = 1;
 
 NOW() is the timestamp function call (at least in MySQL, not sure of others).
 
-Every other Go ORM that currently exists would require you to handle this
-situation by hand, AFAIK. Please file an issue if you are aware of one that
-doesn't. Presently, the way dyndao is written, you could do something like:
+Presently, the way dyndao is written, you could do something like:
 
 ```code
 // 'o' is an instantiation of the ORM package
@@ -48,6 +44,7 @@ if err != nil {
 if obj == nil {
 	panic("no object available to update")
 } else {
+	// obj is a dyndao/object, see github.com/rbastic/dyndao/object
 	obj.Set("UPDATE_TIMESTAMP", object.NewSQLValue("NOW()"))
 	// nil means 'transactionless save', otherwise you can pass
 	// a *sql.Tx
@@ -67,8 +64,11 @@ details). Almost everything is an object in dyndao.
 
 JSON leaves much to be desired due to Go's type model. Mapping reliably between
 JSON and an ORM is fraught with issues due to assumptions that Go makes with
-regards to map[string]interface{}. Please take my opinions here with a grain of
-salt, as one of the authors is originally a humble Perl programmer.
+regards to map[string]interface{}. Please take the opinions here with a grain of
+salt, as one of the authors is originally a Perl programmer. As we all know,
+Perl's core values are laziness, impatience, and hubris - hubris is a double-edged
+sword.
+
 Nonetheless, the authors of this package have attempted to manage these issues
 where possible.
 
