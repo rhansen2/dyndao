@@ -8,8 +8,8 @@ a generic key-value object structure, and an ORM.
 
 This package is a work in progress. While the package is regularly tested on
 production workloads, please use it at your own risk. Suggestions and patches
-are welcome. Please ensure any pull requests are go fmt'd and come up
-(relatively) clean from gometalinter.
+are welcome. Please ensure any pull requests are go fmt'd and are
+(relatively) clean when run against gometalinter.
 
 Currently, basic support for SQLite, MySQL, and Oracle are included.
 
