@@ -76,8 +76,9 @@ where possible.
 
 It may be necessary in some situations to store certain values as strings to
 avoid the issues hinted at above. At least one such issue has resulted from
-unsigned integer hash values that needed to be stored as strings (to avoid
-being converted to Go's float64 type)
+unsigned integer hash values that needed to be stored as strings within
+object.Object (to avoid being converted to Go's float64 type), only to later be
+mapped to number fields in the relevant database tables.
 
 *CODE LAYOUT*
 
