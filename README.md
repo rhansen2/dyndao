@@ -7,8 +7,12 @@ dyndao is a collection of Golang packages which comprise a JSON mapping layer,
 a generic key-value object structure, and a relational database mapping layer
 (ORM).
 
-This package is incomplete and a work in progress. Suggestions and support are
-welcome.
+This package is a work in progress. While the package is regularly tested on
+production workloads, please use it at your own risk. Suggestions and patches
+are welcome. Please ensure any pull requests are go fmt'd and come up
+(relatively) clean from gometalinter.
+
+Currently, basic support for SQLite, MySQL, and Oracle are included.
 
 *MOTIVATION*
 
