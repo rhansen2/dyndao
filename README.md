@@ -52,7 +52,7 @@ if obj == nil {
 	obj.Set("UPDATE_TIMESTAMP", object.NewSQLValue("NOW()"))
 	// nil means 'transactionless save', otherwise you can pass
 	// a *sql.Tx
-	r, err := o.SaveObject(ctx, nil, obj)
+	r, err := myORM.SaveObject(ctx, nil, obj)
 	if err != nil {
 		panic(err)
 	}
