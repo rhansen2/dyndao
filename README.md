@@ -16,7 +16,8 @@ Currently, basic support for SQLite, MySQL, and Oracle are included.
 *MOTIVATION*
 
 Most ORMs perceive the database world as a static state of affairs. Go's
-relatively static nature further complicates this situation.
+relatively static nature makes writing an ORM a bit different than in more
+dynamic languages, like Perl and Python.
 
 Code generators alleviate some of the pain but in some situations, there is
 still much left to be desired. dyndao is driven by the requirement for schemas
