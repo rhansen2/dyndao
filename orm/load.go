@@ -197,8 +197,9 @@ func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sql
 	if err != nil {
 		return nil, err
 	}
+	sg := o.sqlGen
 	for res.Next() {
-		columnPointers, err := o.sqlGen.MakeColumnPointers(len(columnNames), columnTypes)
+		columnPointers, err := sg.MakeColumnPointers(len(columnNames), columnTypes)
 		if err != nil {
 			return nil, err
 		}
@@ -208,7 +209,7 @@ func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sql
 			return nil, err
 		}
 
-		err = o.sqlGen.DynamicObjectSetter(columnNames, columnPointers, columnTypes, obj)
+		err = sg.DynamicObjectSetter(columnNames, columnPointers, columnTypes, obj)
 		if err != nil {
 			return nil, err
 		}
@@ -322,5 +323,3 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 	}
 	return objectArray, nil
 }
-
-

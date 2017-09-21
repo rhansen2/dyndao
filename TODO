@@ -3,6 +3,7 @@
 - add more tests
 - clean up code
 - turn on gometalinter
+- add benchmarks
 
 mapper:
 	- needs more tests overall

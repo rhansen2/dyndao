@@ -66,7 +66,7 @@ func (s Generator) DynamicObjectSetter(columnNames []string, columnPointers []in
 			}
 		} else if s.IsLOBType(typeName) {
 			val := v.(**string)
-			obj.Set(columnNames[i], string(**val))
+			obj.Set(columnNames[i], **val)
 		} else {
 			return errors.New("DynamicObjectSetter: Unrecognized type: " + typeName)
 		}
