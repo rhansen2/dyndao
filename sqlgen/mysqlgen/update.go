@@ -56,7 +56,7 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 		return "", nil, nil, errors.New("BindingUpdate: Field map unavailable for table " + obj.Type)
 	}
 
-	whereClause, bindWhere, err := renderUpdateWhereClause(schTbl, fieldsMap, obj)
+	whereClause, bindWhere, err := g.renderUpdateWhereClause(schTbl, fieldsMap, obj)
 	if err != nil {
 		return "", nil, nil, err
 	}
@@ -84,7 +84,7 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 				newValuesAry[i] = fmt.Sprintf("%s = NULL", f.Name)
 				bindArgs[i] = nil
 			} else {
-				newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, renderBindingUpdateValue(f))
+				newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, g.RenderBindingValue(f))
 				bindArgs[i] = v
 			}
 			i++
@@ -108,7 +108,7 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 				newValuesAry[i] = fmt.Sprintf("%s = NULL", f.Name)
 				bindArgs[i] = nil
 			} else {
-				newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, renderBindingUpdateValue(f))
+				newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, g.RenderBindingValue(f))
 				bindArgs[i] = v
 			}
 
@@ -122,6 +122,3 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 	return sqlStr, bindArgs, bindWhere, nil
 }
 
-func renderBindingUpdateValue(f *schema.Field) string {
-	return "?"
-}

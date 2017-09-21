@@ -19,7 +19,7 @@ func (g Generator) BindingDelete(sch *schema.Schema, queryVals *object.Object) (
 	}
 	tableName := schema.GetTableName(schTable.Name, table)
 
-	whereClause, bindWhere, err := renderWhereClause(schTable, queryVals)
+	whereClause, bindWhere, err := g.renderWhereClause(schTable, queryVals)
 	if err != nil {
 		return "", nil, err
 	}

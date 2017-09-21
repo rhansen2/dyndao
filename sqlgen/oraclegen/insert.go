@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/rbastic/nils"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 	"github.com/tidwall/gjson"
@@ -54,7 +55,7 @@ func (g Generator) coreBindingInsert(schTable *schema.Table, data map[string]int
 		if r == "" {
 			f, ok := fieldsMap[realName]
 			if ok {
-				r = renderBindingInsertValue(f)
+				r = g.RenderBindingValue(f)
 			} else {
 				panic(fmt.Sprintf("coreBindingInsert: Unknown field for key: [%s] realName: [%s] for table %s", k, realName, schTable.Name))
 			}
@@ -73,37 +74,6 @@ func (g Generator) coreBindingInsert(schTable *schema.Table, data map[string]int
 		i++
 	}
 	return bindNames, colNames, bindArgs
-}
-
-// TODO: Push these 3 routines onto github.
-func countNils(maybeNils []interface{}) int {
-	var count int
-	for _, v := range maybeNils {
-		if v == nil {
-			count++
-		}
-	}
-	return count
-}
-
-func removeNils(someNils []interface{}, count int) []interface{} {
-	noNils := make([]interface{}, len(someNils)-count)
-	j := 0
-	for _, v := range someNils {
-		if v != nil {
-			noNils[j] = v
-			j++
-		}
-	}
-	return noNils
-}
-
-func removeNilsIfNeeded(maybeNils []interface{}) []interface{} {
-	numNils := countNils(maybeNils)
-	if numNils > 0 {
-		return removeNils(maybeNils, numNils)
-	}
-	return maybeNils
 }
 
 func getRealColumnName(tbl *schema.Table, col string) string {
@@ -133,7 +103,6 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 	}
 
 	tableName := schema.GetTableName(schTable.Name, table)
-	//fmt.Println("tableName=",tableName,"schTable=",schTable)
 
 	fieldsMap := schTable.Fields
 	if fieldsMap == nil {
@@ -144,13 +113,8 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 	g.setPKifNeeded(data, identityCol)
 
 	bindNames, colNames, bindArgs := g.coreBindingInsert(schTable, data, identityCol, fieldsMap)
-	bindArgs = removeNilsIfNeeded(bindArgs)
-	/*
-		//DEBUGGING:
-		for _, v := range bindArgs {
-			identifyValueType(v)
-		}
-	*/
+	bindArgs = nils.RemoveNilsIfNeeded(bindArgs)
+
 	var sqlStr string
 	if g.CallerSuppliesPK {
 		sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
@@ -171,45 +135,6 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 	}
 	return sqlStr, bindArgs, nil
 }
-
-/*
-func quotedString(value string) string {
-	// TODO: Quote the data according to semantics of local database. This should be provided by dyndao's sql generator?
-	// ( TODO: Research what something like xorm might provide already in this area... )
-	return fmt.Sprintf(`"%s"`, value)
-}
-*/
-
-func renderBindingInsertValue(f *schema.Field) string {
-	return ":" + f.Name
-}
-
-/*
-func identifyValueType(value interface{}) {
-	// TODO do we need the schema.Field for more than debugging information?
-	switch typ := value.(type) {
-	case string:
-		fmt.Printf("%v is a string\n", value)
-	case int32:
-		fmt.Printf("%v is a int32\n", value)
-	case int:
-		fmt.Printf("%v is a int\n", value)
-	case int64:
-		fmt.Printf("%v is an int64\n", value)
-	case uint64:
-		fmt.Printf("%v is a uint64\n", value)
-	case float64:
-		fmt.Printf("%v is a float64", value)
-		// TODO: when we support more than regular integers, we'll need to care about this more
-	case *object.SQLValue:
-		fmt.Printf("%v is a pointer to an object.SQLValue", value)
-	case object.SQLValue:
-		fmt.Printf("%v is an object.SQLValue", value)
-	default:
-		fmt.Printf("%v is an unrecognized type: %v", value, typ)
-	}
-}
-*/
 
 func renderInsertValue(f *schema.Field, value interface{}) (interface{}, error) {
 	// TODO do we need the schema.Field for more than debugging information?

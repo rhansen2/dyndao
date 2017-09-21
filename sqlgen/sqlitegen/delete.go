@@ -20,7 +20,7 @@ func (g Generator) BindingDelete(sch *schema.Schema, obj *object.Object) (string
 		return "", nil, errors.New("BindingDelete: Field map unavailable for table " + obj.Type)
 	}
 
-	whereClause, bindWhere, err := renderUpdateWhereClause(schTable, fieldsMap, obj)
+	whereClause, bindWhere, err := g.renderUpdateWhereClause(schTable, fieldsMap, obj)
 	if err != nil {
 		return "", nil, err
 	}

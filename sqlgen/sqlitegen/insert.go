@@ -38,7 +38,7 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 	for k, v := range data {
 		colNames[i] = k
 		//fmt.Println("k=", k, "fieldsMap[k]=", fieldsMap[k], "v=", v)
-		r := renderBindingInsertValue(fieldsMap[k])
+		r := g.RenderBindingValue(fieldsMap[k])
 		bindNames[i] = r
 		bindArgs[i] = v
 		i++
@@ -89,10 +89,6 @@ func quotedString(value string) string {
 	return fmt.Sprintf(`"%s"`, value)
 }
 
-func renderBindingInsertValue(f *schema.Field) string {
-	return ":" + f.Name
-}
-
 func renderInsertValue(f *schema.Field, value interface{}) (string, error) {
 	// TODO do we need the schema.Field for more than debugging information?
 	switch v := value.(type) {
@@ -114,4 +110,12 @@ func renderInsertValue(f *schema.Field, value interface{}) (string, error) {
 		return "", errors.New("renderInsertField: unknown type " + fmt.Sprintf("%v", v) + " for the value of " + f.Name)
 
 	}
+}
+
+func (g Generator) RenderBindingValue(f *schema.Field) string {
+	return ":" + f.Name
+}
+
+func (g Generator) RenderBindingValueWithInt(f *schema.Field, i int64) string {
+	return fmt.Sprintf(":%s%d", f.Name, i)
 }

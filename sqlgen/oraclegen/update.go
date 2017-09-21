@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rbastic/nils"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 )
@@ -56,7 +57,7 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 		return "", nil, nil, errors.New("BindingUpdate: Field map unavailable for table " + obj.Type)
 	}
 
-	whereClause, bindWhere, err := renderUpdateWhereClause(schTbl, fieldsMap, obj)
+	whereClause, bindWhere, err := g.renderUpdateWhereClause(schTbl, fieldsMap, obj)
 	if err != nil {
 		return "", nil, nil, err
 	}
@@ -84,7 +85,7 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 				newValuesAry[i] = fmt.Sprintf("%s = NULL", f.Name)
 				bindArgs[i] = nil
 			} else {
-				newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, renderBindingUpdateValue(f), i)
+				newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, g.RenderBindingValue(f), i)
 				bindArgs[i] = v
 			}
 			i++
@@ -108,20 +109,16 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 				newValuesAry[i] = fmt.Sprintf("%s = NULL", f.Name)
 				bindArgs[i] = nil
 			} else {
-				newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, renderBindingUpdateValue(f), i)
+				newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, g.RenderBindingValue(f), i)
 				bindArgs[i] = v
 			}
 
 			i++
 		}
 	}
-	bindArgs = removeNilsIfNeeded(bindArgs)
+	bindArgs = nils.RemoveNilsIfNeeded(bindArgs)
 
 	tableName := schema.GetTableName(schTbl.Name, obj.Type)
 	sqlStr := fmt.Sprintf("UPDATE %s SET %s WHERE %s", tableName, strings.Join(newValuesAry, ","), whereClause)
 	return sqlStr, bindArgs, bindWhere, nil
-}
-
-func renderBindingUpdateValue(f *schema.Field) string {
-	return ":" + f.Name
 }

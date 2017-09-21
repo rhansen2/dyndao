@@ -9,7 +9,7 @@ import (
 	"github.com/rbastic/dyndao/schema"
 )
 
-func renderUpdateWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {
+func (g Generator) renderUpdateWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {
 	var bindArgs []interface{}
 	var whereClause string
 
@@ -20,7 +20,7 @@ func renderUpdateWhereClause(schTable *schema.Table, fieldsMap map[string]*schem
 	if !schTable.MultiKey {
 		f := fieldsMap[schTable.Primary]
 		sqlName := f.Name
-		whereClause = fmt.Sprintf("%s = %s", sqlName, renderBindingUpdateValue(f))
+		whereClause = fmt.Sprintf("%s = %s", sqlName, g.RenderBindingValue(f))
 		bindArgs = make([]interface{}, 1)
 		bindVal := obj.Get(schTable.Primary)
 		if bindVal == nil {
@@ -45,7 +45,7 @@ func renderUpdateWhereClause(schTable *schema.Table, fieldsMap map[string]*schem
 		{
 			pk := schTable.Primary
 			f := fieldsMap[schTable.Primary]
-			whereKeys[i] = fmt.Sprintf("%s = %s", f.Name, renderBindingUpdateValue(f))
+			whereKeys[i] = fmt.Sprintf("%s = %s", f.Name, g.RenderBindingValue(f))
 
 			bindVal := obj.Get(pk)
 			if bindVal == nil {
@@ -58,7 +58,7 @@ func renderUpdateWhereClause(schTable *schema.Table, fieldsMap map[string]*schem
 		if foreignKeyLen > 0 {
 			for _, pk := range schTable.ForeignKeys {
 				f := fieldsMap[pk]
-				whereKeys[i] = fmt.Sprintf("%s = %s", f.Name, renderBindingUpdateValue(f))
+				whereKeys[i] = fmt.Sprintf("%s = %s", f.Name, g.RenderBindingValue(f))
 				bindArgs[i] = obj.Get(pk)
 				i++
 			}
@@ -69,7 +69,7 @@ func renderUpdateWhereClause(schTable *schema.Table, fieldsMap map[string]*schem
 	return whereClause, bindArgs, nil
 }
 
-func renderWhereClause(schTable *schema.Table, obj *object.Object) (string, []interface{}, error) {
+func (g Generator) renderWhereClause(schTable *schema.Table, obj *object.Object) (string, []interface{}, error) {
 	var whereClause string
 
 	if len(obj.KV) == 0 {
@@ -86,7 +86,7 @@ func renderWhereClause(schTable *schema.Table, obj *object.Object) (string, []in
 			return "", nil, errors.New("renderWhereClause: unknown field " + k + " in table " + obj.Type)
 		}
 		sqlName := f.Name
-		whereKeys[i] = fmt.Sprintf("%s = %s", sqlName, renderBindingUpdateValue(f))
+		whereKeys[i] = fmt.Sprintf("%s = %s", sqlName, g.RenderBindingValue(f))
 		bindArgs[i] = v
 
 		i++

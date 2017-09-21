@@ -21,17 +21,17 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 		return "", nil, nil, errors.New("BindingUpdate: Field map unavailable for table " + obj.Type)
 	}
 
-	whereClause, bindWhere, err := renderUpdateWhereClause(schTbl, fieldsMap, obj)
+	whereClause, bindWhere, err := g.renderUpdateWhereClause(schTbl, fieldsMap, obj)
 	if err != nil {
 		return "", nil, nil, err
 	}
 
 	bindArgs := make([]interface{}, len(obj.KV))
 	newValuesAry := make([]string, len(obj.KV))
-	i := 0
+	var i int64
 	for k, v := range obj.KV {
 		f := fieldsMap[k]
-		newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, renderBindingUpdateValue(f), i)
+		newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, g.RenderBindingValueWithInt(f, i))
 		bindArgs[i] = v
 		i++
 	}

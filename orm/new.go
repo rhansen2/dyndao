@@ -20,6 +20,9 @@ type Generator interface {
 	CreateTable(sch *schema.Schema, table string) (string, error)
 	DropTable(name string) string
 
+	RenderBindingValue(f * schema.Field) string
+	RenderBindingValueWithInt(f * schema.Field, i int64) string
+
 	IsStringType(string) bool
 	IsNumberType(string) bool
 	IsFloatingType(string) bool
@@ -48,6 +51,12 @@ type ORM struct {
 // a given ORM object.
 func (o ORM) GetSchema() *schema.Schema {
 	return o.s
+}
+
+// GetGenerator returns the current sql generator object that is stored within a given ORM object.
+
+func (o ORM) GetGenerator() Generator {
+	return o.sqlGen
 }
 
 // New is the ORM constructor. It expects a SQL generator, JSON/SQL Schema object, and database connection.

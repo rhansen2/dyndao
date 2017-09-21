@@ -19,7 +19,7 @@ func (g Generator) BindingDelete(sch *schema.Schema, queryVals *object.Object) (
 	}
 	tableName := schema.GetTableName(schTable.Name, table)
 
-	whereClause, bindWhere, err := renderWhereClause(schTable, queryVals)
+	whereClause, bindWhere, err := g.renderWhereClause(schTable, queryVals)
 	if err != nil {
 		return "", nil, err
 	}
@@ -28,7 +28,6 @@ func (g Generator) BindingDelete(sch *schema.Schema, queryVals *object.Object) (
 	if len(bindWhere) == 0 {
 		whereString = ""
 	}
-	// TODO: Replicate this fix to sqlite sqlgen
 	sqlStr := fmt.Sprintf("DELETE FROM %s %s %s", tableName, whereString, whereClause)
 	if os.Getenv("DEBUG") != "" {
 		fmt.Println(sqlStr)

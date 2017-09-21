@@ -178,7 +178,7 @@ func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sql
 	defer func() {
 		stmtErr := stmt.Close()
 		if stmtErr != nil {
-			fmt.Println(stmtErr) // TODO: logger implementation
+			fmt.Println("defer stmt.Close error:", stmtErr) // TODO: logger implementation
 		}
 	}()
 
@@ -187,9 +187,9 @@ func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sql
 		return nil, err
 	}
 	defer func() {
-		resErr := res.Close() // TODO: logger implementation
+		resErr := res.Close()
 		if resErr != nil {
-			fmt.Println(resErr)
+			fmt.Println("defer res.Close error:", resErr) // TODO: logger implementation
 		}
 	}()
 
@@ -204,15 +204,16 @@ func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sql
 			return nil, err
 		}
 
-		obj := object.New(table)
 		if err := res.Scan(columnPointers...); err != nil {
 			return nil, err
 		}
 
+		obj := object.New(table)
 		err = sg.DynamicObjectSetter(columnNames, columnPointers, columnTypes, obj)
 		if err != nil {
 			return nil, err
 		}
+
 		obj.SetSaved(true)
 		obj.ResetChangedFields()
 
@@ -291,8 +292,9 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 		return nil, err
 	}
 
+	sg := o.sqlGen
 	for res.Next() {
-		columnPointers, err := o.sqlGen.MakeColumnPointers(len(columnNames), columnTypes)
+		columnPointers, err := sg.MakeColumnPointers(len(columnNames), columnTypes)
 		if err != nil {
 			return nil, err
 		}
@@ -302,18 +304,13 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 			return nil, err
 		}
 
-		err = o.sqlGen.DynamicObjectSetter(columnNames, columnPointers, columnTypes, obj)
+		err = sg.DynamicObjectSetter(columnNames, columnPointers, columnTypes, obj)
 		if err != nil {
 			return nil, err
 		}
+
 		obj.SetSaved(true)
 		obj.ResetChangedFields()
-
-		/*
-			if os.Getenv("DEBUG") != "" {
-				fmt.Println("RetrieveObjects ... obj ->", obj)
-			}
-		*/
 		objectArray = append(objectArray, obj)
 	}
 

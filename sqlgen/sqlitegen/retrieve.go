@@ -26,7 +26,7 @@ func (g Generator) BindingRetrieve(sch *schema.Schema, obj *object.Object) (stri
 		return "", nil, nil, errors.New("BindingRetrieve: Table map unavailable for table " + table)
 	}
 
-	whereClause, bindWhere, err := renderWhereClause(schTable, obj)
+	whereClause, bindWhere, err := g.renderWhereClause(schTable, obj)
 	if err != nil {
 		return "", nil, nil, errors.Wrap(err, "BindingRetrieve")
 	}
