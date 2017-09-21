@@ -25,20 +25,21 @@ performance.
 
 See github.com/rbastic/dyndao/schema for how dyndao handles dynamic schemas.
 
-Additionally, since most Go ORMs use code generators and structs, you are never
-able to easily write an UPDATE that mentions a SQL function call:
+Additionally, static typing fails when you want to write an UPDATE that involves
+a SQL function call:
 
 ```code
 UPDATE fooTable SET ..., UPDATE_TIMESTAMP=NOW() WHERE fooTable_ID = 1;
 ```
 
-NOW() is the timestamp function call (at least in MySQL, not sure of others).
+NOW() is the current timestamp function call (at least in MySQL, not sure of
+others).
 
 Presently, the way dyndao is written, you could do something like:
 
 ```code
-// 'o' is an instantiation of the ORM package
-obj, err := o.RetrieveObject(ctx, tableString, pkValues)
+myORM = getORM() // you'll have to write this to instantiate a db connection
+obj, err := myORM.RetrieveObject(ctx, tableString, pkValues)
 if err != nil {
 	panic(err)
 }
