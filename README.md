@@ -11,7 +11,9 @@ production workloads, please use it at your own risk. Suggestions and patches
 are welcome. Please ensure any pull requests are go fmt'd and are
 (relatively) clean when run against gometalinter.
 
-Currently, basic support for SQLite, MySQL, and Oracle are included.
+Currently, basic support for SQLite, MySQL, and Oracle are included. If you
+intend on working with MySQL, please be sure to check out the 'columntype'
+branch for github.com/go-sql-driver/mysql
 
 *MOTIVATION*
 
