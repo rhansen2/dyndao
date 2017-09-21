@@ -69,9 +69,7 @@ details). Almost everything is an object in dyndao.
 JSON leaves much to be desired due to Go's type model. Mapping reliably between
 JSON and an ORM is fraught with issues due to assumptions that Go makes with
 regards to map[string]interface{}. Please take the opinions here with a grain of
-salt, as one of the authors is originally a Perl programmer. As we all know,
-Perl's core values are laziness, impatience, and hubris - hubris is a double-edged
-sword.
+salt, as one of the authors is originally a Perl programmer.
 
 Nonetheless, the authors of this package have attempted to manage these issues
 where possible.
