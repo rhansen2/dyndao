@@ -112,6 +112,38 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 	return rowsAff, nil
 }
 
+// SaveObjectButErrorIfUpdate function will INSERT or UPDATE a record. It does not attempt to
+// save any of the children. If given a transaction, it will use that to
+// attempt to insert the data.
+func (o ORM) SaveObjectButErrorIfUpdate(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	objTable := o.s.GetTable(obj.Type)
+	// skip if object has invalid type
+	if objTable == nil {
+		return 0, errors.New("SaveObjectButErrorIfUpdate: unknown object table " + obj.Type)
+	}
+	// skip if object is saved
+	if obj.GetSaved() {
+		return 0, nil
+	}
+	// retrieve primary key value
+	pk := objTable.Primary
+	if pk == "" {
+		return 0, errors.New("SaveObjectButErrorIfUpdate: empty primary key for " + obj.Type)
+	}
+	// skip if primary key has no field configuration in table schema
+	fieldMap := objTable.Fields
+	f := fieldMap[pk]
+	if f == nil {
+		return 0, errors.New("SaveObjectButErrorIfUpdate: empty field " + pk + " for " + obj.Type)
+	}
+	// Check the primary key to see if we should insert or update
+	_, ok := obj.KV[f.Name]
+	if !ok {
+		return o.Insert(ctx, tx, obj)
+	}
+	return 0, fmt.Errorf("SaveObjectButErrorIfUpdate: ORM was told to expect an Insert for this obj: %v", obj)
+}
+
 // SaveObjectButErrorIfInsert function will UPDATE a record and error if it
 // appears that an INSERT should have been performed. This could be necessary in
 // situations where an INSERT would compromise the integrity of the data.  If
@@ -140,7 +172,7 @@ func (o ORM) SaveObjectButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *ob
 	// Check the primary key to see if we should insert or update
 	_, ok := obj.KV[f.Name]
 	if !ok {
-		return 0, fmt.Errorf("SaveObjectButErrorIfInsert: Expected to perform Update on obj: %v", obj)
+		return 0, fmt.Errorf("SaveObjectButErrorIfInsert: ORM was told to expect an Update for this obj: %v", obj)
 	}
 	return o.Update(ctx, tx, obj)
 }
