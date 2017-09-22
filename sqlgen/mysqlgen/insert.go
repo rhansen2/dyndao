@@ -146,7 +146,6 @@ func renderBindingInsertValue(f *schema.Field) string {
 	return "?"
 }
 
-
 func renderInsertValue(f *schema.Field, value interface{}) (interface{}, error) {
 	// TODO do we need the schema.Field for more than debugging information?
 	switch value.(type) {

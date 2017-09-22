@@ -121,4 +121,3 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 	sqlStr := fmt.Sprintf("UPDATE %s SET %s WHERE %s", tableName, strings.Join(newValuesAry, ","), whereClause)
 	return sqlStr, bindArgs, bindWhere, nil
 }
-

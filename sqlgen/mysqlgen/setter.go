@@ -1,15 +1,15 @@
 package mysqlgen
 
 import (
-	"github.com/pkg/errors"
-	"time"
 	"database/sql"
+	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
+	"time"
 )
 
 // DynamicObjectSetter is used to dynamically set the values of an object by
 // checking the necessary types (via sql.ColumnType, and what the driver tells
-// us we have for column types) 
+// us we have for column types)
 func (s Generator) DynamicObjectSetter(columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error {
 	// NOTE: Read this post for more info on why the code below is written this way:
 	// https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
@@ -74,7 +74,6 @@ func (s Generator) DynamicObjectSetter(columnNames []string, columnPointers []in
 	}
 	return nil
 }
-
 
 func (s Generator) MakeColumnPointers(sliceLen int, columnTypes []*sql.ColumnType) ([]interface{}, error) {
 	columnPointers := make([]interface{}, sliceLen)

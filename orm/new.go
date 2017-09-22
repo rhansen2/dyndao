@@ -20,8 +20,8 @@ type Generator interface {
 	CreateTable(sch *schema.Schema, table string) (string, error)
 	DropTable(name string) string
 
-	RenderBindingValue(f * schema.Field) string
-	RenderBindingValueWithInt(f * schema.Field, i int64) string
+	RenderBindingValue(f *schema.Field) string
+	RenderBindingValueWithInt(f *schema.Field, i int64) string
 
 	IsStringType(string) bool
 	IsNumberType(string) bool

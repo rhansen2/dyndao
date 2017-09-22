@@ -8,9 +8,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/rbastic/nils"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
+	"github.com/rbastic/nils"
 	"github.com/tidwall/gjson"
 )
 

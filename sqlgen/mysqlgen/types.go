@@ -13,8 +13,8 @@ var stringTypes = map[string]bool{
 var numTypes = map[string]bool{
 	"NUMBER": true,
 	"number": true,
-	"INT": true,
-	"int": true,
+	"INT":    true,
+	"int":    true,
 }
 
 var floatTypes = map[string]bool{
