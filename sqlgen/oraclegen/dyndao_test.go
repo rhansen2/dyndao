@@ -31,9 +31,9 @@ const AddressesObjectType string = "addresses"
 // to abstract the DSN
 func GetDB() *sql.DB {
 	// TODO: externalize the DSN and store it in vault
-	dsn := os.Getenv("DSN")
+	dsn := os.Getenv("ORACLE_DSN")
 	if dsn == "" {
-		panic("oracle DSN is not set, cannot initialize database")
+		panic("ORACLE_DSN environment variable is not set, cannot initialize database")
 	}
 	db, err := sql.Open("goracle", dsn)
 	if err != nil {

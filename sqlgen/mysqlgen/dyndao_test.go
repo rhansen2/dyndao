@@ -29,7 +29,7 @@ const AddressesObjectType string = "addresses"
 // to abstract the DSN
 func GetDB() (*sql.DB, error) {
 	// TODO: externalize the DSN and store it in vault
-	dsn := os.Getenv("DSN")
+	dsn := os.Getenv("MYSQL_DSN")
 	if dsn == "" {
 		return nil, errors.New("mysql DSN is not set, cannot initialize database")
 	}

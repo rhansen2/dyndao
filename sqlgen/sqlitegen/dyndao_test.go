@@ -6,6 +6,7 @@ import (
 	"context"
 	// These tests are specific to SQLite
 	_ "github.com/mattn/go-sqlite3"
+	"os"
 
 	"database/sql"
 	"fmt"
@@ -20,8 +21,11 @@ const PeopleObjectType string = "people"
 const AddressesObjectType string = "addresses"
 
 func getDB() *sql.DB {
-	// TODO: test all database types that we support.
-	db, err := sql.Open("sqlite3", "file::memory:?mode=memory&cache=shared")
+	sqliteDSN := os.Getenv("SQLITE_DSN")
+	if sqliteDSN == "" {
+		sqliteDSN = "file::memory:?mode=memory&cache=shared"
+	}
+	db, err := sql.Open("sqlite3", sqliteDSN)
 	if err != nil {
 		panic(err)
 	}
