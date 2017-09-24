@@ -6,30 +6,22 @@
 - add benchmarks
 
 mapper:
-	- needs more tests overall
 	- not completely confident that mapper is in sufficient end-state
 
-TODO
-
-	- finish implementing table name usage (new table.Name override)
+others:
 	- add tests for Delete
 
-	- sqlite support for cascading key constraints on table schema
-	- oracle text->CLOB mapper... what about adding constraints? aka IS JSON constraints.
-
-	- use ChangedFields in update code so that we only update the values that changed....
+	- sqlite support for cascading key constraints on table schema?
 
 	- TODO: oracle, add tests for varchar2 database type?
-	- TODO: oracle, support JSON BLOB constraint on table. support constraints for other databases.
-	- TODO: what do other databases (cough, sqlite) do in this area?
+	- TODO: constraints - oracle: support JSON BLOB constraint on table. support constraints for other databases.
 
-	- Review TODOs in code, in particular the transactions.
+	- Review TODOs in code.
+	- Review transactional cases in code
 	- Review the code overall.
 
-	- consider sync.Map for object.Object
-
 	- (With RetrieveObjects)
-		Implement LIMIT... That's all a singular retrieve should be underneath the hood that's different.
+		- Implement LIMIT... That's all a singular retrieve should be underneath the hood that's different.
 
 	- use schema.Field.IsNumber more ?
 	- type affinity ? type aliasing ?

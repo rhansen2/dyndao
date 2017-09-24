@@ -21,6 +21,7 @@ func (s Generator) DynamicObjectSetter(columnNames []string, columnPointers []in
 		if s.IsTimestampType(typeName) {
 			val := v.(*time.Time)
 			obj.Set(columnNames[i], *val)
+			continue
 		} else if s.IsStringType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
@@ -38,6 +39,7 @@ func (s Generator) DynamicObjectSetter(columnNames []string, columnPointers []in
 				obj.Set(columnNames[i], *val)
 
 			}
+			continue
 		} else if s.IsNumberType(typeName) {
 			// TODO: support more than 'int64' for integer...?
 			nullable, _ := ct.Nullable()
@@ -51,6 +53,7 @@ func (s Generator) DynamicObjectSetter(columnNames []string, columnPointers []in
 				val := v.(*int64)
 				obj.Set(columnNames[i], *val)
 			}
+			continue
 		} else if s.IsFloatingType(typeName) {
 			// TODO: support more than 'int64' for integer...?
 			nullable, _ := ct.Nullable()
@@ -64,11 +67,11 @@ func (s Generator) DynamicObjectSetter(columnNames []string, columnPointers []in
 				val := v.(*float64)
 				obj.Set(columnNames[i], *val)
 			}
+			continue
 		} else if s.IsLOBType(typeName) {
 			return errors.New("DynamicObjectSetter: LOB type isn't supported for SQLite")
-		} else {
-			return errors.New("DynamicObjectSetter: Unrecognized type: " + typeName)
 		}
+		return errors.New("DynamicObjectSetter: Unrecognized type: " + typeName)
 	}
 	return nil
 }

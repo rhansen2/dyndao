@@ -96,10 +96,14 @@ func (g Generator) renderWhereClause(schTable *schema.Table, obj *object.Object)
 	return whereClause, bindArgs, nil
 }
 
+// RenderBindingValue is for binding parameters
 func (g Generator) RenderBindingValue(f *schema.Field) string {
 	return "?"
 }
 
+// RenderBindingValue is for binding parameters in situations where attaching
+// a number as a suffix may be necessary. Not useful for all databases
+// (mostly only Oracle, AFAIK at time of writing.)
 func (g Generator) RenderBindingValueWithInt(f *schema.Field, i int64) string {
 	return "?"
 }

@@ -31,7 +31,7 @@ func GetDB() (*sql.DB, error) {
 	// TODO: externalize the DSN and store it in vault
 	dsn := os.Getenv("MYSQL_DSN")
 	if dsn == "" {
-		return nil, errors.New("mysql DSN is not set, cannot initialize database")
+		return nil, errors.New("MYSQL_DSN is not set, cannot initialize database")
 	}
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {

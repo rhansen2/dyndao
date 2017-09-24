@@ -41,6 +41,3 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 	return sqlStr, bindArgs, bindWhere, nil
 }
 
-func renderBindingUpdateValue(f *schema.Field) string {
-	return ":" + f.Name
-}

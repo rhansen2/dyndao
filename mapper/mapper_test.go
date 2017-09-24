@@ -3,7 +3,6 @@ package mapper
 import (
 	"testing"
 
-	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 	"github.com/tidwall/gjson"
 )
@@ -68,25 +67,6 @@ func getJSONData() string {
 
 func getNestedJSONData() string {
 	return `{"people": {"Name":"Sam", "PersonID":1, "addresses": {"Address1":"Test","Address2":"Test2","City":"Nowhere","State":"AZ" } } }`
-}
-
-func getNestedObj() *object.Object {
-	o := object.New(PeopleObjectType)
-
-	o.KV = map[string]interface{}{
-		"PersonID": 1,
-		"Name":     "Sam",
-	}
-
-	addr := object.New(AddressesObjectType)
-
-	addr.Set("Address1", "Test")
-	addr.Set("Address2", "Test2")
-	addr.Set("City", "Nowhere")
-	addr.Set("State", "AZ")
-
-	o.Children[AddressesObjectType] = object.NewArray(addr)
-	return o
 }
 
 func TestNestedMapper(t *testing.T) {

@@ -54,7 +54,6 @@ func (o ORM) GetSchema() *schema.Schema {
 }
 
 // GetGenerator returns the current sql generator object that is stored within a given ORM object.
-
 func (o ORM) GetGenerator() Generator {
 	return o.sqlGen
 }
