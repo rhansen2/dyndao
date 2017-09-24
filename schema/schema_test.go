@@ -28,6 +28,7 @@ func TestDefaultChildTable(t *testing.T) {
 func fieldID(name string) *Field {
 	fld := DefaultField()
 	fld.Name = name
+	fld.Source = name
 	fld.IsNumber = true
 	return fld
 }
