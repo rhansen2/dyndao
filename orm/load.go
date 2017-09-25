@@ -18,6 +18,11 @@ import (
 // If a child contains multiple parent tables (possibility?) then this would return an Array
 // of objects with multiple potential values for their obj.Type fields.
 func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (object.Array, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
 	table := childObj.Type
 
 	// Retrieve schema table object
@@ -53,6 +58,11 @@ func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (o
 // when fleshening the children structures -- when retrieving the children, we do a single-level retrieve, ignoring
 // any child structures that may be configured at two levels of depth.
 func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues map[string]interface{}) (*object.Object, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
 	// Retrieve schema.Table object
 	objTable := o.s.GetTable(table)
 	if objTable == nil {
@@ -122,6 +132,11 @@ func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues ma
 // datastore.
 // TODO: Implement LIMIT so that we can improve this.
 func (o ORM) RetrieveObject(ctx context.Context, table string, queryVals map[string]interface{}) (*object.Object, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
 	objAry, err := o.RetrieveObjects(ctx, table, queryVals)
 	if err != nil {
 		return nil, err
@@ -135,6 +150,11 @@ func (o ORM) RetrieveObject(ctx context.Context, table string, queryVals map[str
 
 // FleshenChildren function accepts an object and resets it's children.
 func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.Object, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
 	// Retrieve schema configuration for this object type (schema.Table)
 	schemaTable := o.s.GetTable(obj.Type)
 
@@ -165,6 +185,11 @@ func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.O
 // the column names and the binding arguments in addition to the SQL string, so that it can dynamically map
 // the column types accordingly to the destination object. (Mainly, so we know the array length..)
 func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sqlStr string, columnNames []string, bindArgs []interface{}) (object.Array, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
 	var objectArray object.Array
 
 	if os.Getenv("DEBUG_RETRIEVECUSTOM") != "" {
@@ -243,6 +268,11 @@ func (o ORM) makeQueryObj(objTable *schema.Table, queryVals map[string]interface
 
 // RetrieveObjects function will fleshen an object structure, given some primary keys
 func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[string]interface{}) (object.Array, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
 
 	objTable := o.s.GetTable(table)
 	if objTable == nil {

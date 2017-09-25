@@ -69,6 +69,11 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 
 // SaveAllInsideTx will attempt to save an entire nested object structure inside of a single transaction.
 func (o ORM) SaveAllInsideTx(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	select {
+	case <-ctx.Done():
+		return 0, ctx.Err()
+	default:
+	}
 	// TODO: Review this code for how it uses transactions / rollbacks.
 	rowsAff, err := o.recurseAndSave(ctx, tx, obj)
 	if err != nil {
@@ -86,6 +91,12 @@ func (o ORM) SaveAllInsideTx(ctx context.Context, tx *sql.Tx, obj *object.Object
 // It begins the transaction, attempts to recursively save the object and all of it's children,
 // and any of the children's children, and then will finally rollback/commit as necessary.
 func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
+	select {
+	case <-ctx.Done():
+		return 0, ctx.Err()
+	default:
+	}
+
 	tx, err := o.RawConn.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, err
@@ -116,6 +127,11 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 // save any of the children. If given a transaction, it will use that to
 // attempt to insert the data.
 func (o ORM) SaveObjectButErrorIfUpdate(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	select {
+	case <-ctx.Done():
+		return 0, ctx.Err()
+	default:
+	}
 	objTable := o.s.GetTable(obj.Type)
 	// skip if object has invalid type
 	if objTable == nil {
@@ -149,6 +165,11 @@ func (o ORM) SaveObjectButErrorIfUpdate(ctx context.Context, tx *sql.Tx, obj *ob
 // situations where an INSERT would compromise the integrity of the data.  If
 // given a transaction, it will use that to attempt to insert the data.
 func (o ORM) SaveObjectButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	select {
+	case <-ctx.Done():
+		return 0, ctx.Err()
+	default:
+	}
 	objTable := o.s.GetTable(obj.Type)
 	// skip if object has invalid type
 	if objTable == nil {
@@ -181,6 +202,11 @@ func (o ORM) SaveObjectButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *ob
 // save any of the children. If given a transaction, it will use that to
 // attempt to insert the data.
 func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	select {
+	case <-ctx.Done():
+		return 0, ctx.Err()
+	default:
+	}
 	objTable := o.s.GetTable(obj.Type)
 	// skip if object has invalid type
 	if objTable == nil {
@@ -229,6 +255,11 @@ func maybeDereferenceArgs(arg interface{}) interface{} {
 // Insert function will INSERT a record, given an optional transaction and an object.
 // It returns the number of rows affected (int64) and any error that may have occurred.
 func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	select {
+	case <-ctx.Done():
+		return 0, ctx.Err()
+	default:
+	}
 	objTable := o.s.GetTable(obj.Type)
 	if objTable == nil {
 		if os.Getenv("DEBUG_INSERT") != "" {
@@ -319,6 +350,11 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 // Update function will UPDATE a record ...
 func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	select {
+	case <-ctx.Done():
+		return 0, ctx.Err()
+	default:
+	}
 	sqlStr, bindArgs, bindWhere, err := o.sqlGen.BindingUpdate(o.s, obj)
 	if err != nil {
 		if os.Getenv("DEBUG_UPDATE") != "" {

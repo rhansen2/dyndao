@@ -93,19 +93,7 @@ sqlgen - code generators for various database implementations
 
 *CONTEXT CHECKING*
 
-dyndao does not currently check contexts for expiration. You should do so
-in your code before calling any of dyndao's ORM methods.
-
-Example:
-```code
-select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	default:
-}
-
-// now call method in question
-```
+dyndao no longer requires you to check your own contexts.
 
 *DISCLAIMER*
 

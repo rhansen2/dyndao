@@ -13,6 +13,12 @@ import (
 
 // Delete function will DELETE a record ...
 func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	select {
+	case <-ctx.Done():
+		return 0, ctx.Err()
+	default:
+	}
+
 	objTable := o.s.GetTable(obj.Type)
 	if objTable == nil {
 		return 0, errors.New("Delete: unknown object table " + obj.Type)
