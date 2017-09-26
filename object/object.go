@@ -75,6 +75,13 @@ func (o Object) Get(k string) interface{} {
 	return o.KV[k]
 }
 
+// GetWithFlag is the second most basic accessor, for cases
+// that may not be handled by other methods
+func (o Object) GetWithFlag(k string) (interface{}, bool) {
+	v, ok := o.KV[k]
+	return v, ok
+}
+
 // GetBool is a safe, typed bool accessor
 func (o Object) GetBool(k string) (bool, bool) {
 	v, ok := o.KV[k].(bool)

@@ -99,6 +99,9 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 
 		for k, v := range obj.KV {
 			f := schTbl.GetField(k)
+			if f == nil {
+				return "", nil, nil, errors.New("BindingUpdate: field config unavailable for object Type: " + obj.Type + ", key: " + k)
+			}
 			if f.IsIdentity {
 				continue
 			}
