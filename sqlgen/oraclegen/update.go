@@ -68,12 +68,17 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 	var newValuesAry []string
 
 	// If some things have changed, then only use fields that we're sure have changed
+
+	// TODO: Refactor this code.
 	if len(obj.ChangedFields) > 0 {
 		bindArgs = make([]interface{}, len(obj.ChangedFields))
 		newValuesAry = make([]string, len(obj.ChangedFields))
 
 		for k := range obj.ChangedFields {
 			f := schTbl.GetField(k)
+			if f == nil {
+				return "", nil, nil, errors.New("BindingUpdate: field config unavailable for object Type: " + obj.Type + ", key: " + k)
+			}
 			if f.IsIdentity {
 				continue
 			}

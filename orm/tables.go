@@ -9,8 +9,6 @@ import (
 	"github.com/rbastic/dyndao/schema"
 	"context"
 	"database/sql"
-	"fmt"
-	"github.com/pkg/errors"
 )
 
 // CreateTables executes a CreateTable operation for every table specified in
