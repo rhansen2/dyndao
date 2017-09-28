@@ -6,6 +6,7 @@ package orm
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"os"
 
@@ -43,7 +44,7 @@ func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (o
 			return nil, err
 		}
 		// Retrieve + append the relevant parent objs
-		objs, err := o.RetrieveObjects(ctx, pt, pkQueryVals)
+		objs, err := o.RetrieveMany(ctx, pt, pkQueryVals)
 		if err != nil {
 			return nil, err
 		}
@@ -70,9 +71,9 @@ func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues ma
 	}
 
 	// Retrieve single object from database
-	obj, err := o.RetrieveObject(ctx, table, pkValues)
+	obj, err := o.Retrieve(ctx, table, pkValues)
 	if err != nil {
-		return nil, errors.Wrap(err, "RetrieveWithChildren/RetrieveObject")
+		return nil, errors.Wrap(err, "RetrieveWithChildren/Retrieve")
 	}
 
 	// Iterate the configured 'children' for this particular object type
@@ -111,9 +112,9 @@ func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues ma
 		}
 
 		// Retrieve a single child (TODO: Implement RetrieveMany options as well)
-		childObj, err := o.RetrieveObject(ctx, name, childPkValues)
+		childObj, err := o.Retrieve(ctx, name, childPkValues)
 		if err != nil {
-			return nil, errors.Wrap(err, "RetrieveWithChildren/RetrieveObject("+name+")")
+			return nil, errors.Wrap(err, "RetrieveWithChildren/Retrieve("+name+")")
 		}
 		// Populate single child inside parent
 		if obj.Children[name] == nil {
@@ -125,19 +126,19 @@ func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues ma
 	return obj, nil
 }
 
-// RetrieveObject function will fleshen an object structure, given some primary keys.
-// Technically, we call RetrieveObjects internally. Since we do not have LIMIT implemented yet,
+// retrieveCore function will fleshen an object structure, given some primary keys.
+// Technically, we call RetrieveMany internally. Since we do not have LIMIT implemented yet,
 // it's just a cheap implementation that returns the zeroeth value. Nil will be returned
 // for both the object and the error if a row is unable to be matched by the underlying
 // datastore.
 // TODO: Implement LIMIT so that we can improve this.
-func (o ORM) RetrieveObject(ctx context.Context, table string, queryVals map[string]interface{}) (*object.Object, error) {
+func (o ORM) retrieveCore(ctx context.Context, tx * sql.Tx, table string, queryVals map[string]interface{}) (*object.Object, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
 	}
-	objAry, err := o.RetrieveObjects(ctx, table, queryVals)
+	objAry, err := o.retrieveManyCore(ctx, tx, table, queryVals)
 	if err != nil {
 		return nil, err
 	}
@@ -146,6 +147,27 @@ func (o ORM) RetrieveObject(ctx context.Context, table string, queryVals map[str
 		return nil, nil
 	}
 	return objAry[0], nil
+}
+
+// RetrieveTx function will fleshen an object structure, given some primary keys.
+// Technically, we call RetrieveMany internally. Since we do not have LIMIT implemented yet,
+// it's just a cheap implementation that returns the zeroeth value. Nil will be returned
+// for both the object and the error if a row is unable to be matched by the underlying
+// datastore.
+// TODO: Implement LIMIT so that we can improve this.
+func (o ORM) RetrieveTx(ctx context.Context, tx * sql.Tx, table string, queryVals map[string]interface{}) (*object.Object, error) {
+	return o.retrieveCore(ctx, tx, table, queryVals)
+}
+
+
+// Retrieve function will fleshen an object structure, given some primary keys.
+// Technically, we call RetrieveMany internally. Since we do not have LIMIT implemented yet,
+// it's just a cheap implementation that returns the zeroeth value. Nil will be returned
+// for both the object and the error if a row is unable to be matched by the underlying
+// datastore.
+// TODO: Implement LIMIT so that we can improve this.
+func (o ORM) Retrieve(ctx context.Context, table string, queryVals map[string]interface{}) (*object.Object, error) {
+	return o.retrieveCore(ctx, nil, table, queryVals)
 }
 
 // FleshenChildren function accepts an object and resets it's children.
@@ -163,7 +185,7 @@ func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.O
 	pkVal := obj.Get(pkKey)
 
 	// If this table is configured with child tables, then we iterate over
-	// them and call RetrieveObjects using the singular primary key value.
+	// them and call RetrieveMany using the singular primary key value.
 	// FIXME: We need to support multikey in this instance if we are going
 	// to consider this complete.
 	if len(schemaTable.Children) > 0 {
@@ -171,7 +193,7 @@ func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.O
 			// TODO: multi-key support here...
 			m := map[string]interface{}{}
 			m[pkKey] = pkVal
-			childObjs, err := o.RetrieveObjects(ctx, childTableName, m)
+			childObjs, err := o.RetrieveMany(ctx, childTableName, m)
 			if err != nil {
 				return nil, err
 			}
@@ -181,10 +203,10 @@ func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.O
 	return obj, nil
 }
 
-// RetrieveObjectsFromCustomSQL will fleshen an object structure, given a custom SQL string. It must still be told
+// RetrieveManyFromCustomSQL will fleshen an object structure, given a custom SQL string. It must still be told
 // the column names and the binding arguments in addition to the SQL string, so that it can dynamically map
 // the column types accordingly to the destination object. (Mainly, so we know the array length..)
-func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sqlStr string, columnNames []string, bindArgs []interface{}) (object.Array, error) {
+func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr string, columnNames []string, bindArgs []interface{}) (object.Array, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -193,7 +215,7 @@ func (o ORM) RetrieveObjectsFromCustomSQL(ctx context.Context, table string, sql
 	var objectArray object.Array
 
 	if os.Getenv("DEBUG_RETRIEVECUSTOM") != "" {
-		fmt.Println("RetrieveObjectsFromCustomSQL/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
+		fmt.Println("RetrieveManyFromCustomSQL/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
 	}
 
 	stmt, err := o.RawConn.PrepareContext(ctx, sqlStr)
@@ -266,8 +288,7 @@ func (o ORM) makeQueryObj(objTable *schema.Table, queryVals map[string]interface
 	return queryObj
 }
 
-// RetrieveObjects function will fleshen an object structure, given some primary keys
-func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[string]interface{}) (object.Array, error) {
+func (o ORM) retrieveManyCore(ctx context.Context, tx * sql.Tx, table string, queryVals map[string]interface{}) (object.Array, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -276,28 +297,29 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 
 	objTable := o.s.GetTable(table)
 	if objTable == nil {
-		return nil, errors.New("RetrieveObjects: unknown object table " + table)
+		return nil, errors.New("RetrieveMany: unknown object table " + table)
 	}
 	if objTable.Name == "" {
-		return nil, errors.New("RetrieveObjects: schema table object has unset 'Name' property")
+		return nil, errors.New("RetrieveMany: schema table object has unset 'Name' property")
 	}
 
 	var objectArray object.Array
 	queryObj := o.makeQueryObj(objTable, queryVals)
 
 	sqlStr, columnNames, bindArgs, err := o.sqlGen.BindingRetrieve(o.s, queryObj)
-	if os.Getenv("DEBUG_RETRIEVEOBJS") != "" {
-		fmt.Println("RetrieveObjects/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
+	if os.Getenv("DEBUG_RETRIEVEMANY") != "" {
+		fmt.Println("RetrieveMany/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
 	}
 
 	if err != nil {
 		return nil, err
 	}
 
-	stmt, err := o.RawConn.PrepareContext(ctx, sqlStr)
+	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)
 	if err != nil {
 		return nil, err
 	}
+
 	defer func() {
 		err := stmt.Close()
 		if err != nil {
@@ -349,4 +371,15 @@ func (o ORM) RetrieveObjects(ctx context.Context, table string, queryVals map[st
 		return nil, err
 	}
 	return objectArray, nil
+}
+
+// RetrieveManyTx function will fleshen a top-level object structure, given some primary keys. And
+// it's transactional!
+func (o ORM) RetrieveManyTx(ctx context.Context, tx * sql.Tx, table string, queryVals map[string]interface{}) (object.Array, error) {
+	return o.retrieveManyCore(ctx, tx, table, queryVals)
+}
+
+// RetrieveMany function will fleshen a top-level object structure, given some primary keys
+func (o ORM) RetrieveMany(ctx context.Context, table string, queryVals map[string]interface{}) (object.Array, error) {
+	return o.retrieveManyCore(ctx, nil, table, queryVals)
 }

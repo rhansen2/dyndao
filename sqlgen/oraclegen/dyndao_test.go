@@ -132,14 +132,14 @@ func TestSuiteNested(t *testing.T) {
 		testSaveObject(&o, t, obj)
 	})
 
-	t.Run("RetrieveObject", func(t *testing.T) {
+	t.Run("Retrieve", func(t *testing.T) {
 		// test retrieving the parent, given a child object
-		testRetrieveObject(&o, t, sch)
+		testRetrieve(&o, t, sch)
 	})
 
-	t.Run("RetrieveObjects", func(t *testing.T) {
+	t.Run("RetrieveMany", func(t *testing.T) {
 		// test multiple retrieve
-		testRetrieveObjects(&o, t, PeopleObjectType)
+		testRetrieveMany(&o, t, PeopleObjectType)
 	})
 
 	t.Run("FleshenChildren", func(t *testing.T) {
@@ -155,7 +155,7 @@ func TestSuiteNested(t *testing.T) {
 	// JSON mapper tests
 	var newJSON string
 	t.Run("JSONMapper", func(t *testing.T) {
-		latestRyan, err := o.RetrieveObject(context.TODO(), PeopleObjectType,
+		latestRyan, err := o.Retrieve(context.TODO(), PeopleObjectType,
 			map[string]interface{}{
 				"PersonID": 1,
 			})
@@ -272,12 +272,12 @@ func testSaveObject(o *orm.ORM, t *testing.T, obj *object.Object) {
 
 }
 
-func testRetrieveObject(o *orm.ORM, t *testing.T, sch *schema.Schema) {
+func testRetrieve(o *orm.ORM, t *testing.T, sch *schema.Schema) {
 	queryVals := map[string]interface{}{
 		"PersonID": 1,
 	}
 	// refleshen our object
-	latestJoe, err := o.RetrieveObject(context.TODO(), PeopleObjectType, queryVals)
+	latestJoe, err := o.Retrieve(context.TODO(), PeopleObjectType, queryVals)
 	if err != nil {
 		t.Fatal("retrieve failed: " + err.Error())
 	}
@@ -290,7 +290,7 @@ func testRetrieveObject(o *orm.ORM, t *testing.T, sch *schema.Schema) {
 	}
 }
 
-func testRetrieveObjects(o *orm.ORM, t *testing.T, rootTable string) {
+func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
 	// insert another object
 	nobj := object.New(rootTable)
 	nobj.Set("Name", "Joe")
@@ -308,7 +308,7 @@ func testRetrieveObjects(o *orm.ORM, t *testing.T, rootTable string) {
 	}
 
 	// try a full table scan
-	all, err := o.RetrieveObjects(context.TODO(), rootTable, make(map[string]interface{}))
+	all, err := o.RetrieveMany(context.TODO(), rootTable, make(map[string]interface{}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -324,7 +324,7 @@ func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 	queryVals := make(map[string]interface{})
 	queryVals["PersonID"] = 1
 	// Retrieve a single child object
-	childObj, err := o.RetrieveObject(context.TODO(), "addresses", queryVals)
+	childObj, err := o.Retrieve(context.TODO(), "addresses", queryVals)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -348,7 +348,7 @@ func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 }
 
 func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
-	obj, err := o.RetrieveObject(context.TODO(), rootTable, map[string]interface{}{
+	obj, err := o.Retrieve(context.TODO(), rootTable, map[string]interface{}{
 		"PersonID": 1,
 	})
 	if err != nil {

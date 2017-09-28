@@ -110,7 +110,7 @@ func TestSaveBasicObject(t *testing.T) {
 
 	{
 		// Refleshen our object
-		latestJoe, err := sqliteORM.RetrieveObject(context.TODO(), PeopleObjectType, obj.KV)
+		latestJoe, err := sqliteORM.Retrieve(context.TODO(), PeopleObjectType, obj.KV)
 		if err != nil {
 			t.Fatal("retrieve failed: " + err.Error())
 		}
@@ -199,7 +199,7 @@ func TestSaveNestedObject(t *testing.T) {
 		// TODO: Verify that addresses are present
 	}
 
-	testRetrieveObjects(&sqliteORM, t, rootTable) // test multiple retrieve
+	testRetrieveMany(&sqliteORM, t, rootTable) // test multiple retrieve
 	testFleshenChildren(&sqliteORM, t, rootTable) // try fleshen children on person id 1
 	testGetParentsViaChild(&sqliteORM, t)
 
@@ -213,7 +213,7 @@ func TestSaveNestedObject(t *testing.T) {
 func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 	queryVals := make(map[string]interface{})
 	queryVals["PersonID"] = 1
-	childObj, err := o.RetrieveObject(context.TODO(), "addresses", queryVals)
+	childObj, err := o.Retrieve(context.TODO(), "addresses", queryVals)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -226,7 +226,7 @@ func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 }
 
 func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
-	obj, err := o.RetrieveObject(context.TODO(), rootTable, map[string]interface{}{
+	obj, err := o.Retrieve(context.TODO(), rootTable, map[string]interface{}{
 		"PersonID": 1,
 	})
 	if err != nil {
@@ -282,7 +282,7 @@ func dropTables(db *sql.DB, sch *schema.Schema) error {
 	return nil
 }
 
-func testRetrieveObjects(o *orm.ORM, t *testing.T, rootTable string) {
+func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
 	// insert another object
 	nobj := object.New(rootTable)
 	nobj.Set("Name", "Joe")
@@ -300,7 +300,7 @@ func testRetrieveObjects(o *orm.ORM, t *testing.T, rootTable string) {
 	}
 
 	// try a full table scan
-	all, err := o.RetrieveObjects(context.TODO(), rootTable, make(map[string]interface{}))
+	all, err := o.RetrieveMany(context.TODO(), rootTable, make(map[string]interface{}))
 	if err != nil {
 		t.Fatal(err)
 	}
