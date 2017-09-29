@@ -14,19 +14,6 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func (g Generator) setPKifNeeded(data map[string]interface{}, identityCol string) {
-	if g.CallerSuppliesPK {
-		// NOTE: Currently we support this as a SYS_GUID implementation,
-		// and technically, /we/ aren't the caller ... maybe I will rename
-		// this as ORMSuppliesPK ... but I don't have another reference
-		// point to compare against yet. YAGNI applies.
-		_, ok := data[identityCol]
-		if !ok {
-			data[identityCol] = object.NewSQLValue("SYS_GUID()")
-		}
-	}
-}
-
 func (g Generator) coreBindingInsert(schTable *schema.Table, data map[string]interface{}, identityCol string, fieldsMap map[string]*schema.Field) ([]string, []string, []interface{}) {
 	dataLen := len(data)
 	bindNames := make([]string, dataLen)
@@ -38,20 +25,6 @@ func (g Generator) coreBindingInsert(schTable *schema.Table, data map[string]int
 		colNames[i] = realName
 		var r string
 
-		if g.CallerSuppliesPK && k == identityCol {
-			switch typ := v.(type) {
-			case int64:
-				r = string(v.(int64))
-			case string:
-				r = v.(string)
-			case *object.SQLValue:
-				thing := v.(*object.SQLValue)
-				r = thing.Value
-				v = nil
-			default:
-				panic(fmt.Sprintf("coreBindingInsert: Unknown type [%v] in switch", typ))
-			}
-		}
 		if r == "" {
 			f, ok := fieldsMap[realName]
 			if ok {
@@ -110,25 +83,17 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 	}
 
 	identityCol := schTable.Primary
-	g.setPKifNeeded(data, identityCol)
 
 	bindNames, colNames, bindArgs := g.coreBindingInsert(schTable, data, identityCol, fieldsMap)
 	bindArgs = nils.RemoveNilsIfNeeded(bindArgs)
 
 	var sqlStr string
-	if g.CallerSuppliesPK {
-		sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
-			tableName,
-			strings.Join(colNames, ","),
-			strings.Join(bindNames, ","))
-	} else {
-		sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING %s /*LASTINSERTID*/ INTO :%s",
-			tableName,
-			strings.Join(colNames, ","),
-			strings.Join(bindNames, ","),
-			identityCol,
-			identityCol)
-	}
+	sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING %s /*LASTINSERTID*/ INTO :%s",
+		tableName,
+		strings.Join(colNames, ","),
+		strings.Join(bindNames, ","),
+		identityCol,
+		identityCol)
 	if os.Getenv("DEBUG") != "" {
 		fmt.Println("DEBUG: INSERT sqlStr->", sqlStr, "bindArgs->", bindArgs)
 

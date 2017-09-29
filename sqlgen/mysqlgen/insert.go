@@ -23,20 +23,6 @@ func (g Generator) coreBindingInsert(schTable *schema.Table, data map[string]int
 		colNames[i] = realName
 		var r string
 
-		if g.CallerSuppliesPK && k == identityCol {
-			switch typ := v.(type) {
-			case int64:
-				r = string(v.(int64))
-			case string:
-				r = v.(string)
-			case *object.SQLValue:
-				thing := v.(*object.SQLValue)
-				r = thing.Value
-				v = nil
-			default:
-				panic(fmt.Sprintf("coreBindingInsert: Unknown type [%v] in switch", typ))
-			}
-		}
 		if r == "" {
 			f, ok := fieldsMap[realName]
 			if ok {

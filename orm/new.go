@@ -29,11 +29,9 @@ type Generator interface {
 	IsTimestampType(string) bool
 	IsLOBType(string) bool
 
-	// TODO: Name supplying our primary key as CallerSuppliesPrimaryKey?
 	// This option will turn MODE_LAST_INSERT_ID off? Start naming these
 	// things all mode? Same with FixLastInsertIDbug()?
 	FixLastInsertIDbug() bool
-	CallerSuppliesPrimaryKey() bool
 
 	DynamicObjectSetter(columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error
 	MakeColumnPointers(sliceLen int, columnTypes []*sql.ColumnType) ([]interface{}, error)

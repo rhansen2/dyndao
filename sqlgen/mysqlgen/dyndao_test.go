@@ -53,7 +53,7 @@ func TestDropTables(t *testing.T) {
 		}
 	}()
 
-	sqlGen := New("test", sch, false)
+	sqlGen := New("test", sch)
 	o := orm.New(sqlGen, sch, db)
 
 	err = dropTables(o.RawConn, sch)
@@ -75,7 +75,7 @@ func TestCreateTables(t *testing.T) {
 		}
 	}()
 
-	sqlGen := New("test", sch, false)
+	sqlGen := New("test", sch)
 	o := orm.New(sqlGen, sch, db)
 
 	err = createTables(o.RawConn, sch)
@@ -119,7 +119,7 @@ func TestSuiteNested(t *testing.T) {
 		}
 	}()
 	// Setup our ORM
-	o := orm.New(New("test", sch, false), sch, db)
+	o := orm.New(New("test", sch), sch, db)
 	// Construct our default mock object
 	obj := makeDefaultPersonWithAddress()
 	// Save our default object
@@ -417,7 +417,7 @@ func prepareAndExecSQL(db *sql.DB, sqlStr string) (sql.Result, error) {
 }
 
 func createTables(db *sql.DB, sch *schema.Schema) error {
-	gen := New("test", sch, false)
+	gen := New("test", sch)
 
 	for k := range sch.Tables {
 		sql, err := gen.CreateTable(sch, k)
@@ -433,7 +433,7 @@ func createTables(db *sql.DB, sch *schema.Schema) error {
 }
 
 func dropTables(db *sql.DB, sch *schema.Schema) error {
-	gen := New("test", sch, false)
+	gen := New("test", sch)
 
 	for k := range sch.Tables {
 		sql := gen.DropTable(k)

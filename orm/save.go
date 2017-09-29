@@ -314,11 +314,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, errors.Wrap(err, "Insert/ExecContext")
 	}
 
-	// If we are not expecting the caller to supply the primary key,
-	// then we should not try to capture the last value (for example,
-	// using LAST_INSERT_ID() with MySQL..)
-	// TODO: Should CallerSuppliesPrimaryKey be per-table?
-	if !o.sqlGen.CallerSuppliesPrimaryKey() {
+	{
 		newID, err := res.LastInsertId()
 		if err != nil && lastID == 0 {
 			if os.Getenv("DEBUG_INSERT") != "" {
@@ -332,7 +328,6 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		if os.Getenv("DEBUG_INSERT") != "" {
 			fmt.Println("DEBUG Insert received newID=", newID)
 		}
-
 		obj.Set(objTable.Primary, newID) // Set the new primary key in the object
 	}
 

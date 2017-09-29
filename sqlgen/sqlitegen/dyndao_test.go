@@ -48,7 +48,7 @@ func TestSaveBasicObject(t *testing.T) {
 	}()
 
 	// Initialize ORM
-	sqliteORM := orm.New(New("test", sch, false), sch, db)
+	sqliteORM := orm.New(New("test", sch), sch, db)
 
 	// NOTE: This should force insert
 	obj := object.New(PeopleObjectType)
@@ -149,7 +149,7 @@ func TestSaveNestedObject(t *testing.T) {
 		}
 	}()
 
-	sqliteORM := orm.New(New("test", sch, false), sch, db)
+	sqliteORM := orm.New(New("test", sch), sch, db)
 	rootTable := PeopleObjectType
 
 	obj := object.New(rootTable)
@@ -251,7 +251,7 @@ func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
 }
 
 func createTables(db *sql.DB, sch *schema.Schema) error {
-	gen := New("test", sch, false)
+	gen := New("test", sch)
 
 	for k := range sch.Tables {
 		fmt.Println("Creating table ", k)
@@ -269,7 +269,7 @@ func createTables(db *sql.DB, sch *schema.Schema) error {
 }
 
 func dropTables(db *sql.DB, sch *schema.Schema) error {
-	gen := New("test", sch, false)
+	gen := New("test", sch)
 
 	for k := range sch.Tables {
 		fmt.Println("Dropping table ", k)

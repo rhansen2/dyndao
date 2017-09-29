@@ -9,7 +9,7 @@ import (
 
 func TestGeneratorBasic(t *testing.T) {
 	sch := schema.MockBasicSchema()
-	basic := New("testDB", sch, false) // Basic generator initialization
+	basic := New("testDB", sch) // Basic generator initialization
 
 	sql, err := basic.CreateTable(sch, "people")
 	if err != nil {
@@ -46,7 +46,7 @@ func TestGeneratorNested(t *testing.T) {
 	sch := schema.MockNestedSchema()
 
 	// Basic generator initialization
-	basic := New("testDB", sch, false)
+	basic := New("testDB", sch)
 
 	sql, err := basic.CreateTable(sch, "people")
 	if err != nil {
