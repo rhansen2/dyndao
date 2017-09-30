@@ -103,6 +103,12 @@ compounded over years of experience and multiple jaded developers. While humor
 is intended, the author(s) can take no responsibility for damages that one may
 incur by viewing or utilizing this source code.
 
+*THANKS*
+
+The author would like to express his sincere thanks to Rob Hansen (github.com/rhansen2),
+without whom the Oracle support in this library would not be possible.
+
 *LICENSE*
 
 MIT license. See LICENSE file.
+
