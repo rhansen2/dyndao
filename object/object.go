@@ -30,15 +30,16 @@ type Array []*Object
 // retrieved or remapped from internal database state.
 type Object struct {
 	Type          string
-	KV            map[string]interface{} `json:"KV"`
-	ChangedFields map[string]interface{} `json:"ChangedFields"`
+	KV            map[string]interface{}
+	HiddenKV      map[string]interface{}
+	ChangedFields map[string]interface{}
 	Children      map[string]Array
 	saved         bool
 }
 
 // New is an empty constructor
 func New(objType string) *Object {
-	return &Object{Type: objType, KV: makeEmptyMap(), ChangedFields: makeEmptyMap(), Children: makeEmptyChildrenMap(), saved: false}
+	return &Object{Type: objType, KV: makeEmptyMap(), HiddenKV: nil, ChangedFields: makeEmptyMap(), Children: makeEmptyChildrenMap(), saved: false}
 }
 
 // MakeArray will construct an array of length 'size'
@@ -67,6 +68,12 @@ func makeEmptyMap() map[string]interface{} {
 
 func makeEmptyChildrenMap() map[string]Array {
 	return make(map[string]Array)
+}
+
+func (o * Object) MakeHiddenKVIfNeeded() {
+	if o.HiddenKV == nil {
+		o.HiddenKV = makeEmptyMap()
+	}
 }
 
 // Get is the most basic accessor, for cases
@@ -106,7 +113,31 @@ func (o Object) GetFloat(k string) (float64, bool) {
 	return v, ok
 }
 
-// TODO: GetStringAlways
+// HiddenGetStringAlways is a safe, typed string accessor for the Hidden KV. It
+// will force conversion away from float64, int64, uint64, string, and nil
+// values. Nils and unrecognized values are marked as an error (nil values will
+// return 0 and ErrValueWasNil)
+func (o Object) HiddenGetStringAlways(k string) (string, error) {
+	switch v := o.HiddenKV[k].(type) {
+	case float64:
+		fl := o.HiddenKV[k].(float64)
+		return fmt.Sprintf("%f", fl), nil
+	case int64:
+		fl := o.HiddenKV[k].(int64)
+		return fmt.Sprintf("%d", fl), nil
+	case uint64:
+		fl := o.HiddenKV[k].(uint64)
+		return fmt.Sprintf("%d", fl), nil
+	case string:
+		fl := o.HiddenKV[k].(string)
+		return fl, nil
+	case nil:
+		return "", ErrValueWasNil
+	// TODO: what about booleans?
+	default:
+		return "", fmt.Errorf("HiddenGetStringAlways: unrecognized type %v", v)
+	}
+}
 
 // GetStringAlways is a safe, typed string accessor. It will force conversion away
 // from float64, int64, uint64, string, and nil values. Nils and unrecognized values
