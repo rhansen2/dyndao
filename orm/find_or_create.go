@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (o ORM) FindOrCreate(ctx context.Context, tx * sql.Tx, table string, queryVals map[string]interface{}) (*object.Object, error) {
+func (o ORM) FindOrCreate(ctx context.Context, tx * sql.Tx, table string, queryVals map[string]interface{}, createVals map[string]interface{}) (*object.Object, error) {
 	obj, err := o.RetrieveTx(ctx, tx, table, queryVals)
 	if err != nil {
 		return nil, err
@@ -15,7 +15,8 @@ func (o ORM) FindOrCreate(ctx context.Context, tx * sql.Tx, table string, queryV
 
 	if obj == nil {
 		obj = object.New( table )
-		obj.KV = queryVals
+		obj.KV = createVals
+
 		numRows, err := o.Insert(ctx, tx, obj)
 		if err != nil {
 			return nil, err
@@ -23,6 +24,7 @@ func (o ORM) FindOrCreate(ctx context.Context, tx * sql.Tx, table string, queryV
 		if numRows == 0 {
 			return nil, errors.New("FindOrCreate: numRows was 0 when expecting Insert")
 		}
+
 		return obj, nil
 	}
 

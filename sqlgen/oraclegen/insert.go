@@ -14,6 +14,19 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+// TODO: refactor this?
+func getRealColumnName(tbl *schema.Table, col string) string {
+	if tbl.FieldAliases == nil {
+		return col
+	}
+
+	realName, ok := tbl.FieldAliases[col]
+	if ok {
+		return realName
+	}
+	return col
+}
+
 func (g Generator) coreBindingInsert(schTable *schema.Table, data map[string]interface{}, identityCol string, fieldsMap map[string]*schema.Field) ([]string, []string, []interface{}) {
 	dataLen := len(data)
 	bindNames := make([]string, dataLen)
@@ -33,32 +46,33 @@ func (g Generator) coreBindingInsert(schTable *schema.Table, data map[string]int
 				panic(fmt.Sprintf("coreBindingInsert: Unknown field for key: [%s] realName: [%s] for table %s", k, realName, schTable.Name))
 			}
 		}
-		bindNames[i] = r
+
 		if v == nil {
+			bindNames[i] = r
 			bindArgs[i] = v
 		} else {
-			barg, err := renderInsertValue(fieldsMap[realName], v)
-			if err != nil {
-				panic(err.Error())
+			switch v.(type) {
+				case *object.SQLValue:
+					sqlv := v.(*object.SQLValue)
+					bindNames[i] = sqlv.String()
+					bindArgs[i] = nil
+				// TODO: dont think this case is necessary...
+				case object.SQLValue:
+					sqlv := v.(object.SQLValue)
+					bindNames[i] = sqlv.String()
+					bindArgs[i] = nil
+				default:
+					bindNames[i] = r
+					barg, err := renderInsertValue(fieldsMap[realName], v)
+					if err != nil {
+						panic(err.Error())
+					}
+					bindArgs[i] = barg
 			}
-			bindArgs[i] = barg
-
 		}
 		i++
 	}
 	return bindNames, colNames, bindArgs
-}
-
-func getRealColumnName(tbl *schema.Table, col string) string {
-	if tbl.FieldAliases == nil {
-		return col
-	}
-
-	realName, ok := tbl.FieldAliases[col]
-	if ok {
-		return realName
-	}
-	return col
 }
 
 // BindingInsert generates the SQL for a given INSERT statement for oracle with binding parameter values
@@ -94,6 +108,7 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 		strings.Join(bindNames, ","),
 		identityCol,
 		identityCol)
+
 	if os.Getenv("DEBUG") != "" {
 		fmt.Println("DEBUG: INSERT sqlStr->", sqlStr, "bindArgs->", bindArgs)
 

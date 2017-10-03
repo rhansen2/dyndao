@@ -305,7 +305,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		newBindArgs[i] = maybeDereferenceArgs(arg)
 	}
 
-	res, err := stmt.ExecContext(ctx, newBindArgs...)
+	res, err := stmt.ExecContext(ctx, bindArgs...)
 	if err != nil {
 		if os.Getenv("DEBUG_INSERT") != "" {
 			fmt.Println("orm/save error", err)

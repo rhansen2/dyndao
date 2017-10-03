@@ -26,3 +26,9 @@ func (r *SQLValue) String() string {
 func NewSQLValue(s string) *SQLValue {
 	return &SQLValue{Value: s}
 }
+
+// NewNULLValue is syntax sugar for creating a new NULL SQLValue,
+// when one wishes to explicitly null something.
+func NewNULLValue() *SQLValue {
+	return &SQLValue{Value: "NULL"}
+}
