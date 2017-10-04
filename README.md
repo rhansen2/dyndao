@@ -3,8 +3,10 @@ DYNamic Data Access Object (in Go)
 
 JSON <-> object.Object <-> RDBMS
 
-dyndao is a collection of Golang packages which comprise a JSON mapping layer,
-a generic key-value object structure, and an ORM.
+dyndao is a collection of Golang packages which serve as an
+ActiveRecord-influenced ORM in Go.
+
+*DISCLAIMER* 
 
 This package is a work in progress. While the package is regularly tested on
 production workloads, please use it at your own risk. Suggestions and patches
@@ -29,15 +31,15 @@ performance.
 
 See github.com/rbastic/dyndao/schema for how dyndao handles dynamic schemas.
 
-Additionally, static typing fails when you want to write an UPDATE that involves
-a SQL function call:
+Additionally, static typing fails when you want to write an UPDATE that
+involves a SQL function call:
 
 ```code
 UPDATE fooTable SET ..., UPDATE_TIMESTAMP=NOW() WHERE fooTable_ID = 1;
 ```
 
 NOW() is the current timestamp function call (at least in MySQL, not sure of
-others).
+others). There is an issue open currently to abstract this further.
 
 Presently, the way dyndao is written, you could do something like:
 
@@ -95,14 +97,6 @@ sqlgen - code generators for various database implementations
 *CONTEXT CHECKING*
 
 dyndao no longer requires you to check your own contexts.
-
-*DISCLAIMER*
-
-Please note that the current code layout and design is the result of deadlines,
-hackathons, corporate feature requirements, and metric quantities of caffeine,
-compounded over years of experience and multiple jaded developers. While humor
-is intended, the author(s) can take no responsibility for damages that one may
-incur by viewing or utilizing this source code.
 
 *THANKS*
 
