@@ -8,26 +8,28 @@ ActiveRecord-influenced ORM in Go.
 
 *DISCLAIMER* 
 
-This package is a work in progress. While the package is regularly tested on
-production workloads, please use it at your own risk. Suggestions and patches
-are welcome. I reserve the right to change the API at any time. Please ensure
-any pull requests are go fmt'd and are (relatively) clean when run against
-gometalinter.
+This package is a work in progress. While much of the code is regularly tested
+on production workloads, please use it at your own risk. Suggestions and
+patches are welcome. Currently, I reserve the right to refactor the API at any
+time.
+
+If you find yourself using this package to do cool things, please let me know.
+:-)
 
 Currently, basic support for SQLite, MySQL, and Oracle are included. If you
 intend on working with MySQL, please be sure to check out the 'columntype'
 branch for github.com/go-sql-driver/mysql
 
+Support for additional database drivers is planned.
+
 *MOTIVATION*
 
-Most ORMs perceive the database world as a static state of affairs. Go's
-relatively static nature makes writing an ORM a bit different than in more
-dynamic languages, like Perl and Python.
+dyndao started out due to the fact that Go lacks a 'very dynamic' ORM,
+and the author had some requirements for dynamic schemas and a vision for
+multiple database support.
 
-Code generators alleviate some of the pain but in some situations, there is
-still much left to be desired. dyndao is driven by the requirement for schemas
-to be completely dynamic. This offers additionally flexibility at a cost to
-performance.
+Despite the additional cost of supporting a complex 'object' type in Go,
+this package is presently suitable for the author's needs.
 
 See github.com/rbastic/dyndao/schema for how dyndao handles dynamic schemas.
 
@@ -44,8 +46,8 @@ others). There is an issue open currently to abstract this further.
 Presently, the way dyndao is written, you could do something like:
 
 ```code
-myORM = getORM() // you'll have to write this to instantiate a db connection
-obj, err := myORM.RetrieveObject(ctx, tableString, pkValues)
+myORM = getORM() // see tests for example
+obj, err := myORM.Retrieve(ctx, tableString, pkValues)
 if err != nil {
 	panic(err)
 }
