@@ -255,22 +255,25 @@ func maybeDereferenceArgs(arg interface{}) interface{} {
 // Insert function will INSERT a record, given an optional transaction and an object.
 // It returns the number of rows affected (int64) and any error that may have occurred.
 func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	errorString := "orm/save error"
+
 	select {
 	case <-ctx.Done():
 		return 0, ctx.Err()
 	default:
 	}
+
 	objTable := o.s.GetTable(obj.Type)
 	if objTable == nil {
 		if os.Getenv("DEBUG_INSERT") != "" {
-			log15.Info("orm/save error", "error", "thing was unknown")
+			log15.Error(errorString, "GetTable_error", "thing was unknown")
 		}
 		return 0, errors.New("Insert: unknown object table " + obj.Type)
 	}
 	sqlStr, bindArgs, err := o.sqlGen.BindingInsert(o.s, obj.Type, obj.KV)
 	if err != nil {
 		if os.Getenv("DEBUG_INSERT") != "" {
-			log15.Info("orm/save error", "error", err)
+			log15.Error(errorString, "BindingInsert_error", err)
 		}
 		return 0, err
 	}
@@ -279,6 +282,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	}
 
 	var lastID int64
+	// Oracle-specific fix
 	if o.sqlGen.FixLastInsertIDbug() {
 		bindArgs = append(bindArgs, sql.Named(o.s.GetTable(obj.Type).Primary, sql.Out{
 			Dest: &lastID,
@@ -288,7 +292,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)
 	if err != nil {
 		if os.Getenv("DEBUG_INSERT") != "" {
-			log15.Info("orm/save error", "error", err)
+			log15.Error(errorString, "stmtFromDbOrTx_error", err)
 		}
 
 		return 0, err
@@ -296,10 +300,11 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	defer func() {
 		err := stmt.Close()
 		if err != nil {
-			fmt.Println(err) // TODO: logging implementation
+			fmt.Println("Insert stmt.Close error=", err) // TODO: logging implementation
 		}
 	}()
 
+	// TODO: Still necessary?
 	newBindArgs := make([]interface{}, len(bindArgs))
 	for i, arg := range bindArgs {
 		newBindArgs[i] = maybeDereferenceArgs(arg)
@@ -308,6 +313,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	res, err := stmt.ExecContext(ctx, bindArgs...)
 	if err != nil {
 		if os.Getenv("DEBUG_INSERT") != "" {
+			log15.Error( errorString, "ExecContext_error", err )
 			fmt.Println("orm/save error", err)
 		}
 
@@ -320,6 +326,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 			if os.Getenv("DEBUG_INSERT") != "" {
 				fmt.Println("orm/save error", err)
 			}
+			log15.Error( errorString, "LastInsertID_error", err )
 			return 0, err
 		}
 		if lastID != 0 {
@@ -328,6 +335,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		if os.Getenv("DEBUG_INSERT") != "" {
 			fmt.Println("DEBUG Insert received newID=", newID)
 		}
+
 		obj.Set(objTable.Primary, newID) // Set the new primary key in the object
 	}
 
