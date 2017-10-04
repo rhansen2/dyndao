@@ -3,22 +3,12 @@ DYNamic Data Access Object (in Go)
 
 JSON <-> object.Object <-> RDBMS
 
-dyndao is a collection of Golang packages which serve as an
-ActiveRecord-influenced ORM in Go.
-
-*DISCLAIMER* 
-
-This package is a work in progress. While much of the code is regularly tested
-on production workloads, please use it at your own risk. Suggestions and
-patches are welcome. Currently, I reserve the right to refactor the API at any
-time.
-
-If you find yourself using this package to do cool things, please let me know.
-:-)
+dyndao is a collection of Golang packages which intend to serve as a relatively
+lightweight ORM, somewhat influenced by Perl's DBI and the 'Active Record pattern'.
 
 Currently, basic support for SQLite, MySQL, and Oracle are included. If you
-intend on working with MySQL, please be sure to check out the 'columntype'
-branch for github.com/go-sql-driver/mysql
+intend on working with MySQL, please be sure to check out (as in, `git checkout`)
+the 'columntype' branch for github.com/go-sql-driver/mysql
 
 Support for additional database drivers is planned.
 
@@ -84,21 +74,31 @@ the relevant database tables.
 *CODE LAYOUT*
 
 ```code
-mapper - JSON mapping layer (WIP)
-
 object - object.Object and object.Array
 
-orm    - ORM class, combines object, schema, and sqlgen
+schema - schema definitions and supporting types
 
-schema - dynamic schema packages: declare your schema using these, or write and
-         share a schema parser / generator with us for your database of choice!
+orm    - Bridge pattern-influenced package combining schema, sqlgen, and
+	 object.
 
-sqlgen - code generators for various database implementations
+sqlgen - Code generators for various database implementations
+
+mapper - Custom JSON mapping layers (WIP)
 ```
 
 *CONTEXT CHECKING*
 
 dyndao no longer requires you to check your own contexts.
+
+*DISCLAIMER* 
+
+This package is a work in progress. While much of the code is regularly tested
+on production workloads, please use it at your own risk. Suggestions and
+patches are welcome. Currently, I reserve the right to refactor the API at any
+time.
+
+If you find yourself using this package to do cool things, please let me know.
+:-)
 
 *THANKS*
 
