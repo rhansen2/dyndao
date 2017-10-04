@@ -336,7 +336,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 			fmt.Println("DEBUG Insert received newID=", newID)
 		}
 
-		obj.Set(objTable.Primary, newID) // Set the new primary key in the object
+		obj.SetCore(objTable.Primary, newID) // Set the new primary key in the object
 	}
 
 	rowsAff, err := res.RowsAffected()
