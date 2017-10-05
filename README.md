@@ -7,12 +7,9 @@ dyndao is a collection of Golang packages which intend to serve as a relatively
 lightweight ORM, somewhat influenced by Perl's DBI and the 'Active Record pattern'.
 
 Currently, basic support for SQLite, MySQL, and Oracle are included. If you
-intend on working with MySQL, please be sure to check out (as in, `git checkout`)
-the 'columntype' branch for github.com/go-sql-driver/mysql
-
-Support for additional database drivers is planned.
-
-*MOTIVATION*
+intend on working with MySQL, please be sure to check out (as in, `git
+checkout`) the 'columntype' branch for github.com/go-sql-driver/mysql.  Support
+for additional database drivers is planned.
 
 dyndao started out due to the fact that Go lacks a 'very dynamic' ORM,
 and the author had some requirements for dynamic schemas and a vision for
@@ -60,7 +57,7 @@ if obj == nil {
 
 So, instead of representing rows as structs like other ORMs, you represent them
 as pointers to object.Object (see github.com/rbastic/dyndao/object for
-details). Almost everything is an object in dyndao.
+details).
 
 *MISC.*
 
@@ -107,5 +104,5 @@ without whom the Oracle support in this library would not be possible.
 
 *LICENSE*
 
-MIT license. See LICENSE file.
+dyndao is released under the MIT license. See LICENSE file.
 
