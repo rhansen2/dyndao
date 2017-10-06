@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (o ORM) CreateOrUpdateTx(ctx context.Context, tx * sql.Tx, obj * object.Object) (int, *object.Object, error) {
+func (o ORM) CreateOrUpdateTx(ctx context.Context, tx * sql.Tx, obj * object.Object) (int64, *object.Object, error) {
 	retObj, err := o.RetrieveTx(ctx, tx, obj.Type, obj.KV)
 	if err != nil {
 		return 0, nil, err
@@ -38,7 +38,7 @@ func (o ORM) CreateOrUpdateTx(ctx context.Context, tx * sql.Tx, obj * object.Obj
 	return 0, nil, nil
 }
 
-func (o ORM) CreateOrUpdate(ctx context.Context, table string, pkVals map[string]interface{}, createVals map[string]interface{}) (int, *object.Object, error) {
+func (o ORM) CreateOrUpdate(ctx context.Context, obj * object.Object) (int64, *object.Object, error) {
 
-	return o.CreateOrUpdate(ctx, nil, table, queryVals, createVals)
+	return o.CreateOrUpdateTx(ctx, nil, obj)
 }
