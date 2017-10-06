@@ -32,5 +32,6 @@ func (o ORM) FindOrCreateTx(ctx context.Context, tx * sql.Tx, table string, quer
 }
 
 func (o ORM) FindOrCreate(ctx context.Context, table string, queryVals map[string]interface{}, createVals map[string]interface{}) (*object.Object, error) {
+
 	return o.FindOrCreateTx(ctx, nil, table, queryVals, createVals)
 }
