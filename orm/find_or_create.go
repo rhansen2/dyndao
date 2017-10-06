@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (o ORM) FindOrCreate(ctx context.Context, tx * sql.Tx, table string, queryVals map[string]interface{}, createVals map[string]interface{}) (*object.Object, error) {
+func (o ORM) FindOrCreateTx(ctx context.Context, tx * sql.Tx, table string, queryVals map[string]interface{}, createVals map[string]interface{}) (*object.Object, error) {
 	obj, err := o.RetrieveTx(ctx, tx, table, queryVals)
 	if err != nil {
 		return nil, err
@@ -29,4 +29,8 @@ func (o ORM) FindOrCreate(ctx context.Context, tx * sql.Tx, table string, queryV
 	}
 
 	return obj, nil
+}
+
+func (o ORM) FindOrCreate(ctx context.Context, table string, queryVals map[string]interface{}, createVals map[string]interface{}) (*object.Object, error) {
+	return o.FindOrCreateTx(ctx, nil, table, queryVals, createVals)
 }
