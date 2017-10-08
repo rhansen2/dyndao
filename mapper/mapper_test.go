@@ -1,10 +1,6 @@
 package mapper
 
-import (
-	"testing"
-
-	"github.com/rbastic/dyndao/schema"
-)
+import ()
 
 const PeopleObjectType string = "people"
 const AddressesObjectType string = "addresses"

@@ -52,22 +52,22 @@ func (g Generator) coreBindingInsert(schTable *schema.Table, data map[string]int
 			bindArgs[i] = v
 		} else {
 			switch v.(type) {
-				case *object.SQLValue:
-					sqlv := v.(*object.SQLValue)
-					bindNames[i] = sqlv.String()
-					bindArgs[i] = nil
-				// TODO: dont think this case is necessary...
-				case object.SQLValue:
-					sqlv := v.(object.SQLValue)
-					bindNames[i] = sqlv.String()
-					bindArgs[i] = nil
-				default:
-					bindNames[i] = r
-					barg, err := renderInsertValue(fieldsMap[realName], v)
-					if err != nil {
-						panic(err.Error())
-					}
-					bindArgs[i] = barg
+			case *object.SQLValue:
+				sqlv := v.(*object.SQLValue)
+				bindNames[i] = sqlv.String()
+				bindArgs[i] = nil
+			// TODO: dont think this case is necessary...
+			case object.SQLValue:
+				sqlv := v.(object.SQLValue)
+				bindNames[i] = sqlv.String()
+				bindArgs[i] = nil
+			default:
+				bindNames[i] = r
+				barg, err := renderInsertValue(fieldsMap[realName], v)
+				if err != nil {
+					panic(err.Error())
+				}
+				bindArgs[i] = barg
 			}
 		}
 		i++

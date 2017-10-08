@@ -132,7 +132,7 @@ func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues ma
 // for both the object and the error if a row is unable to be matched by the underlying
 // datastore.
 // TODO: Implement LIMIT so that we can improve this.
-func (o ORM) retrieveCore(ctx context.Context, tx * sql.Tx, table string, queryVals map[string]interface{}) (*object.Object, error) {
+func (o ORM) retrieveCore(ctx context.Context, tx *sql.Tx, table string, queryVals map[string]interface{}) (*object.Object, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -155,10 +155,9 @@ func (o ORM) retrieveCore(ctx context.Context, tx * sql.Tx, table string, queryV
 // for both the object and the error if a row is unable to be matched by the underlying
 // datastore.
 // TODO: Implement LIMIT so that we can improve this.
-func (o ORM) RetrieveTx(ctx context.Context, tx * sql.Tx, table string, queryVals map[string]interface{}) (*object.Object, error) {
+func (o ORM) RetrieveTx(ctx context.Context, tx *sql.Tx, table string, queryVals map[string]interface{}) (*object.Object, error) {
 	return o.retrieveCore(ctx, tx, table, queryVals)
 }
-
 
 // Retrieve function will fleshen an object structure, given some primary keys.
 // Technically, we call RetrieveMany internally. Since we do not have LIMIT implemented yet,
@@ -288,7 +287,7 @@ func (o ORM) makeQueryObj(objTable *schema.Table, queryVals map[string]interface
 	return queryObj
 }
 
-func (o ORM) retrieveManyCore(ctx context.Context, tx * sql.Tx, table string, queryVals map[string]interface{}) (object.Array, error) {
+func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, queryVals map[string]interface{}) (object.Array, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -375,7 +374,7 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx * sql.Tx, table string, qu
 
 // RetrieveManyTx function will fleshen a top-level object structure, given some primary keys. And
 // it's transactional!
-func (o ORM) RetrieveManyTx(ctx context.Context, tx * sql.Tx, table string, queryVals map[string]interface{}) (object.Array, error) {
+func (o ORM) RetrieveManyTx(ctx context.Context, tx *sql.Tx, table string, queryVals map[string]interface{}) (object.Array, error) {
 	return o.retrieveManyCore(ctx, tx, table, queryVals)
 }
 

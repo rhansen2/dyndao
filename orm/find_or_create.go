@@ -3,20 +3,17 @@ package orm
 import (
 	"context"
 	"database/sql"
-	"github.com/rbastic/dyndao/object"
 	"github.com/pkg/errors"
+	"github.com/rbastic/dyndao/object"
 )
 
-func (o ORM) FindOrCreateTx(ctx context.Context, tx * sql.Tx, table string, queryVals map[string]interface{}, createVals map[string]interface{}) (*object.Object, error) {
-	obj, err := o.RetrieveTx(ctx, tx, table, queryVals)
+func (o ORM) FindOrCreateTx(ctx context.Context, tx *sql.Tx, obj *object.Object) (*object.Object, error) {
+	obj, err := o.RetrieveTx(ctx, tx, obj.Type, obj.KV)
 	if err != nil {
 		return nil, err
 	}
 
 	if obj == nil {
-		obj = object.New( table )
-		obj.KV = createVals
-
 		numRows, err := o.Insert(ctx, tx, obj)
 		if err != nil {
 			return nil, err
@@ -31,7 +28,7 @@ func (o ORM) FindOrCreateTx(ctx context.Context, tx * sql.Tx, table string, quer
 	return obj, nil
 }
 
-func (o ORM) FindOrCreate(ctx context.Context, table string, queryVals map[string]interface{}, createVals map[string]interface{}) (*object.Object, error) {
+func (o ORM) FindOrCreate(ctx context.Context, obj *object.Object) (*object.Object, error) {
 
-	return o.FindOrCreateTx(ctx, nil, table, queryVals, createVals)
+	return o.FindOrCreateTx(ctx, nil, obj)
 }

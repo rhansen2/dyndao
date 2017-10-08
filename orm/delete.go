@@ -35,6 +35,7 @@ func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	if err != nil {
 		return 0, err
 	}
+
 	defer func() {
 		stmtErr := stmt.Close()
 		if stmtErr != nil {

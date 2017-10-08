@@ -70,7 +70,7 @@ func makeEmptyChildrenMap() map[string]Array {
 	return make(map[string]Array)
 }
 
-func (o * Object) MakeHiddenKVIfNeeded() {
+func (o *Object) MakeHiddenKVIfNeeded() {
 	if o.HiddenKV == nil {
 		o.HiddenKV = makeEmptyMap()
 	}

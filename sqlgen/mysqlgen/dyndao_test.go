@@ -15,11 +15,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/rbastic/dyndao/mapper"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/orm"
 	"github.com/rbastic/dyndao/schema"
-	"github.com/tidwall/gjson"
 )
 
 const PeopleObjectType string = "people"
@@ -177,70 +175,6 @@ func TestSuiteNested(t *testing.T) {
 		// test retrieving multiple parents, given a single child object
 		testGetParentsViaChild(&o, t)
 	})
-
-	// JSON mapper tests
-	var newJSON string
-	t.Run("JSONMapper", func(t *testing.T) {
-		latestRyan, err := o.Retrieve(context.TODO(), PeopleObjectType,
-			map[string]interface{}{
-				"PersonID": 1,
-			})
-		if err != nil {
-			t.Fatal(err)
-		}
-		newJSON, err = mapper.ToJSONFromObject(sch, latestRyan, "{}", "", true)
-		if err != nil {
-			t.Fatal(err)
-		}
-	})
-
-	t.Run("JSONMapperValidate", func(t *testing.T) {
-		validateJSONMapper(t, newJSON)
-	})
-
-	t.Run("JSONMapperFrom", func(t *testing.T) {
-		objs, err := mapper.ToObjectsFromJSON(sch, newJSON)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if objs == nil {
-			t.Fatal("objs was nil")
-		}
-		if len(objs) != 1 {
-			t.Fatal("objs length was: ", len(objs), "expected 1")
-		}
-		obj := objs[0]
-		if obj == nil {
-			t.Fatal("obj was nil")
-		}
-		validateJSONMapperFrom(t, obj)
-	})
-
-	// TODO: More JSON mapper tests <-> (both To and From)
-}
-
-func validateJSONMapper(t *testing.T, json string) {
-	if gjson.Get(json, "people.Name").String() != "Joe" {
-		t.Fatal("people.Name was not Joe")
-	}
-	if gjson.Get(json, "people.PersonID").String() != "1" {
-		t.Fatal("people.PersonID was not 1")
-	}
-}
-
-func validateJSONMapperFrom(t *testing.T, obj *object.Object) {
-	if obj.Type != PeopleObjectType {
-		t.Fatal("Object is wrong type")
-	}
-	pn := obj.Get("Name")
-	if pn != "Joe" {
-		t.Fatal("Object has wrong name")
-	}
-
-	pi := obj.Get("PersonID")
-	if pi.(float64) != 1 {
-		t.Fatal("Object has wrong PersonID")
-	}
 }
 
 func saveMockObject(t *testing.T, o *orm.ORM, obj *object.Object) {

@@ -5,8 +5,8 @@ import "github.com/rbastic/dyndao/schema"
 
 // Generator is an empty struct for encapsulating whatever we need for our sql generator ...
 type Generator struct {
-	Database         string
-	Name             string
+	Database string
+	Name     string
 }
 
 // New is our SQLITE code-generator constructor.

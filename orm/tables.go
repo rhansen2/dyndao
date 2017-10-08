@@ -5,10 +5,10 @@ import (
 	// TODO: Use log15 instead of fmt?
 	"fmt"
 
-	"github.com/pkg/errors"
-	"github.com/rbastic/dyndao/schema"
 	"context"
 	"database/sql"
+	"github.com/pkg/errors"
+	"github.com/rbastic/dyndao/schema"
 )
 
 // CreateTables executes a CreateTable operation for every table specified in
@@ -68,7 +68,6 @@ func (o ORM) DropTable(tableName string) error {
 	}
 	return nil
 }
-
 
 func prepareAndExecSQL(db *sql.DB, sqlStr string) (sql.Result, error) {
 	stmt, err := db.PrepareContext(context.TODO(), sqlStr)

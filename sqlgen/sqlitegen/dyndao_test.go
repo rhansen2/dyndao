@@ -199,7 +199,7 @@ func TestSaveNestedObject(t *testing.T) {
 		// TODO: Verify that addresses are present
 	}
 
-	testRetrieveMany(&sqliteORM, t, rootTable) // test multiple retrieve
+	testRetrieveMany(&sqliteORM, t, rootTable)    // test multiple retrieve
 	testFleshenChildren(&sqliteORM, t, rootTable) // try fleshen children on person id 1
 	testGetParentsViaChild(&sqliteORM, t)
 

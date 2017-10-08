@@ -313,7 +313,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	res, err := stmt.ExecContext(ctx, bindArgs...)
 	if err != nil {
 		if os.Getenv("DEBUG_INSERT") != "" {
-			log15.Error( errorString, "ExecContext_error", err )
+			log15.Error(errorString, "ExecContext_error", err)
 			fmt.Println("orm/save error", err)
 		}
 
@@ -326,7 +326,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 			if os.Getenv("DEBUG_INSERT") != "" {
 				fmt.Println("orm/save error", err)
 			}
-			log15.Error( errorString, "LastInsertID_error", err )
+			log15.Error(errorString, "LastInsertID_error", err)
 			return 0, err
 		}
 		if lastID != 0 {
