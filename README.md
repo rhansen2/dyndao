@@ -3,8 +3,8 @@ DYNamic Data Access Object (in Go)
 
 JSON <-> object.Object <-> RDBMS
 
-dyndao is a collection of Golang packages which intend to serve as a relatively
-lightweight ORM, somewhat influenced by Perl's DBI and the 'Active Record pattern'.
+dyndao is a dynamic Golang ORM, heavily influenced by Perl's various database
+packages as well as the ActiveRecord pattern.
 
 Currently, basic support for SQLite, MySQL, and Oracle are included. If you
 intend on working with MySQL, please be sure to check out (as in, `git
