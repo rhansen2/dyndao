@@ -19,7 +19,7 @@ func (o ORM) FindOrCreateTx(ctx context.Context, tx *sql.Tx, obj *object.Object)
 			return nil, err
 		}
 		if numRows == 0 {
-			return nil, errors.New("FindOrCreate: numRows was 0 when expecting Insert")
+			return nil, errors.New("FindOrCreateTx: numRows was 0 when expecting Insert")
 		}
 
 		return obj, nil
@@ -29,6 +29,33 @@ func (o ORM) FindOrCreateTx(ctx context.Context, tx *sql.Tx, obj *object.Object)
 }
 
 func (o ORM) FindOrCreate(ctx context.Context, obj *object.Object) (*object.Object, error) {
-
 	return o.FindOrCreateTx(ctx, nil, obj)
+}
+
+func (o ORM) FindOrCreateKVTx(ctx context.Context, tx *sql.Tx, typ string, queryKV map[string]interface{}, createKV map[string]interface{}) (*object.Object, error) {
+	obj, err := o.RetrieveTx(ctx, tx, typ, queryKV)
+	if err != nil {
+		return nil, err
+	}
+
+	if obj == nil {
+		obj := object.New(typ)
+		obj.KV = createKV
+
+		numRows, err := o.Insert(ctx, tx, obj)
+		if err != nil {
+			return nil, err
+		}
+		if numRows == 0 {
+			return nil, errors.New("FindOrCreateKVTx: numRows was 0 when expecting Insert")
+		}
+
+		return obj, nil
+	}
+
+	return obj, nil
+}
+
+func (o ORM) FindOrCreateKV(ctx context.Context, typ string, queryKV map[string]interface{}, createKV map[string]interface{}) (*object.Object, error) {
+	return o.FindOrCreateKVTx(ctx, nil, typ, queryKV, createKV)
 }
