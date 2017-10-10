@@ -4,9 +4,11 @@ package orm
 import (
 	"context"
 	"database/sql"
+
+	"github.com/inconshreveable/log15"
+	"github.com/pkg/errors"
 	//"github.com/rbastic/dyndao/
 	"fmt"
-	log15 "gopkg.in/inconshreveable/log15.v2"
 	"runtime/debug"
 )
 
@@ -17,8 +19,8 @@ type TxFuncType func(*sql.Tx) error
 // http://stackoverflow.com/questions/16184238/database-sql-tx-detecting-commit-or-rollback
 // Please note this function has been changed from the above post to use
 // contexts
-func (o *ORM) Transact(ctx context.Context, txFunc TxFuncType) error {
-	tx, err := o.RawConn.BeginTx(ctx, nil)
+func (o *ORM) Transact(ctx context.Context, txFunc TxFuncType, opts *sql.TxOptions) error {
+	tx, err := o.RawConn.BeginTx(ctx, opts)
 	if err != nil {
 		log15.Error("[Transact]", "BeginTx", err)
 		return err
@@ -33,8 +35,7 @@ func (o *ORM) Transact(ctx context.Context, txFunc TxFuncType) error {
 				err = fmt.Errorf("%s", p)
 			}
 
-			err = fmt.Errorf("%s [%s]", err, debug.Stack())
-			log15.Error("Transact", "defer_panic_error", err.Error())
+			err = fmt.Errorf("%s [Transact/defer/panic %s]", err, debug.Stack())
 		}
 		if err != nil {
 			rollbackErr := tx.Rollback()
@@ -44,22 +45,41 @@ func (o *ORM) Transact(ctx context.Context, txFunc TxFuncType) error {
 			// and we end up with an additional
 			// error?
 			if rollbackErr != nil {
-				log15.Error("Transact", "defer_Rollback_error", rollbackErr)
+				err = errors.Wrap(err, rollbackErr.Error())
 			}
 			return
 		}
 		err = tx.Commit()
 		if err != nil {
-			log15.Error("Transact", "defer_Commit_error", err)
+			// TODO: ???
 		}
 	}()
 
 	err = txFunc(tx)
 
 	if err != nil {
-		log15.Error("Transact", "error_in_txFunc", err)
 		return err
 	}
 
 	return nil
+}
+
+func (o *ORM) TransactRethrow(ctx context.Context, txFunc TxFuncType, opts *sql.TxOptions) *error {
+	tx, err := o.RawConn.BeginTx(ctx, opts)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
+	err = txFunc(tx)
+	return err
 }
