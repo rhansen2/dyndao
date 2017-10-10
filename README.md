@@ -89,7 +89,7 @@ schema - schema definitions and supporting types
 orm    - Bridge pattern-influenced package combining schema, sqlgen, and
 	 object.
 
-sqlgen - Code generators for various database implementations
+sqlgen - SQL statement generators for various database implementations
 
 mapper - Custom JSON mapping layers (WIP)
 ```
