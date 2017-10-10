@@ -308,3 +308,53 @@ func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
 		t.Fatal("Should only be 2 rows inserted")
 	}
 }
+
+func BenchmarkBasicSaves(b *testing.B) {
+	var rowsAff int64
+
+	// Configure basic schema
+	sch := schema.MockBasicSchema()
+
+	// Retrieve database connection
+	db := getDB()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	// Initialize ORM
+	sqliteORM := orm.New(New("test", sch), sch, db)
+
+	// Create requisite tables
+	err := createTables(db, sch)
+	if err != nil {
+		panic(err)
+	}
+
+	for n := 0; n < b.N; n++ {
+		obj := object.New(PeopleObjectType)
+		obj.Set("Name", fmt.Sprintf("Ryan%d", n))
+
+		// Save object
+		rowsAff, err = sqliteORM.SaveObject(context.TODO(), nil, obj)
+		if err != nil {
+			panic(err)
+		}
+		// Check saved status
+		if !obj.GetSaved() {
+			panic("Unknown object error, object not saved")
+		}
+		if rowsAff == 0 {
+			panic("Rows affected shouldn't be zero initially")
+		}
+	}
+
+	// End of tests - drop all tables ...
+	err = dropTables(db, sch)
+	if err != nil {
+		panic(err)
+	}
+}
+

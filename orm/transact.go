@@ -64,7 +64,7 @@ func (o *ORM) Transact(ctx context.Context, txFunc TxFuncType, opts *sql.TxOptio
 	return nil
 }
 
-func (o *ORM) TransactRethrow(ctx context.Context, txFunc TxFuncType, opts *sql.TxOptions) *error {
+func (o *ORM) TransactRethrow(ctx context.Context, txFunc TxFuncType, opts *sql.TxOptions) error {
 	tx, err := o.RawConn.BeginTx(ctx, opts)
 	if err != nil {
 		return err
