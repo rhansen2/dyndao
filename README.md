@@ -21,15 +21,20 @@ this package is presently suitable for the author's needs.
 
 See github.com/rbastic/dyndao/schema for how dyndao handles dynamic schemas.
 
-Additionally, static typing fails when you want to write an UPDATE that
-involves a SQL function call:
+One nice thing that dyndao supports is a type named object.SQLValue,
+which lets you explicitly store values that can be rendered as
+SQL function calls (and other unquoted necessities), without making the
+mistake of constructing them as binding parameters.
+
+I specifically mention this as an example because I have not yet seen
+an ORM support this particular feature in Go, and dyndao's design
+lends itself to implementation being simple. Here is an example:
 
 ```code
 UPDATE fooTable SET ..., UPDATE_TIMESTAMP=NOW() WHERE fooTable_ID = 1;
 ```
 
-NOW() is the current timestamp function call (at least in MySQL, not sure of
-others). There is an issue open currently to abstract this further.
+NOW() is the current timestamp function call (at least in MySQL).
 
 Presently, the way dyndao is written, you could do something like:
 
@@ -59,6 +64,11 @@ if obj == nil {
 So, instead of representing rows as structs like other ORMs, you represent them
 as pointers to object.Object (see github.com/rbastic/dyndao/object for
 details).
+
+Note, one should not have to hard-code the NOW() function, because if the
+underlying database changes to say, Oracle, it will not work. Some work is
+underway to explore how better cross-platform support for date- and timestamp-
+handling can be implemented.
 
 *MISC.*
 
