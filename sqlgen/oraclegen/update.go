@@ -1,6 +1,7 @@
 package oraclegen
 
 import (
+	"reflect"
 	"errors"
 	"fmt"
 	"strings"
@@ -28,6 +29,16 @@ func zeroTime(arg interface{}) bool {
 	return false
 }
 
+func sqlValueConvert(arg interface{}) (string, bool) {
+	switch arg.(type) {
+	case *object.SQLValue:
+		v := arg.(*object.SQLValue)
+		return v.String(), true
+	default:
+		return "", false
+	}
+}
+
 func safeConvert(arg interface{}) time.Time {
 	switch t := arg.(type) {
 	case string:
@@ -41,7 +52,7 @@ func safeConvert(arg interface{}) time.Time {
 	case *time.Time:
 		return *t
 	default:
-		panic("unkown type in safe convert")
+		panic(fmt.Sprintf("unknown type in safe convert: %v", reflect.TypeOf(t)))
 	}
 }
 
@@ -83,15 +94,22 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 				continue
 			}
 			v := obj.KV[k]
-			if g.IsTimestampType(schTbl.GetField(k).DBType) {
-				v = safeConvert(v)
-			}
-			if v == nil || zeroTime(v) {
-				newValuesAry[i] = fmt.Sprintf("%s = NULL", f.Name)
+
+			vStr, wasSV := sqlValueConvert(v)
+			if wasSV {
+				newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, vStr)
 				bindArgs[i] = nil
 			} else {
-				newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, g.RenderBindingValue(f), i)
-				bindArgs[i] = v
+				if g.IsTimestampType(schTbl.GetField(k).DBType) {
+					v = safeConvert(v)
+				}
+				if v == nil || zeroTime(v) {
+					newValuesAry[i] = fmt.Sprintf("%s = NULL", f.Name)
+					bindArgs[i] = nil
+				} else {
+					newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, g.RenderBindingValue(f), i)
+					bindArgs[i] = v
+				}
 			}
 			i++
 		}
@@ -110,15 +128,22 @@ func (g Generator) BindingUpdate(sch *schema.Schema, obj *object.Object) (string
 			if f.IsIdentity {
 				continue
 			}
-			if g.IsTimestampType(schTbl.GetField(k).DBType) {
-				v = safeConvert(v)
-			}
-			if v == nil || zeroTime(v) {
-				newValuesAry[i] = fmt.Sprintf("%s = NULL", f.Name)
+
+			vStr, wasSV := sqlValueConvert(v)
+			if wasSV {
+				newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, vStr)
 				bindArgs[i] = nil
 			} else {
-				newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, g.RenderBindingValue(f), i)
-				bindArgs[i] = v
+				if g.IsTimestampType(schTbl.GetField(k).DBType) {
+					v = safeConvert(v)
+				}
+				if v == nil || zeroTime(v) {
+					newValuesAry[i] = fmt.Sprintf("%s = NULL", f.Name)
+					bindArgs[i] = nil
+				} else {
+					newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, g.RenderBindingValue(f), i)
+					bindArgs[i] = v
+				}
 			}
 
 			i++
