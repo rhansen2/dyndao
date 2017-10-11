@@ -79,3 +79,46 @@ func (o ORM) CreateOrUpdateKVTx(ctx context.Context, tx *sql.Tx, typ string, que
 func (o ORM) CreateOrUpdateKV(ctx context.Context, typ string, queryKV map[string]interface{}, createKV map[string]interface{}) (int64, *object.Object, error) {
 	return o.CreateOrUpdateKVTx(ctx, nil, typ, queryKV, createKV)
 }
+
+func (o ORM) CreateOrUpdateKVHookUpdate(ctx context.Context, tx *sql.Tx, typ string, queryKV, createKV map[string]interface{}, beforeUpdateCopyFields []string) (int64, *object.Object, error) {
+
+	var err error
+	var retObj *object.Object
+
+	retObj, err = o.RetrieveTx(ctx, tx, typ, queryKV)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	var numRows int64
+	var opType string
+
+	var obj *object.Object
+	if retObj == nil {
+		obj = object.New(typ)
+		obj.KV = createKV
+		numRows, err = o.Insert(ctx, tx, obj)
+		opType = "Insert"
+	} else {
+		// TODO: what about situations where fields dont exist in the createKV,
+		// indicating they were deleted? how do we handle nils here,
+		// for example?
+		for _, k := range beforeUpdateCopyFields {
+			newV, ok := createKV[k]
+			if ok {
+				retObj.Set(k, newV)
+			}
+		}
+		numRows, err = o.Update(ctx, tx, retObj)
+		opType = "Update"
+	}
+
+	if err != nil {
+		return 0, nil, err
+	}
+	if numRows == 0 {
+		return 0, nil, errors.New("createOrUpdateAssign: numRows was 0 when expecting " + opType)
+	}
+
+	return numRows, obj, nil
+}
