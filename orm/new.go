@@ -33,12 +33,23 @@ type Generator interface {
 	MakeColumnPointers(sliceLen int, columnTypes []*sql.ColumnType) ([]interface{}, error)
 }
 
+// HookFunction is the function type for declaring a software-based trigger, which we
+// refer to as a 'hook function'.
+type HookFunction func(*schema.Schema, *object.Object) error
+
 // ORM is the primary object we expect the caller to operate on.
 // Construct one with orm.New( ... ) and be on your merry way.
 type ORM struct {
 	sqlGen  Generator
 	s       *schema.Schema
 	RawConn *sql.DB
+
+	// string is the table name that corresponds to a table in the schema. HookFunction
+	BeforeCreateHooks map[string]HookFunction
+	AfterCreateHooks map[string]HookFunction
+
+	BeforeUpdateHooks map[string]HookFunction
+	AfterUpdateHooks map[string]HookFunction
 }
 
 // GetSchema returns the current schema object that is stored within
@@ -52,8 +63,55 @@ func (o ORM) GetGenerator() Generator {
 	return o.sqlGen
 }
 
+func makeEmptyHookMap() map[string]HookFunction {
+	return make(map[string]HookFunction)
+}
+
 // New is the ORM constructor. It expects a SQL generator, JSON/SQL Schema object, and database connection.
 func New(gen Generator, s *schema.Schema, db *sql.DB) ORM {
 	o := ORM{sqlGen: gen, s: s, RawConn: db}
+
+	o.BeforeCreateHooks = makeEmptyHookMap()
+	o.AfterCreateHooks = makeEmptyHookMap()
+
+	o.BeforeUpdateHooks = makeEmptyHookMap()
+	o.AfterUpdateHooks = makeEmptyHookMap()
+
 	return o
 }
+
+// Software trigger functions
+
+func (o ORM) CallBeforeCreateHookIfNeeded( obj * object.Object ) error {
+	hookFunc, ok := o.BeforeCreateHooks[ obj.Type ]
+	if ok {
+		return hookFunc(o.s, obj)
+	}
+	return nil
+}
+
+func (o ORM) CallAfterCreateHookIfNeeded( obj * object.Object ) error {
+	hookFunc, ok := o.AfterCreateHooks[ obj.Type ]
+	if ok {
+		return hookFunc(o.s, obj)
+	}
+	return nil
+
+}
+
+func (o ORM) CallBeforeUpdateHookIfNeeded( obj * object.Object ) error {
+	hookFunc, ok := o.BeforeUpdateHooks[ obj.Type ]
+	if ok {
+		return hookFunc(o.s, obj)
+	}
+	return nil
+}
+
+func (o ORM) CallAfterUpdateHookIfNeeded( obj * object.Object ) error {
+	hookFunc, ok := o.AfterUpdateHooks[ obj.Type ]
+	if ok {
+		return hookFunc(o.s, obj)
+	}
+	return nil
+}
+

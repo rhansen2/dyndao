@@ -255,7 +255,7 @@ func maybeDereferenceArgs(arg interface{}) interface{} {
 // Insert function will INSERT a record, given an optional transaction and an object.
 // It returns the number of rows affected (int64) and any error that may have occurred.
 func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
-	errorString := "orm/save error"
+	errorString := "Insert error"
 
 	select {
 	case <-ctx.Done():
@@ -270,6 +270,15 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		}
 		return 0, errors.New("Insert: unknown object table " + obj.Type)
 	}
+
+	err := o.CallBeforeCreateHookIfNeeded( obj )
+	if err != nil {
+		if os.Getenv("DEBUG_INSERT") != "" {
+			log15.Error(errorString, "BeforeCreateHookError", err)
+		}
+		return 0, err
+	}
+
 	sqlStr, bindArgs, err := o.sqlGen.BindingInsert(o.s, obj.Type, obj.KV)
 	if err != nil {
 		if os.Getenv("DEBUG_INSERT") != "" {
@@ -346,6 +355,15 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		}
 		return 0, err
 	}
+
+	err = o.CallAfterCreateHookIfNeeded( obj )
+	if err != nil {
+		if os.Getenv("DEBUG_INSERT") != "" {
+			log15.Error(errorString, "BeforeAfterCreateHookError", err)
+		}
+		return 0, err
+	}
+
 	obj.SetSaved(true)       // Note that the object has been recently saved
 	obj.ResetChangedFields() // Reset the 'changed fields', if any
 	return rowsAff, nil
@@ -353,11 +371,22 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 // Update function will UPDATE a record ...
 func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	errorString := "Update error"
+
 	select {
 	case <-ctx.Done():
 		return 0, ctx.Err()
 	default:
 	}
+
+	err := o.CallBeforeUpdateHookIfNeeded( obj )
+	if err != nil {
+		if os.Getenv("DEBUG_UPDATE") != "" {
+			log15.Error(errorString, "BeforeUpdateHookError", err)
+		}
+		return 0, err
+	}
+
 	sqlStr, bindArgs, bindWhere, err := o.sqlGen.BindingUpdate(o.s, obj)
 	if err != nil {
 		if os.Getenv("DEBUG_UPDATE") != "" {
@@ -392,6 +421,14 @@ func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	rowsAff, err := res.RowsAffected()
 	if err != nil {
+		return 0, err
+	}
+
+	err = o.CallAfterUpdateHookIfNeeded( obj )
+	if err != nil {
+		if os.Getenv("DEBUG_UPDATE") != "" {
+			log15.Error(errorString, "BeforeAfterUpdateHookError", err)
+		}
 		return 0, err
 	}
 
