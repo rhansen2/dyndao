@@ -270,6 +270,28 @@ func (o *Object) SetCore(k string, v interface{}) {
 	o.KV[k] = v
 }
 
+// SetWhereNeeded is useful in situations where you aren't quite sure what Set()
+// method to use (because yes, sometimes, it is not super clear.) If you are forcing
+// UPDATEs to an entire row by turning SetSaved() off, then calling Set() will populate
+// ChangedFields, and you will lose the rest of your UPDATE statement. If the object
+// is already changed, then Set() is fine. Sometimes, you would want SetCore().
+// This has the necessary logic to determine the approach Set() method to call.
+// This can be particularly useful when constructing hook functions as part of a
+// data pipeline. I consider this a design smell with dyndao and am working on solving
+// this in a more sane manner.
+func (o * Object) SetWhereNeeded(k string, v interface{}) {
+	if len(o.ChangedFields) > 0 {
+		o.Set(k, v)
+	} else if !o.GetSaved() && len(o.KV) > 0 {
+		// If the object is a forced UPDATE (meaning ChangedFields are not set),
+		// then we have to set this value in the KV without affecting a change that
+		// will force us away from updating the other values. (Due to how
+		// Update is coded in Dyndao)
+		o.SetCore(k, v)
+	}
+
+}
+
 // ResetChangedFields can be used in conjunction with an ORM... For instance,
 // once a Save() method is invoked
 func (o *Object) ResetChangedFields() {
