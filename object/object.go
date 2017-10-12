@@ -280,13 +280,16 @@ func (o *Object) SetCore(k string, v interface{}) {
 // data pipeline. I consider this a design smell with dyndao and am working on solving
 // this in a more sane manner.
 func (o * Object) SetWhereNeeded(k string, v interface{}) {
+	// If the object has already been changed, then we need to try to use Set().
+	// Otherwise, SetCore() is the right method to use.
 	if len(o.ChangedFields) > 0 {
 		o.Set(k, v)
 	} else if !o.GetSaved() && len(o.KV) > 0 {
-		// If the object is a forced UPDATE (meaning ChangedFields are not set),
-		// then we have to set this value in the KV without affecting a change that
-		// will force us away from updating the other values. (Due to how
-		// Update is coded in Dyndao)
+		// If the object is a forced UPDATE (meaning ChangedFields are
+		// not set), for example, then we have to set this value in the
+		// KV without affecting a change that will force us away from
+		// updating the other values. (Due to how Update is coded in
+		// Dyndao)
 		o.SetCore(k, v)
 	}
 
