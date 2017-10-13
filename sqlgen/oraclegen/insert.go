@@ -102,12 +102,20 @@ func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[stri
 	bindArgs = nils.RemoveNilsIfNeeded(bindArgs)
 
 	var sqlStr string
-	sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING %s /*LASTINSERTID*/ INTO :%s",
-		tableName,
-		strings.Join(colNames, ","),
-		strings.Join(bindNames, ","),
-		identityCol,
-		identityCol)
+
+	if schTable.CallerSuppliesPK {
+		sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
+			tableName,
+			strings.Join(colNames, ","),
+			strings.Join(bindNames, ","))
+	} else {
+		sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING %s /*LASTINSERTID*/ INTO :%s",
+			tableName,
+			strings.Join(colNames, ","),
+			strings.Join(bindNames, ","),
+			identityCol,
+			identityCol)
+	}
 
 	if os.Getenv("DEBUG") != "" {
 		fmt.Println("DEBUG: INSERT sqlStr->", sqlStr, "bindArgs->", bindArgs)

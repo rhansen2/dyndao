@@ -30,6 +30,8 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, errors.New("Insert: unknown object table " + obj.Type)
 	}
 
+	callerSuppliesPK := objTable.CallerSuppliesPK
+
 	err := o.CallBeforeCreateHookIfNeeded( obj )
 	if err != nil {
 		if os.Getenv("DEBUG_INSERT") != "" {
@@ -51,7 +53,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	var lastID int64
 	// Oracle-specific fix
-	if o.sqlGen.FixLastInsertIDbug() {
+	if o.sqlGen.FixLastInsertIDbug() && (!callerSuppliesPK) {
 		bindArgs = append(bindArgs, sql.Named(o.s.GetTable(obj.Type).Primary, sql.Out{
 			Dest: &lastID,
 		}))
@@ -66,10 +68,13 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, err
 	}
 	defer func() {
+		//fmt.Println("DEFER INSERT ABOUT TO CLOSE")
 		err := stmt.Close()
 		if err != nil {
-			fmt.Println("Insert stmt.Close error=", err) // TODO: logging implementation
+			fmt.Println("DEFER INSERT ERROR stmt.Close error=", err) // TODO: logging implementation
+			return
 		}
+		//fmt.Println("DEFER INSERT CLOSED")
 	}()
 
 	// TODO: Still necessary?
@@ -88,7 +93,9 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, errors.Wrap(err, "Insert/ExecContext")
 	}
 
-	{
+	// If the user supplies the primary key for this table, there is no need
+	// for us to bother with the LastInsertId() check.
+	if !callerSuppliesPK {
 		newID, err := res.LastInsertId()
 		if err != nil && lastID == 0 {
 			if os.Getenv("DEBUG_INSERT") != "" {

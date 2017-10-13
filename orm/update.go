@@ -46,14 +46,18 @@ func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, err
 	}
 	defer func() {
+		//fmt.Println("DEFER UPDATE ABOUT TO CLOSE")
 		err := stmt.Close()
 		if err != nil {
-			fmt.Println(err) // TODO logging implementation
+			fmt.Println("DEFER UPDATE ERROR stmt.Close error=", err) // TODO: logging implementation
+			return
 		}
+		//fmt.Println("DEFER UPDATE CLOSED")
 	}()
 
 	allBind := append(bindArgs, bindWhere...)
 	newAllBind := make([]interface{}, len(allBind))
+	// TODO: Still necessary?
 	for i, arg := range allBind {
 		newAllBind[i] = maybeDereferenceArgs(arg)
 	}

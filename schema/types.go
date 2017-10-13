@@ -9,6 +9,7 @@ type Schema struct {
 
 // Table is the metadata container for a SQL table definition
 type Table struct {
+	CallerSuppliesPK bool // Do we use a LastInsertID mechanism or does the caller supply a PK
 	MultiKey  bool   `json:"MultiKey"` // Use Primary or Primary + ForeignKeys
 	Primary   string `json:"Primary"`
 	Name      string `json:"Name"`
