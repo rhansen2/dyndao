@@ -287,13 +287,17 @@ func (o ORM) makeQueryObj(objTable *schema.Table, queryVals map[string]interface
 	return queryObj
 }
 
+// TODO: Have a more powerful querying mechanism, queryVals is very limited.
 func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, queryVals map[string]interface{}) (object.Array, error) {
+	// Check for timeout
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
 	}
 
+	// Check to make sure that the table arg is a valid table name We will
+	// need objTable later.
 	objTable := o.s.GetTable(table)
 	if objTable == nil {
 		return nil, errors.New("RetrieveMany: unknown object table " + table)
@@ -303,8 +307,12 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 	}
 
 	var objectArray object.Array
+
+	// Construct a dyndao object from our queryVals
 	queryObj := o.makeQueryObj(objTable, queryVals)
 
+	// Generate a sql string, the column names, and the binding parameter
+	// arguments from the schema and the query object
 	sqlStr, columnNames, bindArgs, err := o.sqlGen.BindingRetrieve(o.s, queryObj)
 	if os.Getenv("DEBUG_RETRIEVEMANY") != "" {
 		fmt.Println("RetrieveMany/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
@@ -314,6 +322,8 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 		return nil, err
 	}
 
+	// Determines whether we are running inside a transaction or not,
+	// returning stmt either way
 	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)
 	if err != nil {
 		return nil, err
