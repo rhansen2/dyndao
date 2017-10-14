@@ -82,16 +82,16 @@ func New(gen Generator, s *schema.Schema, db *sql.DB) ORM {
 
 // Software trigger functions
 
-func (o ORM) CallBeforeCreateHookIfNeeded( obj * object.Object ) error {
-	hookFunc, ok := o.BeforeCreateHooks[ obj.Type ]
+func (o * ORM) CallBeforeCreateHookIfNeeded( obj * object.Object ) error {
+	hookFunc, ok := o.BeforeCreateHooks[ o.s.GetTableName(obj.Type) ]
 	if ok {
 		return hookFunc(o.s, obj)
 	}
 	return nil
 }
 
-func (o ORM) CallAfterCreateHookIfNeeded( obj * object.Object ) error {
-	hookFunc, ok := o.AfterCreateHooks[ obj.Type ]
+func (o * ORM) CallAfterCreateHookIfNeeded( obj * object.Object ) error {
+	hookFunc, ok := o.AfterCreateHooks[ o.s.GetTableName(obj.Type) ]
 	if ok {
 		return hookFunc(o.s, obj)
 	}
@@ -99,16 +99,16 @@ func (o ORM) CallAfterCreateHookIfNeeded( obj * object.Object ) error {
 
 }
 
-func (o ORM) CallBeforeUpdateHookIfNeeded( obj * object.Object ) error {
-	hookFunc, ok := o.BeforeUpdateHooks[ obj.Type ]
+func (o * ORM) CallBeforeUpdateHookIfNeeded( obj * object.Object ) error {
+	hookFunc, ok := o.BeforeUpdateHooks[ o.s.GetTableName(obj.Type) ]
 	if ok {
 		return hookFunc(o.s, obj)
 	}
 	return nil
 }
 
-func (o ORM) CallAfterUpdateHookIfNeeded( obj * object.Object ) error {
-	hookFunc, ok := o.AfterUpdateHooks[ obj.Type ]
+func (o * ORM) CallAfterUpdateHookIfNeeded( obj * object.Object ) error {
+	hookFunc, ok := o.AfterUpdateHooks[ o.s.GetTableName(obj.Type) ]
 	if ok {
 		return hookFunc(o.s, obj)
 	}

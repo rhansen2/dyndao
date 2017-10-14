@@ -342,10 +342,13 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 	}
 
 	defer func() {
+		//fmt.Println("RYAN DEFER RETRIEVE ABOUT TO CLOSE")
 		err := res.Close()
 		if err != nil {
+			//fmt.Println("RYAN DEFER RETRIEVE ERROR", err)
 			fmt.Println(err) // TODO logger implementation
 		}
+		//fmt.Println("RYAN DEFER RETRIEVE CLOSED")
 	}()
 
 	columnTypes, err := res.ColumnTypes()
@@ -379,6 +382,7 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 	if err != nil {
 		return nil, err
 	}
+
 	return objectArray, nil
 }
 

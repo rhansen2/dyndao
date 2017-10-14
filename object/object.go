@@ -12,6 +12,11 @@ import (
 )
 
 var (
+	// ErrKeyWasMissing is returned by the Get* family of functions in
+	// situations where a value must be returned, but we would like to
+	// signal that the requested key was empty.
+	ErrKeyWasMissing = errors.New("object: key was missing")
+
 	// ErrValueWasNil is returned by the Get* family of functions in
 	// situations where a value must be returned, but we would like to
 	// signal that it was originally nil.
@@ -118,18 +123,23 @@ func (o Object) GetFloat(k string) (float64, bool) {
 // values. Nils and unrecognized values are marked as an error (nil values will
 // return 0 and ErrValueWasNil)
 func (o Object) HiddenGetStringAlways(k string) (string, error) {
-	switch v := o.HiddenKV[k].(type) {
+	v, ok := o.HiddenKV[k]
+	if !ok {
+		return "", ErrKeyWasMissing
+	}
+
+	switch v.(type) {
 	case float64:
-		fl := o.HiddenKV[k].(float64)
+		fl := v.(float64)
 		return fmt.Sprintf("%f", fl), nil
 	case int64:
-		fl := o.HiddenKV[k].(int64)
+		fl := v.(int64)
 		return fmt.Sprintf("%d", fl), nil
 	case uint64:
-		fl := o.HiddenKV[k].(uint64)
+		fl := v.(uint64)
 		return fmt.Sprintf("%d", fl), nil
 	case string:
-		fl := o.HiddenKV[k].(string)
+		fl := v.(string)
 		return fl, nil
 	case nil:
 		return "", ErrValueWasNil
@@ -143,18 +153,23 @@ func (o Object) HiddenGetStringAlways(k string) (string, error) {
 // from float64, int64, uint64, string, and nil values. Nils and unrecognized values
 // are marked as an error (nil values will return 0 and ErrValueWasNil)
 func (o Object) GetStringAlways(k string) (string, error) {
-	switch v := o.KV[k].(type) {
+	v, ok := o.KV[k]
+	if !ok {
+		return "", ErrKeyWasMissing
+	}
+
+	switch v.(type) {
 	case float64:
-		fl := o.KV[k].(float64)
+		fl := v.(float64)
 		return fmt.Sprintf("%f", fl), nil
 	case int64:
-		fl := o.KV[k].(int64)
+		fl := v.(int64)
 		return fmt.Sprintf("%d", fl), nil
 	case uint64:
-		fl := o.KV[k].(uint64)
+		fl := v.(uint64)
 		return fmt.Sprintf("%d", fl), nil
 	case string:
-		fl := o.KV[k].(string)
+		fl := v.(string)
 		return fl, nil
 	case nil:
 		return "", ErrValueWasNil
@@ -168,18 +183,23 @@ func (o Object) GetStringAlways(k string) (string, error) {
 // from float64, int64, uint64, string, and nil values. Nils and unrecognized values
 // are marked as an error (nil values will return 0 and ErrValueWasNil)
 func (o Object) GetFloatAlways(k string) (float64, error) {
-	switch v := o.KV[k].(type) {
+	v, ok := o.KV[k]
+	if !ok {
+		return 0, ErrKeyWasMissing
+	}
+
+	switch v.(type) {
 	case float64:
-		fl := o.KV[k].(float64)
+		fl := v.(float64)
 		return fl, nil
 	case int64:
-		fl := o.KV[k].(float64)
+		fl := v.(float64)
 		return fl, nil
 	case uint64:
-		fl := o.KV[k].(uint64)
+		fl := v.(uint64)
 		return float64(fl), nil
 	case string:
-		fl := o.KV[k].(string)
+		fl := v.(string)
 		return strconv.ParseFloat(fl, 64)
 	case nil:
 		return 0, ErrValueWasNil
@@ -193,18 +213,23 @@ func (o Object) GetFloatAlways(k string) (float64, error) {
 // from float64, uint64, int64 and string values. Nils and unrecognized values are
 // marked as an error (nil values will return 0 and ErrValueWasNil)
 func (o Object) GetIntAlways(k string) (int64, error) {
-	switch v := o.KV[k].(type) {
+	v, ok := o.KV[k]
+	if !ok {
+		return 0, ErrKeyWasMissing
+	}
+
+	switch v.(type) {
 	case float64:
-		fl := o.KV[k].(float64)
+		fl := v.(float64)
 		return int64(fl), nil
 	case int64:
-		fl := o.KV[k].(int64)
+		fl := v.(int64)
 		return fl, nil
 	case uint64:
-		fl := o.KV[k].(uint64)
+		fl := v.(uint64)
 		return int64(fl), nil
 	case string:
-		fl := o.KV[k].(string)
+		fl := v.(string)
 		return strconv.ParseInt(fl, 10, 64)
 	case nil:
 		return 0, ErrValueWasNil
@@ -218,18 +243,23 @@ func (o Object) GetIntAlways(k string) (int64, error) {
 // away from float64, int64, and string values. Nils and unrecognized values
 // are marked as an error (nil values will return 0 and ErrValueWasNil)
 func (o Object) GetUintAlways(k string) (uint64, error) {
-	switch v := o.KV[k].(type) {
+	v, ok := o.KV[k]
+	if !ok {
+		return 0, ErrKeyWasMissing
+	}
+
+	switch v.(type) {
 	case float64:
-		fl := o.KV[k].(float64)
+		fl := v.(float64)
 		return uint64(fl), nil
 	case int64:
-		fl := o.KV[k].(int64)
+		fl := v.(int64)
 		return uint64(fl), nil
 	case uint64:
-		fl := o.KV[k].(uint64)
+		fl := v.(uint64)
 		return fl, nil
 	case string:
-		fl := o.KV[k].(string)
+		fl := v.(string)
 		return strconv.ParseUint(fl, 10, 64)
 	case nil:
 		return uint64(0), ErrValueWasNil

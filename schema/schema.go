@@ -51,7 +51,20 @@ func FromJSONBytes(jsonBytes []byte) (*Schema, error) {
 	return sch, nil
 }
 
-// GetTable returns the correct table in a potentially aliased environment.
+// GetTableName returns the correct Table name in a potentially aliased environment.
+func (s *Schema) GetTableName(n string) string {
+	if s.TableAliases != nil {
+		realName, ok := s.TableAliases[n]
+		if !ok {
+			// Perhaps it is not an alias
+			return n
+		}
+		return realName
+	}
+	return n
+}
+
+// GetTable returns the correct Table type in a potentially aliased environment.
 func (s *Schema) GetTable(n string) *Table {
 	if s.TableAliases != nil {
 		realName, ok := s.TableAliases[n]
