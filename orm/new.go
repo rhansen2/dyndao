@@ -82,6 +82,9 @@ func New(gen Generator, s *schema.Schema, db *sql.DB) ORM {
 
 // Software trigger functions
 
+
+// CallBeforeCreateHookIfNeeded will call the necessary BeforeCreate triggers for a given
+// object if they are set.
 func (o * ORM) CallBeforeCreateHookIfNeeded( obj * object.Object ) error {
 	hookFunc, ok := o.BeforeCreateHooks[ o.s.GetTableName(obj.Type) ]
 	if ok {
@@ -90,6 +93,8 @@ func (o * ORM) CallBeforeCreateHookIfNeeded( obj * object.Object ) error {
 	return nil
 }
 
+// CallAfterCreateHookIfNeeded will call the necessary AfterCreate triggers for a given
+// object if they are set.
 func (o * ORM) CallAfterCreateHookIfNeeded( obj * object.Object ) error {
 	hookFunc, ok := o.AfterCreateHooks[ o.s.GetTableName(obj.Type) ]
 	if ok {
@@ -99,6 +104,8 @@ func (o * ORM) CallAfterCreateHookIfNeeded( obj * object.Object ) error {
 
 }
 
+// CallBeforeUpdateHookIfNeeded will call the necessary BeforeUpdate triggers for a given
+// object if they are set.
 func (o * ORM) CallBeforeUpdateHookIfNeeded( obj * object.Object ) error {
 	hookFunc, ok := o.BeforeUpdateHooks[ o.s.GetTableName(obj.Type) ]
 	if ok {
@@ -107,6 +114,8 @@ func (o * ORM) CallBeforeUpdateHookIfNeeded( obj * object.Object ) error {
 	return nil
 }
 
+// CallAfterUpdateHookIfNeeded will call the necessary AfterUpdate triggers for
+// a given object if they are set.
 func (o * ORM) CallAfterUpdateHookIfNeeded( obj * object.Object ) error {
 	hookFunc, ok := o.AfterUpdateHooks[ o.s.GetTableName(obj.Type) ]
 	if ok {
