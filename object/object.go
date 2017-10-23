@@ -309,7 +309,7 @@ func (o *Object) SetCore(k string, v interface{}) {
 // This can be particularly useful when constructing hook functions as part of a
 // data pipeline. I consider this a design smell with dyndao and am working on solving
 // this in a more sane manner.
-func (o * Object) SetWhereNeeded(k string, v interface{}) {
+func (o *Object) SetWhereNeeded(k string, v interface{}) {
 	// If the object has already been changed, then we need to try to use Set().
 	// Otherwise, SetCore() is the right method to use.
 	if len(o.ChangedFields) > 0 {

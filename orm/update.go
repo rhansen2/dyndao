@@ -11,7 +11,6 @@ import (
 	"github.com/rbastic/dyndao/object"
 )
 
-
 // Update function will UPDATE a record ...
 func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	errorString := "Update error"
@@ -22,7 +21,7 @@ func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	default:
 	}
 
-	err := o.CallBeforeUpdateHookIfNeeded( obj )
+	err := o.CallBeforeUpdateHookIfNeeded(obj)
 	if err != nil {
 		if os.Getenv("DEBUG_UPDATE") != "" {
 			log15.Error(errorString, "BeforeUpdateHookError", err)
@@ -71,7 +70,7 @@ func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, err
 	}
 
-	err = o.CallAfterUpdateHookIfNeeded( obj )
+	err = o.CallAfterUpdateHookIfNeeded(obj)
 	if err != nil {
 		if os.Getenv("DEBUG_UPDATE") != "" {
 			log15.Error(errorString, "BeforeAfterUpdateHookError", err)

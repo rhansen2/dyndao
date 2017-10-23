@@ -46,10 +46,10 @@ type ORM struct {
 
 	// string is the table name that corresponds to a table in the schema. HookFunction
 	BeforeCreateHooks map[string]HookFunction
-	AfterCreateHooks map[string]HookFunction
+	AfterCreateHooks  map[string]HookFunction
 
 	BeforeUpdateHooks map[string]HookFunction
-	AfterUpdateHooks map[string]HookFunction
+	AfterUpdateHooks  map[string]HookFunction
 }
 
 // GetSchema returns the current schema object that is stored within
@@ -82,11 +82,10 @@ func New(gen Generator, s *schema.Schema, db *sql.DB) ORM {
 
 // Software trigger functions
 
-
 // CallBeforeCreateHookIfNeeded will call the necessary BeforeCreate triggers for a given
 // object if they are set.
-func (o * ORM) CallBeforeCreateHookIfNeeded( obj * object.Object ) error {
-	hookFunc, ok := o.BeforeCreateHooks[ o.s.GetTableName(obj.Type) ]
+func (o *ORM) CallBeforeCreateHookIfNeeded(obj *object.Object) error {
+	hookFunc, ok := o.BeforeCreateHooks[o.s.GetTableName(obj.Type)]
 	if ok {
 		return hookFunc(o.s, obj)
 	}
@@ -95,8 +94,8 @@ func (o * ORM) CallBeforeCreateHookIfNeeded( obj * object.Object ) error {
 
 // CallAfterCreateHookIfNeeded will call the necessary AfterCreate triggers for a given
 // object if they are set.
-func (o * ORM) CallAfterCreateHookIfNeeded( obj * object.Object ) error {
-	hookFunc, ok := o.AfterCreateHooks[ o.s.GetTableName(obj.Type) ]
+func (o *ORM) CallAfterCreateHookIfNeeded(obj *object.Object) error {
+	hookFunc, ok := o.AfterCreateHooks[o.s.GetTableName(obj.Type)]
 	if ok {
 		return hookFunc(o.s, obj)
 	}
@@ -106,8 +105,8 @@ func (o * ORM) CallAfterCreateHookIfNeeded( obj * object.Object ) error {
 
 // CallBeforeUpdateHookIfNeeded will call the necessary BeforeUpdate triggers for a given
 // object if they are set.
-func (o * ORM) CallBeforeUpdateHookIfNeeded( obj * object.Object ) error {
-	hookFunc, ok := o.BeforeUpdateHooks[ o.s.GetTableName(obj.Type) ]
+func (o *ORM) CallBeforeUpdateHookIfNeeded(obj *object.Object) error {
+	hookFunc, ok := o.BeforeUpdateHooks[o.s.GetTableName(obj.Type)]
 	if ok {
 		return hookFunc(o.s, obj)
 	}
@@ -116,11 +115,10 @@ func (o * ORM) CallBeforeUpdateHookIfNeeded( obj * object.Object ) error {
 
 // CallAfterUpdateHookIfNeeded will call the necessary AfterUpdate triggers for
 // a given object if they are set.
-func (o * ORM) CallAfterUpdateHookIfNeeded( obj * object.Object ) error {
-	hookFunc, ok := o.AfterUpdateHooks[ o.s.GetTableName(obj.Type) ]
+func (o *ORM) CallAfterUpdateHookIfNeeded(obj *object.Object) error {
+	hookFunc, ok := o.AfterUpdateHooks[o.s.GetTableName(obj.Type)]
 	if ok {
 		return hookFunc(o.s, obj)
 	}
 	return nil
 }
-

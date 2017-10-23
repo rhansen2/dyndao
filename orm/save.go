@@ -249,5 +249,3 @@ func maybeDereferenceArgs(arg interface{}) interface{} {
 	v := reflect.ValueOf(arg)
 	return reflect.Indirect(v).Interface()
 }
-
-

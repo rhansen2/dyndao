@@ -2,12 +2,12 @@ package infoschema
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
 	dyndaoORM "github.com/rbastic/dyndao/orm"
+	"github.com/rbastic/dyndao/schema"
 	//"database/sql"
 )
 
@@ -40,5 +40,8 @@ func TestBasicIS(t *testing.T) {
 
 	// TODO: actually validate that the schema was parsed correctly
 	// (and try running schema parser against multiple db's)
-	fmt.Println(sch)
+	//	fmt.Println(sch)
+
+	err = schema.Validate(sch)
+	fatalIf(t, err)
 }

@@ -32,7 +32,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	callerSuppliesPK := objTable.CallerSuppliesPK
 
-	err := o.CallBeforeCreateHookIfNeeded( obj )
+	err := o.CallBeforeCreateHookIfNeeded(obj)
 	if err != nil {
 		if os.Getenv("DEBUG_INSERT") != "" {
 			log15.Error(errorString, "BeforeCreateHookError", err)
@@ -122,7 +122,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, err
 	}
 
-	err = o.CallAfterCreateHookIfNeeded( obj )
+	err = o.CallAfterCreateHookIfNeeded(obj)
 	if err != nil {
 		if os.Getenv("DEBUG_INSERT") != "" {
 			log15.Error(errorString, "BeforeAfterCreateHookError", err)

@@ -1,9 +1,9 @@
 package oraclegen
 
 import (
-	"reflect"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
