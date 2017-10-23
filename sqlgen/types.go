@@ -21,7 +21,6 @@ type FnIsNumberType func(string) bool
 type FnIsFloatingType func(string) bool
 type FnIsTimestampType func(string) bool
 type FnIsLOBType func(string) bool
-type FnFixLastInsertIDbug func() bool
 type FnDynamicObjectSetter func(g * SQLGenerator, columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error
 type FnMakeColumnPointers func(g * SQLGenerator, sliceLen int, columnTypes []*sql.ColumnType) ([]interface{}, error)
 
@@ -38,6 +37,7 @@ type FnBindingInsertSQL func(schTable * schema.Table, tableName string, colNames
 // runtime, it allows us to share common SQL idioms between implementations
 // much more easily.
 type SQLGenerator struct {
+	FixLastInsertIDbug	bool
 	BindingInsert             FnBindingInsert
 	BindingUpdate             FnBindingUpdate
 	BindingRetrieve           FnBindingRetrieve
@@ -57,8 +57,6 @@ type SQLGenerator struct {
 	IsLOBType       FnIsLOBType
 
 	// HACK TODO At least replace this with a boolean on the Generator struct.
-	FixLastInsertIDbug FnFixLastInsertIDbug
-
 	DynamicObjectSetter FnDynamicObjectSetter
 	MakeColumnPointers  FnMakeColumnPointers
 

@@ -54,7 +54,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	var lastID int64
 	// Oracle-specific fix
-	if (!callerSuppliesPK) && o.sqlGen.FixLastInsertIDbug() {
+	if (!callerSuppliesPK) && o.sqlGen.FixLastInsertIDbug {
 		bindArgs = append(bindArgs, sql.Named(o.s.GetTable(obj.Type).Primary, sql.Out{
 			Dest: &lastID,
 		}))

@@ -12,7 +12,7 @@ func New(g * sg.SQLGenerator) *sg.SQLGenerator {
 	// Oracle SQLGenerator uses Core for anything commented out.
 
 	//g.CreateTable = sg.FnCreateTable(CreateTable)
-	g.FixLastInsertIDbug = sg.FnFixLastInsertIDbug(FixLastInsertIDbug)
+	g.FixLastInsertIDbug = true
 	g.IsStringType = sg.FnIsStringType(IsStringType)
 	g.IsNumberType = sg.FnIsNumberType(IsNumberType)
 	g.IsFloatingType = sg.FnIsFloatingType(IsFloatingType)

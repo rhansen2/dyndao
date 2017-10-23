@@ -40,9 +40,6 @@ func PanicIfInvalid( g * SQLGenerator ) {
 	if g.IsLOBType == nil {
 		panic("dyndao: vtable IsLOBType is nil")
 	}
-	if g.FixLastInsertIDbug == nil {
-		panic("dyndao: vtable FixLastInsertIDbug is nil")
-	}
 	if g.DynamicObjectSetter == nil {
 		panic("dyndao: vtable DynamicObjectSetter is nil")
 	}
