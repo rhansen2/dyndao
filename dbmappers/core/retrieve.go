@@ -6,9 +6,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	sg "github.com/rbastic/dyndao/sqlgen"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
+	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
 // BindingRetrieve accepts a schema and an object, constructing the appropriate SELECT
@@ -16,7 +16,7 @@ import (
 // binding where clause.
 // DEBUG mode may be turned on by setting an environment parameter, "DEBUG".
 // TODO: We may consider using a different name in the future.
-func BindingRetrieve(g * sg.SQLGenerator, sch *schema.Schema, obj *object.Object) (string, []string, []interface{}, error) {
+func BindingRetrieve(g *sg.SQLGenerator, sch *schema.Schema, obj *object.Object) (string, []string, []interface{}, error) {
 	table := obj.Type // TODO: we may want to map this
 	schTable := sch.GetTable(table)
 	if schTable == nil {

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	sg "github.com/rbastic/dyndao/sqlgen"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
+	sg "github.com/rbastic/dyndao/sqlgen"
 	"github.com/rbastic/nils"
 )
 
@@ -58,7 +58,7 @@ func safeConvert(arg interface{}) time.Time {
 }
 
 // BindingUpdate generates the SQL for a given UPDATE statement for oracle with binding parameter values
-func BindingUpdate(g * sg.SQLGenerator, sch *schema.Schema, obj *object.Object) (string, []interface{}, []interface{}, error) {
+func BindingUpdate(g *sg.SQLGenerator, sch *schema.Schema, obj *object.Object) (string, []interface{}, []interface{}, error) {
 	schTbl := sch.GetTable(obj.Type)
 	if schTbl == nil {
 		return "", nil, nil, errors.New("BindingUpdate: Table map unavailable for table " + obj.Type)

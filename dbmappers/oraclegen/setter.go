@@ -3,8 +3,8 @@ package oraclegen
 import (
 	"database/sql"
 	"github.com/pkg/errors"
-	sg "github.com/rbastic/dyndao/sqlgen"
 	"github.com/rbastic/dyndao/object"
+	sg "github.com/rbastic/dyndao/sqlgen"
 	"gopkg.in/goracle.v2"
 	"io/ioutil"
 	"time"
@@ -30,7 +30,7 @@ func (l *LobDST) Scan(src interface{}) error {
 // DynamicObjectSetter is used to dynamically set the values of an object by
 // checking the necessary types (via sql.ColumnType, and what the driver tells
 // us we have for column types)
-func DynamicObjectSetter(s * sg.SQLGenerator, columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error {
+func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error {
 	// NOTE: Read this post for more info on why the code below is written this way:
 	// https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
 	for i, v := range columnPointers {
@@ -95,7 +95,7 @@ func DynamicObjectSetter(s * sg.SQLGenerator, columnNames []string, columnPointe
 	return nil
 }
 
-func MakeColumnPointers(s * sg.SQLGenerator, sliceLen int, columnTypes []*sql.ColumnType) ([]interface{}, error) {
+func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.ColumnType) ([]interface{}, error) {
 	columnPointers := make([]interface{}, sliceLen)
 	for i := 0; i < sliceLen; i++ {
 		ct := columnTypes[i]

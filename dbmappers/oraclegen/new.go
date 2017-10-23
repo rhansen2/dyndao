@@ -8,7 +8,7 @@ import (
 // It receives the SQLGenerator composed by Core and then overrides any
 // methods that it needs to. In some instances, this could be all methods,
 // or hardly any.
-func New(g * sg.SQLGenerator) *sg.SQLGenerator {
+func New(g *sg.SQLGenerator) *sg.SQLGenerator {
 	// Oracle SQLGenerator uses Core for anything commented out.
 
 	//g.CreateTable = sg.FnCreateTable(CreateTable)

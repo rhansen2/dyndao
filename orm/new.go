@@ -3,9 +3,9 @@ package orm
 import (
 	"database/sql"
 
-	sg "github.com/rbastic/dyndao/sqlgen"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
+	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
 // HookFunction is the function type for declaring a software-based trigger, which we

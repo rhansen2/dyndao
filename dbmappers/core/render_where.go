@@ -6,12 +6,12 @@ import (
 
 	"github.com/pkg/errors"
 
-	sg "github.com/rbastic/dyndao/sqlgen"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
+	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
-func RenderUpdateWhereClause(g * sg.SQLGenerator, schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {
+func RenderUpdateWhereClause(g *sg.SQLGenerator, schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {
 	var bindArgs []interface{}
 	var whereClause string
 
@@ -71,7 +71,7 @@ func RenderUpdateWhereClause(g * sg.SQLGenerator, schTable *schema.Table, fields
 	return whereClause, bindArgs, nil
 }
 
-func RenderWhereClause(g * sg.SQLGenerator, schTable *schema.Table, obj *object.Object) (string, []interface{}, error) {
+func RenderWhereClause(g *sg.SQLGenerator, schTable *schema.Table, obj *object.Object) (string, []interface{}, error) {
 	var whereClause string
 
 	if len(obj.KV) == 0 {

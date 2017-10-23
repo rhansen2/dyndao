@@ -8,10 +8,10 @@ import (
 
 	"github.com/pkg/errors"
 
-	sg "github.com/rbastic/dyndao/sqlgen"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/orm"
 	"github.com/rbastic/dyndao/schema"
+	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
 const PeopleObjectType string = "people"
@@ -24,11 +24,11 @@ type FnGetDB func() *sql.DB
 type FnGetSG func() *sg.SQLGenerator
 
 var (
-	GetDB FnGetDB
+	GetDB     FnGetDB
 	getSQLGen FnGetSG
 )
 
-func Test( t * testing.T , getDBFn FnGetDB, getSGFN FnGetSG) {
+func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
 	// Set our functions locally
 	GetDB = getDBFn
 	getSQLGen = getSGFN

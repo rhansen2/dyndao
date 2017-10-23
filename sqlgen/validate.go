@@ -1,6 +1,6 @@
 package sqlgen
 
-func PanicIfInvalid( g * SQLGenerator ) {
+func PanicIfInvalid(g *SQLGenerator) {
 	if g.BindingInsert == nil {
 		panic("dyndao: vtable BindingInsert is nil")
 	}

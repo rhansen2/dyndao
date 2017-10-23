@@ -12,12 +12,12 @@ func quotedString(value string) string {
 	return fmt.Sprintf(`"%s"`, value)
 }
 
-func RenderInsertValue(f *schema.Field, value interface{}) (string, error) {
+func RenderInsertValue(f *schema.Field, value interface{}) (interface{}, error) {
 	// TODO do we need the schema.Field for more than debugging information?
 	switch v := value.(type) {
 	case string:
 		if v == "" {
-			return "", errors.New("renderInsertField: unable to turn the value of " + f.Name + " into string")
+			return "", errors.New("dyndao: RenderInsertValue: unable to turn the value of " + f.Name + " into string")
 		}
 		return quotedString(v), nil
 	case int32:
@@ -30,7 +30,7 @@ func RenderInsertValue(f *schema.Field, value interface{}) (string, error) {
 		num := value.(int64)
 		return string(num), nil
 	default:
-		return "", errors.New("renderInsertField: unknown type " + fmt.Sprintf("%v", v) + " for the value of " + f.Name)
+		return "", errors.New("dyndao: RenderInsertValue: unknown type " + fmt.Sprintf("%v", v) + " for the value of " + f.Name)
 
 	}
 }

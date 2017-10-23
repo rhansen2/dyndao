@@ -1,18 +1,18 @@
 package oraclegen
 
 import (
-	"strings"
 	"database/sql"
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 	"github.com/tidwall/gjson"
 )
 
-func BindingInsertSQL( schTable * schema.Table, tableName string, colNames []string, bindNames []string, identityCol string) string {
+func BindingInsertSQL(schTable *schema.Table, tableName string, colNames []string, bindNames []string, identityCol string) string {
 	var sqlStr string
 	if schTable.CallerSuppliesPK {
 		sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",

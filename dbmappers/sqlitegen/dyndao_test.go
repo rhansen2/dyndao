@@ -11,7 +11,6 @@ import (
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 
-
 	"os"
 	"testing"
 
@@ -19,10 +18,14 @@ import (
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
+var (
+	defaultDSN = "file::memory:?mode=memory&cache=shared"
+)
+
 func GetDB() *sql.DB {
 	sqliteDSN := os.Getenv("SQLITE_DSN")
 	if sqliteDSN == "" {
-		sqliteDSN = "file::memory:?mode=memory&cache=shared"
+		sqliteDSN = defaultDSN
 	}
 	db, err := sql.Open("sqlite3", sqliteDSN)
 	if err != nil {
@@ -38,6 +41,6 @@ func GetSQLGen() *sg.SQLGenerator {
 	return sqlGen
 }
 
-func TestMain(t * testing.T) {
+func TestMain(t *testing.T) {
 	core.Test(t, GetDB, GetSQLGen)
 }

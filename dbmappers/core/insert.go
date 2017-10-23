@@ -26,7 +26,7 @@ func getRealColumnName(tbl *schema.Table, col string) string {
 	return col
 }
 
-func CoreBindingInsert(g * sg.SQLGenerator, schTable *schema.Table, data map[string]interface{}, identityCol string, fieldsMap map[string]*schema.Field) ([]string, []string, []interface{}) {
+func CoreBindingInsert(g *sg.SQLGenerator, schTable *schema.Table, data map[string]interface{}, identityCol string, fieldsMap map[string]*schema.Field) ([]string, []string, []interface{}) {
 	dataLen := len(data)
 	bindNames := make([]string, dataLen)
 	colNames := make([]string, dataLen)
@@ -75,7 +75,7 @@ func CoreBindingInsert(g * sg.SQLGenerator, schTable *schema.Table, data map[str
 }
 
 // BindingInsert generates the SQL for a given INSERT statement for oracle with binding parameter values
-func BindingInsert(g * sg.SQLGenerator, sch *schema.Schema, table string, data map[string]interface{}) (string, []interface{}, error) {
+func BindingInsert(g *sg.SQLGenerator, sch *schema.Schema, table string, data map[string]interface{}) (string, []interface{}, error) {
 	if table == "" {
 		return "", nil, errors.New("BindingInsert: Empty table name")
 	}
@@ -109,7 +109,7 @@ func BindingInsert(g * sg.SQLGenerator, sch *schema.Schema, table string, data m
 	return sqlStr, bindArgs, nil
 }
 
-func BindingInsertSQL( schTable * schema.Table, tableName string, colNames []string, bindNames []string, identityCol string) string {
+func BindingInsertSQL(schTable *schema.Table, tableName string, colNames []string, bindNames []string, identityCol string) string {
 	var sqlStr string
 	sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
 		tableName,

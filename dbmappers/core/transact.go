@@ -2,7 +2,7 @@ package core
 
 // TODO This package is bad. The functions imply that they will perform the
 // action but they just return SQL.
-// 
+//
 
 // Begin renders a SQL BEGIN statement for us
 func Begin(name string) string {

@@ -41,6 +41,6 @@ func GetSQLGen() *sg.SQLGenerator {
 	return sqlGen
 }
 
-func TestMain(t * testing.T) {
+func TestMain(t *testing.T) {
 	core.Test(t, GetDB, GetSQLGen)
 }

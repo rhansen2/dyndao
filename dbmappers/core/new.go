@@ -20,4 +20,3 @@ func New() *sg.SQLGenerator {
 	g.RenderUpdateWhereClause = sg.FnRenderUpdateWhereClause(RenderUpdateWhereClause)
 	return g
 }
-

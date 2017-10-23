@@ -10,7 +10,7 @@ import (
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
-func RenderCreateField(sg * sg.SQLGenerator, f *schema.Field) string {
+func RenderCreateField(sg *sg.SQLGenerator, f *schema.Field) string {
 	dataType := f.DBType
 	notNull := ""
 	identity := ""
