@@ -31,11 +31,14 @@ func TestBasicIS(t *testing.T) {
 	db, err := dyndaoORM.GetDB(driver, dsn)
 	fatalIf(t, err)
 
+	// TODO: use a different schema than 'test'
 	sch, err := LoadSchema(context.TODO(), db, "test")
 	fatalIf(t, err)
 
 	err = db.Close()
 	fatalIf(t, err)
 
+	// TODO: actually validate that the schema was parsed correctly
+	// (and try running schema parser against multiple db's)
 	fmt.Println(sch)
 }
