@@ -4,6 +4,14 @@ package orm
 // relevant objects, etc. The current design is a WIP. While not finished, it is serviceable
 // and can be used effectively.
 
+/*
+
+TODO: This file has two Retrieve implementations with some duplicated
+code (RetrieveManyFromCustomSQL, retrieveManyCore). It should be easy to
+refactor.
+
+*/
+
 import (
 	"context"
 	"database/sql"
@@ -245,7 +253,7 @@ func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr
 	}
 	sg := o.sqlGen
 	for res.Next() {
-		columnPointers, err := sg.MakeColumnPointers(len(columnNames), columnTypes)
+		columnPointers, err := sg.MakeColumnPointers(sg, len(columnNames), columnTypes)
 		if err != nil {
 			return nil, err
 		}
@@ -255,7 +263,7 @@ func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr
 		}
 
 		obj := object.New(table)
-		err = sg.DynamicObjectSetter(columnNames, columnPointers, columnTypes, obj)
+		err = sg.DynamicObjectSetter(sg, columnNames, columnPointers, columnTypes, obj)
 		if err != nil {
 			return nil, err
 		}
@@ -313,7 +321,8 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 
 	// Generate a sql string, the column names, and the binding parameter
 	// arguments from the schema and the query object
-	sqlStr, columnNames, bindArgs, err := o.sqlGen.BindingRetrieve(o.s, queryObj)
+	sg := o.sqlGen
+	sqlStr, columnNames, bindArgs, err := sg.BindingRetrieve(sg, o.s, queryObj)
 	if os.Getenv("DEBUG_RETRIEVEMANY") != "" {
 		fmt.Println("RetrieveMany/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
 	}
@@ -356,9 +365,8 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 		return nil, err
 	}
 
-	sg := o.sqlGen
 	for res.Next() {
-		columnPointers, err := sg.MakeColumnPointers(len(columnNames), columnTypes)
+		columnPointers, err := sg.MakeColumnPointers(sg, len(columnNames), columnTypes)
 		if err != nil {
 			return nil, err
 		}
@@ -368,7 +376,7 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 			return nil, err
 		}
 
-		err = sg.DynamicObjectSetter(columnNames, columnPointers, columnTypes, obj)
+		err = sg.DynamicObjectSetter(sg, columnNames, columnPointers, columnTypes, obj)
 		if err != nil {
 			return nil, err
 		}

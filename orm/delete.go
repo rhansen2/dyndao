@@ -23,7 +23,7 @@ func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	if objTable == nil {
 		return 0, errors.New("Delete: unknown object table " + obj.Type)
 	}
-	sqlStr, bindWhere, err := o.sqlGen.BindingDelete(o.s, obj)
+	sqlStr, bindWhere, err := o.sqlGen.BindingDelete(o.sqlGen, o.s, obj)
 	if err != nil {
 		return 0, err
 	}

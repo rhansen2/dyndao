@@ -1,6 +1,6 @@
-// Package oraclegen encapsulates an implementation for a given schema attached to
+// Package oraclegen core an implementation for a given schema attached to
 // a generator. This code represents an example implementation for oracle
-package oraclegen
+package core
 
 import (
 	"errors"

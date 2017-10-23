@@ -1,5 +1,5 @@
 // Package oraclegen helps with generating SQL statements based on a given schema and additional parameters
-package oraclegen
+package core
 
 import "github.com/rbastic/dyndao/schema"
 

@@ -3,35 +3,10 @@ package orm
 import (
 	"database/sql"
 
+	sg "github.com/rbastic/dyndao/sqlgen"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 )
-
-// Generator is the interface that an ORM expects a SQL string generator to support.
-type Generator interface {
-	BindingInsert(sch *schema.Schema, table string, data map[string]interface{}) (string, []interface{}, error)
-	BindingUpdate(sch *schema.Schema, obj *object.Object) (string, []interface{}, []interface{}, error)
-	BindingRetrieve(sch *schema.Schema, obj *object.Object) (string, []string, []interface{}, error)
-	BindingDelete(sch *schema.Schema, obj *object.Object) (string, []interface{}, error)
-	CreateTable(sch *schema.Schema, table string) (string, error)
-	DropTable(name string) string
-
-	RenderBindingValue(f *schema.Field) string
-	RenderBindingValueWithInt(f *schema.Field, i int64) string
-
-	IsStringType(string) bool
-	IsNumberType(string) bool
-	IsFloatingType(string) bool
-	IsTimestampType(string) bool
-	IsLOBType(string) bool
-
-	// This option will turn MODE_LAST_INSERT_ID off? Start naming these
-	// things all mode? Same with FixLastInsertIDbug()?
-	FixLastInsertIDbug() bool
-
-	DynamicObjectSetter(columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error
-	MakeColumnPointers(sliceLen int, columnTypes []*sql.ColumnType) ([]interface{}, error)
-}
 
 // HookFunction is the function type for declaring a software-based trigger, which we
 // refer to as a 'hook function'.
@@ -40,7 +15,7 @@ type HookFunction func(*schema.Schema, *object.Object) error
 // ORM is the primary object we expect the caller to operate on.
 // Construct one with orm.New( ... ) and be on your merry way.
 type ORM struct {
-	sqlGen  Generator
+	sqlGen  *sg.SQLGenerator
 	s       *schema.Schema
 	RawConn *sql.DB
 
@@ -59,7 +34,7 @@ func (o ORM) GetSchema() *schema.Schema {
 }
 
 // GetGenerator returns the current sql generator object that is stored within a given ORM object.
-func (o ORM) GetGenerator() Generator {
+func (o ORM) GetGenerator() *sg.SQLGenerator {
 	return o.sqlGen
 }
 
@@ -68,7 +43,7 @@ func makeEmptyHookMap() map[string]HookFunction {
 }
 
 // New is the ORM constructor. It expects a SQL generator, JSON/SQL Schema object, and database connection.
-func New(gen Generator, s *schema.Schema, db *sql.DB) ORM {
+func New(gen *sg.SQLGenerator, s *schema.Schema, db *sql.DB) ORM {
 	o := ORM{sqlGen: gen, s: s, RawConn: db}
 
 	o.BeforeCreateHooks = makeEmptyHookMap()

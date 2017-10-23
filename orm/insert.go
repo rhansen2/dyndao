@@ -40,7 +40,8 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, err
 	}
 
-	sqlStr, bindArgs, err := o.sqlGen.BindingInsert(o.s, obj.Type, obj.KV)
+	sg := o.sqlGen
+	sqlStr, bindArgs, err := sg.BindingInsert(sg, o.s, obj.Type, obj.KV)
 	if err != nil {
 		if os.Getenv("DEBUG_INSERT") != "" {
 			log15.Error(errorString, "BindingInsert_error", err)
@@ -53,7 +54,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	var lastID int64
 	// Oracle-specific fix
-	if o.sqlGen.FixLastInsertIDbug() && (!callerSuppliesPK) {
+	if (!callerSuppliesPK) && o.sqlGen.FixLastInsertIDbug() {
 		bindArgs = append(bindArgs, sql.Named(o.s.GetTable(obj.Type).Primary, sql.Out{
 			Dest: &lastID,
 		}))

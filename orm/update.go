@@ -29,7 +29,8 @@ func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, err
 	}
 
-	sqlStr, bindArgs, bindWhere, err := o.sqlGen.BindingUpdate(o.s, obj)
+	sg := o.sqlGen
+	sqlStr, bindArgs, bindWhere, err := sg.BindingUpdate(sg, o.s, obj)
 	if err != nil {
 		if os.Getenv("DEBUG_UPDATE") != "" {
 			fmt.Println("Update/sqlStr, err=", err)

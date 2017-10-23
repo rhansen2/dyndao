@@ -17,6 +17,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/rbastic/dyndao/dbmappers/core"
+	sg "github.com/rbastic/dyndao/sqlgen"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/orm"
 	"github.com/rbastic/dyndao/schema"
@@ -40,6 +42,13 @@ func GetDB() *sql.DB {
 	return db
 }
 
+func getSQLGen() *sg.SQLGenerator {
+	sqlGen := core.New()
+	sqlGen = New(sqlGen)
+	sg.PanicIfInvalid(sqlGen)
+	return sqlGen
+}
+
 func TestCreateTables(t *testing.T) {
 	sch := schema.MockNestedSchema()
 	db := GetDB()
@@ -50,8 +59,7 @@ func TestCreateTables(t *testing.T) {
 		}
 	}()
 
-	sqlGen := New("test", sch)
-	o := orm.New(sqlGen, sch, db)
+	o := orm.New(getSQLGen(), sch, db)
 
 	err := createTables(o.RawConn, sch)
 	if err != nil {
@@ -91,7 +99,7 @@ func TestSuiteNested(t *testing.T) {
 		}
 	}()
 	// Setup our ORM
-	o := orm.New(New("test", sch), sch, db)
+	o := orm.New(getSQLGen(), sch, db)
 	// Construct our default mock object
 	obj := makeDefaultPersonWithAddress()
 	// Save our default object
@@ -317,8 +325,7 @@ func TestDropTables(t *testing.T) {
 		}
 	}()
 
-	sqlGen := New("test", sch)
-	o := orm.New(sqlGen, sch, db)
+	o := orm.New(getSQLGen(), sch, db)
 
 	err := dropTables(o.RawConn, sch)
 	if err != nil {
@@ -345,7 +352,7 @@ func prepareAndExecSQL(db *sql.DB, sqlStr string) (sql.Result, error) {
 }
 
 func createTables(db *sql.DB, sch *schema.Schema) error {
-	gen := New("test", sch)
+	gen := getSQLGen()
 
 	for k := range sch.Tables {
 		sql, err := gen.CreateTable(sch, k)
@@ -361,7 +368,7 @@ func createTables(db *sql.DB, sch *schema.Schema) error {
 }
 
 func dropTables(db *sql.DB, sch *schema.Schema) error {
-	gen := New("test", sch)
+	gen := getSQLGen()
 
 	for k := range sch.Tables {
 		sql := gen.DropTable(k)
