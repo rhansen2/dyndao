@@ -11,7 +11,7 @@ type FnBindingInsert func(g * SQLGenerator, sch *schema.Schema, table string, da
 type FnBindingUpdate func(g * SQLGenerator, sch *schema.Schema, obj *object.Object) (string, []interface{}, []interface{}, error)
 type FnBindingRetrieve func(g * SQLGenerator, sch *schema.Schema, obj *object.Object) (string, []string, []interface{}, error)
 type FnBindingDelete func(g * SQLGenerator, sch *schema.Schema, obj *object.Object) (string, []interface{}, error)
-type FnCreateTable func(sch *schema.Schema, table string) (string, error)
+type FnCreateTable func(g * SQLGenerator, sch *schema.Schema, table string) (string, error)
 type FnDropTable func(name string) string
 type FnRenderBindingValue func(f *schema.Field) string
 type FnRenderBindingValueWithInt func(f *schema.Field, i int64) string
@@ -29,6 +29,8 @@ type FnRenderUpdateWhereClause func(g * SQLGenerator, schTable *schema.Table, fi
 
 type FnCoreBindingInsert func(g * SQLGenerator, schTable *schema.Table, data map[string]interface{}, identityCol string, fieldsMap map[string]*schema.Field) ([]string, []string, []interface{})
 
+type FnRenderCreateField func(g * SQLGenerator, f *schema.Field) string
+
 // SQLGenerator is the 'vtable struct' that an ORM expects a SQL string
 // generator to support.  While this does add an extra layer of indirection at
 // runtime, it allows us to share common SQL idioms between implementations
@@ -39,6 +41,7 @@ type SQLGenerator struct {
 	BindingRetrieve           FnBindingRetrieve
 	BindingDelete             FnBindingDelete
 	CreateTable               FnCreateTable
+	RenderCreateField	  FnRenderCreateField
 	DropTable                 FnDropTable
 	RenderBindingValue        FnRenderBindingValue
 	RenderBindingValueWithInt FnRenderBindingValueWithInt

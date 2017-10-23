@@ -16,7 +16,7 @@ func New(g * sg.SQLGenerator) *sg.SQLGenerator {
 	g.BindingDelete = sg.FnBindingDelete(BindingDelete)
 
 	g.RenderBindingValue = sg.FnRenderBindingValue(RenderBindingValue)
-	g.CreateTable = sg.FnCreateTable(CreateTable)
+	//g.CreateTable = sg.FnCreateTable(CreateTable)
 	g.DropTable = sg.FnDropTable(DropTable)
 	g.FixLastInsertIDbug = sg.FnFixLastInsertIDbug(FixLastInsertIDbug)
 	g.RenderBindingValueWithInt = sg.FnRenderBindingValueWithInt(RenderBindingValueWithInt)
@@ -29,5 +29,6 @@ func New(g * sg.SQLGenerator) *sg.SQLGenerator {
 	g.MakeColumnPointers = sg.FnMakeColumnPointers(MakeColumnPointers)
 	g.RenderWhereClause = sg.FnRenderWhereClause(RenderWhereClause)
 	g.RenderUpdateWhereClause = sg.FnRenderUpdateWhereClause(RenderUpdateWhereClause)
+	g.RenderCreateField = sg.FnRenderCreateField(RenderCreateField)
 	return g
 }

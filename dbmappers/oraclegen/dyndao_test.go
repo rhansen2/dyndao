@@ -355,7 +355,7 @@ func createTables(db *sql.DB, sch *schema.Schema) error {
 	gen := getSQLGen()
 
 	for k := range sch.Tables {
-		sql, err := gen.CreateTable(sch, k)
+		sql, err := gen.CreateTable(gen, sch, k)
 		if err != nil {
 			return err
 		}

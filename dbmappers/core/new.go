@@ -6,6 +6,7 @@ import (
 
 func New() *sg.SQLGenerator {
 	g := new(sg.SQLGenerator)
+	g.CreateTable = sg.FnCreateTable(CreateTable)
 	return g
 }
 

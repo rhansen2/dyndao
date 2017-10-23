@@ -47,37 +47,6 @@ func (g Generator) coreBindingInsert(schTable *schema.Table, data map[string]int
 	return bindNames, colNames, bindArgs
 }
 
-// TODO: Push these 3 routines onto github.
-func countNils(maybeNils []interface{}) int {
-	var count int
-	for _, v := range maybeNils {
-		if v == nil {
-			count++
-		}
-	}
-	return count
-}
-
-func removeNils(someNils []interface{}, count int) []interface{} {
-	noNils := make([]interface{}, len(someNils)-count)
-	j := 0
-	for _, v := range someNils {
-		if v != nil {
-			noNils[j] = v
-			j++
-		}
-	}
-	return noNils
-}
-
-func removeNilsIfNeeded(maybeNils []interface{}) []interface{} {
-	numNils := countNils(maybeNils)
-	if numNils > 0 {
-		return removeNils(maybeNils, numNils)
-	}
-	return maybeNils
-}
-
 func getRealColumnName(tbl *schema.Table, col string) string {
 	if tbl.FieldAliases == nil {
 		return col

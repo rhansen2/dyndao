@@ -40,7 +40,7 @@ func (o ORM) DropTables() error {
 // CreateTable will execute a CreateTable operation for the specified table in
 // a given schema.
 func (o ORM) CreateTable(sch *schema.Schema, tableName string) error {
-	sqlStr, err := o.sqlGen.CreateTable(sch, tableName)
+	sqlStr, err := o.sqlGen.CreateTable(o.sqlGen, sch, tableName)
 	if err != nil {
 		return err
 	}
