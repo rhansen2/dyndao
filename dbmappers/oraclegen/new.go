@@ -9,8 +9,9 @@ import (
 // methods that it needs to. In some instances, this could be all methods,
 // or hardly any.
 func New(g * sg.SQLGenerator) *sg.SQLGenerator {
-	g.BindingInsert = sg.FnBindingInsert(BindingInsert)
-	g.CoreBindingInsert = sg.FnCoreBindingInsert(CoreBindingInsert)
+	// Oracle SQLGenerator uses Core for anything commented out.
+	//g.BindingInsert = sg.FnBindingInsert(BindingInsert)
+	//g.CoreBindingInsert = sg.FnCoreBindingInsert(CoreBindingInsert)
 	g.BindingUpdate = sg.FnBindingUpdate(BindingUpdate)
 	g.BindingRetrieve = sg.FnBindingRetrieve(BindingRetrieve)
 	g.BindingDelete = sg.FnBindingDelete(BindingDelete)
@@ -30,5 +31,6 @@ func New(g * sg.SQLGenerator) *sg.SQLGenerator {
 	g.RenderWhereClause = sg.FnRenderWhereClause(RenderWhereClause)
 	g.RenderUpdateWhereClause = sg.FnRenderUpdateWhereClause(RenderUpdateWhereClause)
 	g.RenderCreateField = sg.FnRenderCreateField(RenderCreateField)
+	g.RenderInsertValue = sg.FnRenderInsertValue(RenderInsertValue)
 	return g
 }

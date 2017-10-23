@@ -15,6 +15,7 @@ type FnCreateTable func(g * SQLGenerator, sch *schema.Schema, table string) (str
 type FnDropTable func(name string) string
 type FnRenderBindingValue func(f *schema.Field) string
 type FnRenderBindingValueWithInt func(f *schema.Field, i int64) string
+type FnRenderInsertValue func(f *schema.Field, value interface{}) (interface{}, error)
 type FnIsStringType func(string) bool
 type FnIsNumberType func(string) bool
 type FnIsFloatingType func(string) bool
@@ -45,6 +46,7 @@ type SQLGenerator struct {
 	DropTable                 FnDropTable
 	RenderBindingValue        FnRenderBindingValue
 	RenderBindingValueWithInt FnRenderBindingValueWithInt
+	RenderInsertValue FnRenderInsertValue
 
 	IsStringType FnIsStringType
 

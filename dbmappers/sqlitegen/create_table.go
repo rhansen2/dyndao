@@ -3,40 +3,14 @@
 package sqlitegen
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/rbastic/dyndao/schema"
+	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
-// CreateTable determines the SQL to create a given table within a schema
-func (g Generator) CreateTable(s *schema.Schema, table string) (string, error) {
-	tbl := s.GetTable(table)
-	if tbl == nil {
-		return "", errors.New("unknown schema for table with name " + table)
-	}
-	tableName := schema.GetTableName(tbl.Name, table)
-	fieldsMap := tbl.Fields
-
-	sqlFields := make([]string, len(fieldsMap))
-	i := 0
-	// TODO: Have field map in order, or allow one to specify key output order for iterating fields
-	// map and generating create SQL....
-	for _, v := range fieldsMap {
-		sqlFields[i] = renderCreateField(v)
-		i++
-	}
-
-	sql := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
-	%s
-)
-`, tableName, strings.Join(sqlFields, ",\n"))
-
-	return sql, nil
-}
-
-func renderCreateField(f *schema.Field) string {
+func RenderCreateField(sg * sg.SQLGenerator, f *schema.Field) string {
 	dataType := f.DBType
 	notNull := ""
 	identity := ""

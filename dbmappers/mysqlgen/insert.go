@@ -12,96 +12,14 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func (g Generator) coreBindingInsert(schTable *schema.Table, data map[string]interface{}, identityCol string, fieldsMap map[string]*schema.Field) ([]string, []string, []interface{}) {
-	dataLen := len(data)
-	bindNames := make([]string, dataLen)
-	colNames := make([]string, dataLen)
-	bindArgs := make([]interface{}, dataLen)
-	i := 0
-	for k, v := range data {
-		realName := getRealColumnName(schTable, k)
-		colNames[i] = realName
-		var r string
-
-		if r == "" {
-			f, ok := fieldsMap[realName]
-			if ok {
-				r = renderBindingInsertValue(f)
-			} else {
-				panic(fmt.Sprintf("coreBindingInsert: Unknown field for key: [%s] realName: [%s] for table %s", k, realName, schTable.Name))
-			}
-		}
-		bindNames[i] = r
-		if v == nil {
-			bindArgs[i] = v
-		} else {
-			barg, err := renderInsertValue(fieldsMap[realName], v)
-			if err != nil {
-				panic(err.Error())
-			}
-			bindArgs[i] = barg
-
-		}
-		i++
-	}
-	return bindNames, colNames, bindArgs
-}
-
-func getRealColumnName(tbl *schema.Table, col string) string {
-	if tbl.FieldAliases == nil {
-		return col
-	}
-
-	realName, ok := tbl.FieldAliases[col]
-	if ok {
-		return realName
-	}
-	return col
-}
-
-// BindingInsert generates the SQL for a given INSERT statement for oracle with binding parameter values
-func (g Generator) BindingInsert(sch *schema.Schema, table string, data map[string]interface{}) (string, []interface{}, error) {
-	if table == "" {
-		return "", nil, errors.New("BindingInsert: Empty table name")
-	}
-	if data == nil {
-		return "", nil, errors.New("BindingInsert: Empty data passed")
-	}
-
-	schTable := sch.GetTable(table)
-	if schTable == nil {
-		return "", nil, errors.New("BindingInsert: Table map unavailable for table " + table)
-	}
-
-	tableName := schema.GetTableName(schTable.Name, table)
-
-	fieldsMap := schTable.Fields
-	if fieldsMap == nil {
-		return "", nil, errors.New("BindingInsert: Field map unavailable for table " + table)
-	}
-
-	identityCol := schTable.Primary
-
-	bindNames, colNames, bindArgs := g.coreBindingInsert(schTable, data, identityCol, fieldsMap)
-	bindArgs = removeNilsIfNeeded(bindArgs)
-
+/*
 	sqlStr := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
 		tableName,
 		strings.Join(colNames, ","),
 		strings.Join(bindNames, ","))
+*/
 
-	if os.Getenv("DEBUG") != "" {
-		fmt.Println("DEBUG: INSERT sqlStr->", sqlStr, "bindArgs->", bindArgs)
-	}
-	return sqlStr, bindArgs, nil
-}
-
-// TODO: cleanup function signature here, not needed for mysql
-func renderBindingInsertValue(f *schema.Field) string {
-	return "?"
-}
-
-func renderInsertValue(f *schema.Field, value interface{}) (interface{}, error) {
+func RenderInsertValue(f *schema.Field, value interface{}) (interface{}, error) {
 	// TODO do we need the schema.Field for more than debugging information?
 	switch value.(type) {
 	case string:
