@@ -36,28 +36,28 @@ var lobTypes = map[string]bool{
 
 // IsStringType can be used to help determine whether a certain data type is a string type.
 // Note that it is case-sensitive.
-func (g Generator) IsStringType(k string) bool {
+func IsStringType(k string) bool {
 	return stringTypes[k]
 }
 
 // IsNumberType can be used to help determine whether a certain data type is a number type.
 // Note that it is case-sensitive.
-func (g Generator) IsNumberType(k string) bool {
+func IsNumberType(k string) bool {
 	return numTypes[k]
 }
 
 // IsFloatingType can be used to help determine whether a certain data type is a float type.
 // Note that it is case-sensitive.
-func (g Generator) IsFloatingType(k string) bool {
+func IsFloatingType(k string) bool {
 	return floatTypes[k]
 }
 
 // IsTimestampType can be used to help determine whether a certain data type is a number type.
 // Note that it is case-sensitive.
-func (g Generator) IsTimestampType(k string) bool {
+func IsTimestampType(k string) bool {
 	return timestampTypes[k]
 }
 
-func (g Generator) IsLOBType(k string) bool {
+func IsLOBType(k string) bool {
 	return lobTypes[k]
 }

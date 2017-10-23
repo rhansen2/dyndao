@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	//sg "github.com/rbastic/dyndao/sqlgen"
+	sg "github.com/rbastic/dyndao/sqlgen"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/orm"
 	"github.com/rbastic/dyndao/schema"
@@ -16,6 +16,28 @@ import (
 
 const PeopleObjectType string = "people"
 const AddressesObjectType string = "addresses"
+
+// function type for GetDB
+type FnGetDB func() *sql.DB
+
+// function type for 'GetSQLGenerator'
+type FnGetSG func() *sg.SQLGenerator
+
+var (
+	GetDB FnGetDB
+	getSQLGen FnGetSG
+)
+
+func Test( t * testing.T , getDBFn FnGetDB, getSGFN FnGetSG) {
+	// Set our functions locally
+	GetDB = getDBFn
+	getSQLGen = getSGFN
+
+	// Bootstrap the db, run the test suite, drop tables
+	TestCreateTables(t)
+	TestSuiteNested(t)
+	TestDropTables(t)
+}
 
 func TestCreateTables(t *testing.T) {
 	sch := schema.MockNestedSchema()

@@ -1,4 +1,4 @@
-package oraclegen
+package core
 
 // TODO This package is bad. The functions imply that they will perform the
 // action but they just return SQL.
