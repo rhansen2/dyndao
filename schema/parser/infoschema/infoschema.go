@@ -10,7 +10,7 @@
 //
 
 /*
-	TODO: Identity / foreign key identification
+	TODO: foreign key identification
 	TODO: Indexes
 	TODO: Constraints
 	TODO: interface type for infoschema package (so that we
@@ -85,7 +85,7 @@ func ParseSchema(ctx context.Context, db *sql.DB, dbName string) (*schema.Schema
 
 func getColumnMetaSQL(db string) string {
 	return fmt.Sprintf(`
-SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, COLUMN_DEFAULT, IS_NULLABLE
+SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, COLUMN_DEFAULT, IS_NULLABLE, EXTRA
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_SCHEMA='%s'
 ORDER BY TABLE_NAME
@@ -108,20 +108,21 @@ func ParseTables(ctx context.Context, db *sql.DB, dbName string, sch *schema.Sch
 		var dataType string
 		var columnDefault sql.NullString
 		var isNullable string
+		var extra string
 
-		err := rows.Scan(&tblName, &colName, &dataType, &columnDefault, &isNullable)
+		err := rows.Scan(&tblName, &colName, &dataType, &columnDefault, &isNullable, &extra)
 		if err != nil {
 			return err
 		}
 
-		setTableCol(sch, tblName, colName, dataType, columnDefault, isNullable)
+		setTableCol(sch, tblName, colName, dataType, columnDefault, isNullable, extra)
 	}
 
 	err = rows.Err()
 	return err
 }
 
-func setTableCol(sch *schema.Schema, tblName string, colName sql.NullString, dataType string, colDefault sql.NullString, isNullable string) {
+func setTableCol(sch *schema.Schema, tblName string, colName sql.NullString, dataType string, colDefault sql.NullString, isNullable string, extra string) {
 	tbl := sch.Tables[tblName]
 	tbl.Name = tblName
 
@@ -135,6 +136,14 @@ func setTableCol(sch *schema.Schema, tblName string, colName sql.NullString, dat
 		isNullBool = true
 	}
 	df.AllowNull = isNullBool
+
+	// TODO: is this mysql only? or does auto_increment go in the 'EXTRA'
+	// column for all db's?
+	isIdentity := false
+	if extra == "auto_increment" {
+		isIdentity = true
+	}
+	df.IsIdentity = isIdentity
 
 	// TODO: IsNumber, need a SQL generator for that, unless we deprecate
 	// IsNumber, I think.  See issue #49 on github.
