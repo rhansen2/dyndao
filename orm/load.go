@@ -221,7 +221,7 @@ func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr
 	}
 	var objectArray object.Array
 
-	if os.Getenv("DEBUG_RETRIEVECUSTOM") != "" {
+	if os.Getenv("DB_TRACE") != "" {
 		fmt.Println("RetrieveManyFromCustomSQL/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
 	}
 
@@ -323,7 +323,7 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 	// arguments from the schema and the query object
 	sg := o.sqlGen
 	sqlStr, columnNames, bindArgs, err := sg.BindingRetrieve(sg, o.s, queryObj)
-	if os.Getenv("DEBUG_RETRIEVEMANY") != "" {
+	if os.Getenv("DB_TRACE") != "" {
 		fmt.Println("RetrieveMany/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
 	}
 

@@ -24,7 +24,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	objTable := o.s.GetTable(obj.Type)
 	if objTable == nil {
-		if os.Getenv("DEBUG_INSERT") != "" {
+		if os.Getenv("DB_TRACE") != "" {
 			log15.Error(errorString, "GetTable_error", "thing was unknown")
 		}
 		return 0, errors.New("Insert: unknown object table " + obj.Type)
@@ -34,7 +34,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	err := o.CallBeforeCreateHookIfNeeded(obj)
 	if err != nil {
-		if os.Getenv("DEBUG_INSERT") != "" {
+		if os.Getenv("DB_TRACE") != "" {
 			log15.Error(errorString, "BeforeCreateHookError", err)
 		}
 		return 0, err
@@ -43,12 +43,12 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	sg := o.sqlGen
 	sqlStr, bindArgs, err := sg.BindingInsert(sg, o.s, obj.Type, obj.KV)
 	if err != nil {
-		if os.Getenv("DEBUG_INSERT") != "" {
+		if os.Getenv("DB_TRACE") != "" {
 			log15.Error(errorString, "BindingInsert_error", err)
 		}
 		return 0, err
 	}
-	if os.Getenv("DEBUG_INSERT") != "" {
+	if os.Getenv("DB_TRACE") != "" {
 		fmt.Println("Insert/sqlStr=", sqlStr, "bindArgs=", bindArgs)
 	}
 
@@ -62,7 +62,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)
 	if err != nil {
-		if os.Getenv("DEBUG_INSERT") != "" {
+		if os.Getenv("DB_TRACE") != "" {
 			log15.Error(errorString, "stmtFromDbOrTx_error", err)
 		}
 
@@ -86,7 +86,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	res, err := stmt.ExecContext(ctx, bindArgs...)
 	if err != nil {
-		if os.Getenv("DEBUG_INSERT") != "" {
+		if os.Getenv("DB_TRACE") != "" {
 			log15.Error(errorString, "ExecContext_error", err)
 			fmt.Println("orm/save error", err)
 		}
@@ -99,7 +99,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	if !callerSuppliesPK {
 		newID, err := res.LastInsertId()
 		if err != nil && lastID == 0 {
-			if os.Getenv("DEBUG_INSERT") != "" {
+			if os.Getenv("DB_TRACE") != "" {
 				fmt.Println("orm/save error", err)
 			}
 			log15.Error(errorString, "LastInsertID_error", err)
@@ -108,7 +108,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		if lastID != 0 {
 			newID = lastID
 		}
-		if os.Getenv("DEBUG_INSERT") != "" {
+		if os.Getenv("DB_TRACE") != "" {
 			fmt.Println("DEBUG Insert received newID=", newID)
 		}
 
@@ -117,7 +117,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	rowsAff, err := res.RowsAffected()
 	if err != nil {
-		if os.Getenv("DEBUG_INSERT") != "" {
+		if os.Getenv("DB_TRACE") != "" {
 			fmt.Println("orm/save error", err)
 		}
 		return 0, err
@@ -125,7 +125,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	err = o.CallAfterCreateHookIfNeeded(obj)
 	if err != nil {
-		if os.Getenv("DEBUG_INSERT") != "" {
+		if os.Getenv("DB_TRACE") != "" {
 			log15.Error(errorString, "BeforeAfterCreateHookError", err)
 		}
 		return 0, err
