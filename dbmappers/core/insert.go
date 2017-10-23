@@ -100,25 +100,20 @@ func BindingInsert(g * sg.SQLGenerator, sch *schema.Schema, table string, data m
 	bindNames, colNames, bindArgs := g.CoreBindingInsert(g, schTable, data, identityCol, fieldsMap)
 	bindArgs = nils.RemoveNilsIfNeeded(bindArgs)
 
-	var sqlStr string
-
-	if schTable.CallerSuppliesPK {
-		sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
-			tableName,
-			strings.Join(colNames, ","),
-			strings.Join(bindNames, ","))
-	} else {
-		sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING %s /*LASTINSERTID*/ INTO :%s",
-			tableName,
-			strings.Join(colNames, ","),
-			strings.Join(bindNames, ","),
-			identityCol,
-			identityCol)
-	}
+	sqlStr := g.BindingInsertSQL(schTable, tableName, colNames, bindNames, identityCol)
 
 	if os.Getenv("DEBUG") != "" {
 		fmt.Println("DEBUG: INSERT sqlStr->", sqlStr, "bindArgs->", bindArgs)
 
 	}
 	return sqlStr, bindArgs, nil
+}
+
+func BindingInsertSQL( schTable * schema.Table, tableName string, colNames []string, bindNames []string, identityCol string) string {
+	var sqlStr string
+	sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
+		tableName,
+		strings.Join(colNames, ","),
+		strings.Join(bindNames, ","))
+	return sqlStr
 }

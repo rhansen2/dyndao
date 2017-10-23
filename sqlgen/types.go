@@ -31,6 +31,7 @@ type FnRenderUpdateWhereClause func(g * SQLGenerator, schTable *schema.Table, fi
 type FnCoreBindingInsert func(g * SQLGenerator, schTable *schema.Table, data map[string]interface{}, identityCol string, fieldsMap map[string]*schema.Field) ([]string, []string, []interface{})
 
 type FnRenderCreateField func(g * SQLGenerator, f *schema.Field) string
+type FnBindingInsertSQL func(schTable * schema.Table, tableName string, colNames []string, bindNames []string, identityCol string) string
 
 // SQLGenerator is the 'vtable struct' that an ORM expects a SQL string
 // generator to support.  While this does add an extra layer of indirection at
@@ -64,4 +65,5 @@ type SQLGenerator struct {
 	RenderWhereClause FnRenderWhereClause
 	RenderUpdateWhereClause FnRenderUpdateWhereClause
 	CoreBindingInsert FnCoreBindingInsert
+	BindingInsertSQL FnBindingInsertSQL
 }

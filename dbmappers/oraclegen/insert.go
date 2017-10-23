@@ -1,6 +1,7 @@
 package oraclegen
 
 import (
+	"strings"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -10,6 +11,24 @@ import (
 	"github.com/rbastic/dyndao/schema"
 	"github.com/tidwall/gjson"
 )
+
+func BindingInsertSQL( schTable * schema.Table, tableName string, colNames []string, bindNames []string, identityCol string) string {
+	var sqlStr string
+	if schTable.CallerSuppliesPK {
+		sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
+			tableName,
+			strings.Join(colNames, ","),
+			strings.Join(bindNames, ","))
+	} else {
+		sqlStr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING %s /*LASTINSERTID*/ INTO :%s",
+			tableName,
+			strings.Join(colNames, ","),
+			strings.Join(bindNames, ","),
+			identityCol,
+			identityCol)
+	}
+	return sqlStr
+}
 
 func RenderInsertValue(f *schema.Field, value interface{}) (interface{}, error) {
 	// TODO do we need the schema.Field for more than debugging information?

@@ -1,4 +1,4 @@
-package oraclegen
+package core
 
 // DropTable renders a SQL drop table statement for us
 func DropTable(name string) string {

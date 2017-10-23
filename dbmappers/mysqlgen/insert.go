@@ -3,21 +3,12 @@ package mysqlgen
 import (
 	"errors"
 	"fmt"
-	"os"
 	"reflect"
-	"strings"
 
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 	"github.com/tidwall/gjson"
 )
-
-/*
-	sqlStr := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
-		tableName,
-		strings.Join(colNames, ","),
-		strings.Join(bindNames, ","))
-*/
 
 func RenderInsertValue(f *schema.Field, value interface{}) (interface{}, error) {
 	// TODO do we need the schema.Field for more than debugging information?

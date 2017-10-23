@@ -1,24 +1,14 @@
-// Package oraclegen is a set of tests that put the various components together and
-// demonstrate how they can be combined. (As well as serving as a bit of a test suite...)
-//
-// In other words, we run database tests, use the generator, use the ORM, etc.
-// TODO: More complex test schemas.
-package sqlitegen
+package core
 
 import (
 	"context"
-	// Load preferred Oracle driver. Mattn's oci8 had race conditions
-	// during testing
 	"database/sql"
-	_ "gopkg.in/goracle.v2"
 
-	"os"
 	"testing"
 
 	"github.com/pkg/errors"
 
-	"github.com/rbastic/dyndao/dbmappers/core"
-	sg "github.com/rbastic/dyndao/sqlgen"
+	//sg "github.com/rbastic/dyndao/sqlgen"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/orm"
 	"github.com/rbastic/dyndao/schema"
@@ -26,28 +16,6 @@ import (
 
 const PeopleObjectType string = "people"
 const AddressesObjectType string = "addresses"
-
-// GetDB is a simple wrapper over sql.Open(), the main purpose being
-// to abstract the DSN
-func GetDB() *sql.DB {
-	// TODO: externalize the DSN and store it in vault
-	dsn := os.Getenv("ORACLE_DSN")
-	if dsn == "" {
-		panic("ORACLE_DSN environment variable is not set, cannot initialize database")
-	}
-	db, err := sql.Open("goracle", dsn)
-	if err != nil {
-		panic(err)
-	}
-	return db
-}
-
-func getSQLGen() *sg.SQLGenerator {
-	sqlGen := core.New()
-	sqlGen = New(sqlGen)
-	sg.PanicIfInvalid(sqlGen)
-	return sqlGen
-}
 
 func TestCreateTables(t *testing.T) {
 	sch := schema.MockNestedSchema()

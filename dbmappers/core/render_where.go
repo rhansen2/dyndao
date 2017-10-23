@@ -1,15 +1,17 @@
-package sqlitegen
+package core
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/pkg/errors"
+
+	sg "github.com/rbastic/dyndao/sqlgen"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 )
 
-func (g Generator) renderUpdateWhereClause(schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {
+func RenderUpdateWhereClause(g * sg.SQLGenerator, schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {
 	var bindArgs []interface{}
 	var whereClause string
 
@@ -24,7 +26,7 @@ func (g Generator) renderUpdateWhereClause(schTable *schema.Table, fieldsMap map
 		bindArgs = make([]interface{}, 1)
 		bindVal := obj.Get(schTable.Primary)
 		if bindVal == nil {
-			return "", nil, errors.New("renderWhereClause: missing primary key " + schTable.Primary)
+			return "", nil, errors.New("dyndao: RenderUpdateWhereClause: missing primary key " + schTable.Primary)
 		}
 		bindArgs[0] = bindVal
 	} else {
@@ -49,7 +51,7 @@ func (g Generator) renderUpdateWhereClause(schTable *schema.Table, fieldsMap map
 
 			bindVal := obj.Get(pk)
 			if bindVal == nil {
-				return "", nil, errors.New("renderWhereClause: missing primary key " + pk)
+				return "", nil, errors.New("dyndao: RenderUpdateWhereClause: missing primary key " + pk)
 			}
 			bindArgs[i] = bindVal
 			i++
@@ -69,7 +71,7 @@ func (g Generator) renderUpdateWhereClause(schTable *schema.Table, fieldsMap map
 	return whereClause, bindArgs, nil
 }
 
-func (g Generator) renderWhereClause(schTable *schema.Table, obj *object.Object) (string, []interface{}, error) {
+func RenderWhereClause(g * sg.SQLGenerator, schTable *schema.Table, obj *object.Object) (string, []interface{}, error) {
 	var whereClause string
 
 	if len(obj.KV) == 0 {
@@ -83,7 +85,7 @@ func (g Generator) renderWhereClause(schTable *schema.Table, obj *object.Object)
 	for k, v := range obj.KV {
 		f := schTable.GetField(k)
 		if f == nil {
-			return "", nil, errors.New("renderWhereClause: unknown field " + k + " in table " + obj.Type)
+			return "", nil, errors.New("dyndao: RenderWhereClause: unknown field " + k + " in table " + obj.Type)
 		}
 		sqlName := f.Name
 		whereKeys[i] = fmt.Sprintf("%s = %s", sqlName, g.RenderBindingValue(f))
@@ -93,4 +95,12 @@ func (g Generator) renderWhereClause(schTable *schema.Table, obj *object.Object)
 	}
 	whereClause = strings.Join(whereKeys, " AND ")
 	return whereClause, bindArgs, nil
+}
+
+func RenderBindingValue(f *schema.Field) string {
+	return ":" + f.Name
+}
+
+func RenderBindingValueWithInt(f *schema.Field, i int64) string {
+	return fmt.Sprintf(":%s%d", f.Name, i)
 }

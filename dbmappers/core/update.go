@@ -1,4 +1,4 @@
-package oraclegen
+package core
 
 import (
 	"errors"

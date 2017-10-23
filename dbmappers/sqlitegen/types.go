@@ -61,17 +61,17 @@ var timestampTypes = map[string]bool{
 // TODO: blob types
 
 // IsStringType can be used to help determine whether a certain data type is a string type.
-func (g Generator) IsStringType(k string) bool {
+func IsStringType(k string) bool {
 	return stringTypes[k]
 }
 
 // IsFloatingType can be used to help determine whether a certain data type is a floating point type.
-func (g Generator) IsFloatingType(k string) bool {
+func IsFloatingType(k string) bool {
 	return floatTypes[k]
 }
 
 // IsNumberType can be used to help determine whether a certain data type is a number type.
-func (g Generator) IsNumberType(k string) bool {
+func IsNumberType(k string) bool {
 	return numTypes[k]
 }
 
@@ -79,11 +79,11 @@ func (g Generator) IsNumberType(k string) bool {
 
 // IsTimestampType can be used to help determine whether a certain data type is a number type.
 // Note that it is case-sensitive.
-func (g Generator) IsTimestampType(k string) bool {
+func IsTimestampType(k string) bool {
 	return timestampTypes[k]
 }
 
 // IsLOBType remains unimplemented for SQLite.
-func (g Generator) IsLOBType(k string) bool {
+func IsLOBType(k string) bool {
 	return false
 }

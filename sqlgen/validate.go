@@ -64,4 +64,7 @@ func PanicIfInvalid( g * SQLGenerator ) {
 	if g.RenderInsertValue == nil {
 		panic("dyndao: vtable RenderInsertValue is nil")
 	}
+	if g.BindingInsertSQL == nil {
+		panic("dyndao: vtable BindingInsertSQL is nil")
+	}
 }
