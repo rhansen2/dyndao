@@ -41,18 +41,18 @@ func LoadSchema(ctx context.Context, db *sql.DB, dbName string) (*schema.Schema,
 
 // db string here is what Oracle calls the 'TABLESPACE'.
 func getTableNamesSQL(db string) string {
-	return fmt.Sprintf(`SELECT DISTINCT(TABLE_NAME) FROM ALL_TABLES WHERE TABLESPACE_NAME='%s' AND STATUS = 'VALID'`, db)
+	return fmt.Sprintf(`SELECT DISTINCT(TABLE_NAME) FROM ALL_TABLES WHERE TABLESPACE_NAME=:TBN0 AND STATUS = :STAT1`)
 }
 
 // ParseSchema does a preliminary load of the schema, reading in all
 // table names and populating default schema.Table structures.
 func ParseSchema(ctx context.Context, db *sql.DB, dbName string) (*schema.Schema, error) {
-	sql := getTableNamesSQL(dbName)
+	sqlStr := getTableNamesSQL(dbName)
 	if os.Getenv("DB_TRACE") != "" {
-		fmt.Println("dyndao: ParseSchema SQL: ", sql)
+		fmt.Println("dyndao: ParseSchema SQL: ", sqlStr)
 	}
 
-	rows, err := db.QueryContext(ctx, sql)
+	rows, err := db.QueryContext(ctx, sqlStr, dbName, "VALID")
 	if err != nil {
 		return nil, err
 	}
