@@ -3,7 +3,7 @@
 //
 // In other words, we run database tests, use the generator, use the ORM, etc.
 // TODO: More complex test schemas.
-package sqlitegen
+package sqlite
 
 import (
 	// Load preferred Oracle driver. Mattn's oci8 had race conditions

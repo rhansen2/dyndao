@@ -1,4 +1,4 @@
-package mysqlgen
+package sqlite
 
 import (
 	"database/sql"
@@ -22,6 +22,7 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 		if s.IsTimestampType(typeName) {
 			val := v.(*time.Time)
 			obj.Set(columnNames[i], *val)
+			continue
 		} else if s.IsStringType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
@@ -39,6 +40,7 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 				obj.Set(columnNames[i], *val)
 
 			}
+			continue
 		} else if s.IsNumberType(typeName) {
 			// TODO: support more than 'int64' for integer...?
 			nullable, _ := ct.Nullable()
@@ -52,6 +54,7 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 				val := v.(*int64)
 				obj.Set(columnNames[i], *val)
 			}
+			continue
 		} else if s.IsFloatingType(typeName) {
 			// TODO: support more than 'int64' for integer...?
 			nullable, _ := ct.Nullable()
@@ -65,13 +68,11 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 				val := v.(*float64)
 				obj.Set(columnNames[i], *val)
 			}
+			continue
 		} else if s.IsLOBType(typeName) {
-			val := v.(**string)
-			obj.Set(columnNames[i], **val)
-		} else {
-			return errors.New("DynamicObjectSetter: Unrecognized type: " + typeName)
+			return errors.New("DynamicObjectSetter: LOB type isn't supported for SQLite")
 		}
-		// TODO: add timestamp support.?
+		return errors.New("DynamicObjectSetter: Unrecognized type: " + typeName)
 	}
 	return nil
 }
@@ -111,14 +112,7 @@ func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.Col
 
 			}
 		} else if s.IsLOBType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				s := new(string)
-				columnPointers[i] = &s
-			} else {
-				s := new(string)
-				columnPointers[i] = &s
-			}
+			return nil, errors.New("MakeColumnPointers: LOB type isn't supported for SQLite")
 		} else {
 			return nil, errors.New("MakeColumnPointers: Unrecognized type: " + typeName)
 		}

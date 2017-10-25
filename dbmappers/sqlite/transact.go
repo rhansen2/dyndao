@@ -1,4 +1,4 @@
-package sqlitegen
+package sqlite
 
 // Begin renders a SQL BEGIN statement for us
 func Begin(name string) string {

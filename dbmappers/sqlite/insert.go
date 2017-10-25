@@ -1,4 +1,4 @@
-package sqlitegen
+package sqlite
 
 import (
 	"errors"

@@ -1,4 +1,4 @@
-package mysqlgen
+package mysql
 
 var stringTypes = map[string]bool{
 	"VARCHAR2": true,

@@ -186,9 +186,6 @@ func validatePersonID(t *testing.T, obj *object.Object) {
 		}
 		t.Fatalf("PersonID has the wrong value, has value %d", personID)
 	}
-	if personID == 1 {
-		fmt.Println("ALL GOOD")
-	}
 }
 
 func validateChildrenSaved(t *testing.T, obj *object.Object) {

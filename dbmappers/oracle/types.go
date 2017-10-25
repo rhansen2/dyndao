@@ -1,4 +1,4 @@
-package oraclegen
+package oracle
 
 var stringTypes = map[string]bool{
 	"VARCHAR2": true,

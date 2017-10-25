@@ -1,4 +1,4 @@
-package oraclegen
+package mysql
 
 import (
 	sg "github.com/rbastic/dyndao/sqlgen"
@@ -9,10 +9,6 @@ import (
 // methods that it needs to. In some instances, this could be all methods,
 // or hardly any.
 func New(g *sg.SQLGenerator) *sg.SQLGenerator {
-	// Oracle SQLGenerator uses Core for anything commented out.
-
-	//g.CreateTable = sg.FnCreateTable(CreateTable)
-	g.FixLastInsertIDbug = true
 	g.IsStringType = sg.FnIsStringType(IsStringType)
 	g.IsNumberType = sg.FnIsNumberType(IsNumberType)
 	g.IsFloatingType = sg.FnIsFloatingType(IsFloatingType)
@@ -22,6 +18,7 @@ func New(g *sg.SQLGenerator) *sg.SQLGenerator {
 	g.MakeColumnPointers = sg.FnMakeColumnPointers(MakeColumnPointers)
 	g.RenderCreateField = sg.FnRenderCreateField(RenderCreateField)
 	g.RenderInsertValue = sg.FnRenderInsertValue(RenderInsertValue)
-	g.BindingInsertSQL = sg.FnBindingInsertSQL(BindingInsertSQL)
+	g.RenderBindingValue = sg.FnRenderBindingValue(RenderBindingValue)
+	g.RenderBindingValueWithInt = sg.FnRenderBindingValueWithInt(RenderBindingValueWithInt)
 	return g
 }

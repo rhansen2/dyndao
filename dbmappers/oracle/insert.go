@@ -1,4 +1,4 @@
-package oraclegen
+package oracle
 
 import (
 	"database/sql"

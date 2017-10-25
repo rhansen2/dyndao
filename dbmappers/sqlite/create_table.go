@@ -1,6 +1,6 @@
-// Package sqlitegen encapsulates an implementation for a given schema attached to
+// Package sqlite encapsulates an implementation for a given schema attached to
 // a generator. This code represents an example implementation for sqlite
-package sqlitegen
+package sqlite
 
 import (
 	"fmt"

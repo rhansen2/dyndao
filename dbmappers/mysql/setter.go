@@ -1,31 +1,12 @@
-package oraclegen
+package mysql
 
 import (
 	"database/sql"
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
 	sg "github.com/rbastic/dyndao/sqlgen"
-	"gopkg.in/goracle.v2"
-	"io/ioutil"
 	"time"
 )
-
-// LobDST helps us to implement custom support for goracle.Lob
-type LobDST string
-
-// Scan is necessary here to deal with oracle BLOB/CLOB data type.
-func (l *LobDST) Scan(src interface{}) error {
-	lob, ok := src.(*goracle.Lob)
-	if !ok {
-		return errors.New("LobDST can only be used with goracle.Lib")
-	}
-	res, err := ioutil.ReadAll(lob)
-	if err != nil {
-		return errors.Wrap(err, "failed to read son")
-	}
-	*l = LobDST(res)
-	return nil
-}
 
 // DynamicObjectSetter is used to dynamically set the values of an object by
 // checking the necessary types (via sql.ColumnType, and what the driver tells
@@ -85,10 +66,10 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 				obj.Set(columnNames[i], *val)
 			}
 		} else if s.IsLOBType(typeName) {
-			val := v.(*LobDST)
-			obj.Set(columnNames[i], string(*val))
+			val := v.(**string)
+			obj.Set(columnNames[i], **val)
 		} else {
-			return errors.New("dynamicObjectSetter: Unrecognized type: " + typeName)
+			return errors.New("DynamicObjectSetter: Unrecognized type: " + typeName)
 		}
 		// TODO: add timestamp support.?
 	}
@@ -132,14 +113,14 @@ func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.Col
 		} else if s.IsLOBType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
-				s := new(LobDST)
-				columnPointers[i] = s
+				s := new(string)
+				columnPointers[i] = &s
 			} else {
-				s := new(LobDST)
-				columnPointers[i] = s
+				s := new(string)
+				columnPointers[i] = &s
 			}
 		} else {
-			return nil, errors.New("makeColumnPointers: Unrecognized type: " + typeName)
+			return nil, errors.New("MakeColumnPointers: Unrecognized type: " + typeName)
 		}
 	}
 	return columnPointers, nil

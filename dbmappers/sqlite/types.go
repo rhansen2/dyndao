@@ -1,4 +1,4 @@
-package sqlitegen
+package sqlite
 
 // Derived from: www.sqlite.org/datatype3.html
 // TODO: That table only shows a small subset of the datatypes SQLite will accept.

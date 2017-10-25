@@ -1,4 +1,4 @@
-package mysqlgen
+package mysql
 
 import (
 	"database/sql"
