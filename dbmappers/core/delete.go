@@ -30,7 +30,7 @@ func BindingDelete(g *sg.SQLGenerator, sch *schema.Schema, queryVals *object.Obj
 		whereString = ""
 	}
 	sqlStr := fmt.Sprintf("DELETE FROM %s %s %s", tableName, whereString, whereClause)
-	if os.Getenv("DEBUG") != "" {
+	if os.Getenv("DB_TRACE") != "" {
 		fmt.Println(sqlStr)
 	}
 	return sqlStr, bindWhere, nil

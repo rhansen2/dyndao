@@ -45,7 +45,7 @@ func (o ORM) CreateTable(sch *schema.Schema, tableName string) error {
 		return err
 	}
 
-	debug := os.Getenv("DEBUG")
+	debug := os.Getenv("DB_TRACE")
 	if debug != "" {
 		// Currently, DEBUG is either on or off.
 		fmt.Println("CreateTable:", sqlStr)

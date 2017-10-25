@@ -27,7 +27,7 @@ func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	if err != nil {
 		return 0, err
 	}
-	if os.Getenv("DEBUG") != "" {
+	if os.Getenv("DB_TRACE") != "" {
 		fmt.Printf("Delete: sqlStr->%s, bindWhere->%v\n", sqlStr, bindWhere)
 	}
 
