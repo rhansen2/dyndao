@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/rbastic/dyndao/dbmappers/core"
+	"github.com/rbastic/dyndao/dbmappers/core/test"
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
@@ -42,5 +43,5 @@ func GetSQLGen() *sg.SQLGenerator {
 }
 
 func TestMain(t *testing.T) {
-	core.Test(t, GetDB, GetSQLGen)
+	test.Test(t, GetDB, GetSQLGen)
 }
