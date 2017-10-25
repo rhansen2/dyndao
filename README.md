@@ -110,8 +110,8 @@ If you find yourself using this package to do cool things, please let me know.
 
 *THANKS*
 
-The author would like to express his sincere thanks to Rob Hansen (github.com/rhansen2),
-without whom the Oracle support in this library would not be possible.
+The author would like to express his sincere thanks to Rob Hansen
+(github.com/rhansen2), for without him this library surely would have suffered.
 
 *LICENSE*
 
