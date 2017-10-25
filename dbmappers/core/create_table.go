@@ -34,6 +34,5 @@ func CreateTable(g *sg.SQLGenerator, s *schema.Schema, table string) (string, er
 )
 `, tableName, strings.Join(sqlFields, ",\n"))
 
-	fmt.Println(sql)
 	return sql, nil
 }

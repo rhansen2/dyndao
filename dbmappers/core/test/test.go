@@ -1,6 +1,14 @@
+// Package test is the core test suite for all database drivers.
+// A conformant implementation should pass all tests.
+//
+// This test suite is not meant to be run on it's own. The individual
+// driver folders have their own dyndao_test.go which bootstraps this
+// code.
+
 package test
 
 import (
+	"fmt"
 	"context"
 	"database/sql"
 
@@ -33,15 +41,10 @@ func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
 	GetDB = getDBFn
 	getSQLGen = getSGFN
 
-	// Bootstrap the db, run the test suite, drop tables
-	TestCreateTables(t)
-	TestSuiteNested(t)
-	TestDropTables(t)
-}
-
-func TestCreateTables(t *testing.T) {
-	sch := schema.MockNestedSchema()
 	db := GetDB()
+	if db == nil {
+		t.Fatal("dyndao: core/test/Test: GetDB() returned a nil value.")
+	}
 	defer func() {
 		err := db.Close()
 		if err != nil {
@@ -49,6 +52,14 @@ func TestCreateTables(t *testing.T) {
 		}
 	}()
 
+	// Bootstrap the db, run the test suite, drop tables
+	TestCreateTables(t, db)
+	TestSuiteNested(t, db)
+	TestDropTables(t, db)
+}
+
+func TestCreateTables(t *testing.T, db * sql.DB) {
+	sch := schema.MockNestedSchema()
 	o := orm.New(getSQLGen(), sch, db)
 
 	err := createTables(o.RawConn, sch)
@@ -57,37 +68,19 @@ func TestCreateTables(t *testing.T) {
 	}
 }
 
-func sampleAddressObject() *object.Object {
-	addr := object.New("addresses")
-	addr.Set("Address1", "Test")
-	addr.Set("Address2", "Test2")
-	addr.Set("City", "Nowhere")
-	addr.Set("State", "AZ")
-	addr.Set("Zip", "02865")
-	return addr
-}
-func makeDefaultPersonWithAddress() *object.Object {
-	// NOTE: This should force insert
-	obj := object.New(PeopleObjectType)
-	//obj.Set("PersonID", 1)
-	obj.Set("Name", "Ryan")
+func TestDropTables(t *testing.T, db * sql.DB) {
+	sch := schema.MockNestedSchema()
+	o := orm.New(getSQLGen(), sch, db)
 
-	addrObj := sampleAddressObject()
-	obj.Children["addresses"] = object.NewArray(addrObj)
-	return obj
+	err := dropTables(o.RawConn, sch)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func TestSuiteNested(t *testing.T) {
+func TestSuiteNested(t *testing.T, db * sql.DB) {
 	// Test schema
 	sch := schema.MockNestedSchema()
-	// Grab database connection
-	db := GetDB()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			t.Fatal(err)
-		}
-	}()
 	// Setup our ORM
 	o := orm.New(getSQLGen(), sch, db)
 	// Construct our default mock object
@@ -147,7 +140,26 @@ func TestSuiteNested(t *testing.T) {
 		// test retrieving multiple parents, given a single child object
 		testGetParentsViaChild(&o, t)
 	})
+}
 
+func sampleAddressObject() *object.Object {
+	addr := object.New("addresses")
+	addr.Set("Address1", "Test")
+	addr.Set("Address2", "Test2")
+	addr.Set("City", "Nowhere")
+	addr.Set("State", "AZ")
+	addr.Set("Zip", "02865")
+	return addr
+}
+func makeDefaultPersonWithAddress() *object.Object {
+	// NOTE: This should force insert
+	obj := object.New(PeopleObjectType)
+	//obj.Set("PersonID", 1)
+	obj.Set("Name", "Ryan")
+
+	addrObj := sampleAddressObject()
+	obj.Children["addresses"] = object.NewArray(addrObj)
+	return obj
 }
 
 func saveMockObject(t *testing.T, o *orm.ORM, obj *object.Object) {
@@ -161,7 +173,6 @@ func saveMockObject(t *testing.T, o *orm.ORM, obj *object.Object) {
 	if rowsAff == 0 {
 		t.Fatal("Rows affected shouldn't be zero initially")
 	}
-
 }
 
 func validatePersonID(t *testing.T, obj *object.Object) {
@@ -170,10 +181,13 @@ func validatePersonID(t *testing.T, obj *object.Object) {
 		t.Fatalf("Had problems retrieving PersonID as int: %s", err.Error())
 	}
 	if personID != 1 {
-		if personID == 2 {
+		if personID >= 2 {
 			t.Fatal("Tests are not in a ready state. Pre-existing data is present.")
 		}
 		t.Fatalf("PersonID has the wrong value, has value %d", personID)
+	}
+	if personID == 1 {
+		fmt.Println("ALL GOOD")
 	}
 }
 
@@ -261,6 +275,9 @@ func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if childObj == nil {
+		t.Fatal("testGetParentsViaChild: childObj was nil")
+	}
 	// A silly test, but verifies basic assumptions
 	if childObj.Type != "addresses" {
 		t.Fatal("Unknown child object retrieved", childObj)
@@ -300,26 +317,10 @@ func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
 	if fleshened.Children[AddressesObjectType] == nil {
 		t.Fatal("expected Addresses children")
 	}
-	if fleshened.Children["addresses"][0].Get("Address1") != "Test" {
-		t.Fatal("expected 'Test' for 'Address1'")
-	}
-}
-
-func TestDropTables(t *testing.T) {
-	sch := schema.MockNestedSchema()
-	db := GetDB()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			panic(err)
-		}
-	}()
-
-	o := orm.New(getSQLGen(), sch, db)
-
-	err := dropTables(o.RawConn, sch)
-	if err != nil {
-		t.Fatal(err)
+	address1 := fleshened.Children["addresses"][0].Get("Address1")
+	expectedStr := "Test"
+	if address1 != "Test" {
+		t.Fatalf("expected %s for 'Address1', address1 was %s", expectedStr, address1)
 	}
 }
 

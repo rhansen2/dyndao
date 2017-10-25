@@ -3,7 +3,6 @@ package core
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	sg "github.com/rbastic/dyndao/sqlgen"
@@ -102,10 +101,6 @@ func BindingInsert(g *sg.SQLGenerator, sch *schema.Schema, table string, data ma
 
 	sqlStr := g.BindingInsertSQL(schTable, tableName, colNames, bindNames, identityCol)
 
-	if os.Getenv("DEBUG") != "" {
-		fmt.Println("DEBUG: INSERT sqlStr->", sqlStr, "bindArgs->", bindArgs)
-
-	}
 	return sqlStr, bindArgs, nil
 }
 

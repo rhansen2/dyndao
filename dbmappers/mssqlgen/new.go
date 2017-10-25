@@ -1,6 +1,7 @@
-package sqlitegen
+package mssqlgen
 
 import (
+	//_ "github.com/denisenkom/go-mssqldb"
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
@@ -9,8 +10,7 @@ import (
 // methods that it needs to. In some instances, this could be all methods,
 // or hardly any.
 func New(g *sg.SQLGenerator) *sg.SQLGenerator {
-	// Oracle SQLGenerator uses Core for anything commented out.
-
+	g.FixLastInsertIDbug = true
 	g.IsStringType = sg.FnIsStringType(IsStringType)
 	g.IsNumberType = sg.FnIsNumberType(IsNumberType)
 	g.IsFloatingType = sg.FnIsFloatingType(IsFloatingType)
