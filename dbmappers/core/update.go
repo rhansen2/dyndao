@@ -108,7 +108,7 @@ func BindingUpdate(g *sg.SQLGenerator, sch *schema.Schema, obj *object.Object) (
 					newValuesAry[i] = fmt.Sprintf("%s = NULL", f.Name)
 					bindArgs[i] = nil
 				} else {
-					newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, g.RenderBindingValue(f), i)
+					newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, g.RenderBindingValueWithInt(f, int64(i)))
 					bindArgs[i] = v
 				}
 			}

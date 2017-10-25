@@ -18,5 +18,7 @@ func New(g *sg.SQLGenerator) *sg.SQLGenerator {
 	g.MakeColumnPointers = sg.FnMakeColumnPointers(MakeColumnPointers)
 	g.RenderCreateField = sg.FnRenderCreateField(RenderCreateField)
 	g.RenderInsertValue = sg.FnRenderInsertValue(RenderInsertValue)
+	g.RenderBindingValue = sg.FnRenderBindingValue(RenderBindingValue)
+	g.RenderBindingValueWithInt = sg.FnRenderBindingValueWithInt(RenderBindingValueWithInt)
 	return g
 }
