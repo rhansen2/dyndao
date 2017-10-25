@@ -8,7 +8,6 @@
 package test
 
 import (
-	"fmt"
 	"context"
 	"database/sql"
 
