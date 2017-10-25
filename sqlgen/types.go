@@ -13,9 +13,9 @@ type FnBindingRetrieve func(g *SQLGenerator, sch *schema.Schema, obj *object.Obj
 type FnBindingDelete func(g *SQLGenerator, sch *schema.Schema, obj *object.Object) (string, []interface{}, error)
 type FnCreateTable func(g *SQLGenerator, sch *schema.Schema, table string) (string, error)
 type FnDropTable func(name string) string
-type FnRenderBindingValue func(f *schema.Field) string
-type FnRenderBindingValueWithInt func(f *schema.Field, i int64) string
-type FnRenderInsertValue func(f *schema.Field, value interface{}) (interface{}, error)
+type FnRenderBindingValue func(f *schema.Column) string
+type FnRenderBindingValueWithInt func(f *schema.Column, i int64) string
+type FnRenderInsertValue func(f *schema.Column, value interface{}) (interface{}, error)
 type FnIsStringType func(string) bool
 type FnIsNumberType func(string) bool
 type FnIsFloatingType func(string) bool
@@ -25,11 +25,11 @@ type FnDynamicObjectSetter func(g *SQLGenerator, columnNames []string, columnPoi
 type FnMakeColumnPointers func(g *SQLGenerator, sliceLen int, columnTypes []*sql.ColumnType) ([]interface{}, error)
 
 type FnRenderWhereClause func(g *SQLGenerator, schTable *schema.Table, obj *object.Object) (string, []interface{}, error)
-type FnRenderUpdateWhereClause func(g *SQLGenerator, schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error)
+type FnRenderUpdateWhereClause func(g *SQLGenerator, schTable *schema.Table, fieldsMap map[string]*schema.Column, obj *object.Object) (string, []interface{}, error)
 
-type FnCoreBindingInsert func(g *SQLGenerator, schTable *schema.Table, data map[string]interface{}, identityCol string, fieldsMap map[string]*schema.Field) ([]string, []string, []interface{})
+type FnCoreBindingInsert func(g *SQLGenerator, schTable *schema.Table, data map[string]interface{}, identityCol string, fieldsMap map[string]*schema.Column) ([]string, []string, []interface{})
 
-type FnRenderCreateField func(g *SQLGenerator, f *schema.Field) string
+type FnRenderCreateColumn func(g *SQLGenerator, f *schema.Column) string
 type FnBindingInsertSQL func(schTable *schema.Table, tableName string, colNames []string, bindNames []string, identityCol string) string
 
 // SQLGenerator is the 'vtable struct' that an ORM expects a SQL string
@@ -43,7 +43,7 @@ type SQLGenerator struct {
 	BindingRetrieve           FnBindingRetrieve
 	BindingDelete             FnBindingDelete
 	CreateTable               FnCreateTable
-	RenderCreateField         FnRenderCreateField
+	RenderCreateColumn         FnRenderCreateColumn
 	DropTable                 FnDropTable
 	RenderBindingValue        FnRenderBindingValue
 	RenderBindingValueWithInt FnRenderBindingValueWithInt

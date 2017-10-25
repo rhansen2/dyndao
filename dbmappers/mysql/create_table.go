@@ -10,7 +10,7 @@ import (
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
-func RenderCreateField(sg *sg.SQLGenerator, f *schema.Field) string {
+func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
 	dataType := f.DBType
 	var notNull string
 	identity := ""
@@ -38,7 +38,7 @@ func RenderCreateField(sg *sg.SQLGenerator, f *schema.Field) string {
 	dataType = mapType(dataType)
 
 	if dataType == "" {
-		panic("Empty dataType in renderCreateField for " + f.Name)
+		panic("Empty dataType in renderCreateColumn for " + f.Name)
 	}
 	return strings.Join([]string{f.Name, dataType, identity, notNull, unique}, " ")
 }

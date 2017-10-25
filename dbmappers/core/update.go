@@ -64,9 +64,9 @@ func BindingUpdate(g *sg.SQLGenerator, sch *schema.Schema, obj *object.Object) (
 		return "", nil, nil, errors.New("BindingUpdate: Table map unavailable for table " + obj.Type)
 	}
 
-	fieldsMap := schTbl.Fields
+	fieldsMap := schTbl.Columns
 	if fieldsMap == nil {
-		return "", nil, nil, errors.New("BindingUpdate: Field map unavailable for table " + obj.Type)
+		return "", nil, nil, errors.New("BindingUpdate: Column map unavailable for table " + obj.Type)
 	}
 
 	whereClause, bindWhere, err := g.RenderUpdateWhereClause(g, schTbl, fieldsMap, obj)
@@ -82,12 +82,12 @@ func BindingUpdate(g *sg.SQLGenerator, sch *schema.Schema, obj *object.Object) (
 	// If some things have changed, then only use fields that we're sure have changed
 
 	// TODO: Refactor this code.
-	if len(obj.ChangedFields) > 0 {
-		bindArgs = make([]interface{}, len(obj.ChangedFields))
-		newValuesAry = make([]string, len(obj.ChangedFields))
+	if len(obj.ChangedColumns) > 0 {
+		bindArgs = make([]interface{}, len(obj.ChangedColumns))
+		newValuesAry = make([]string, len(obj.ChangedColumns))
 
-		for k := range obj.ChangedFields {
-			f := schTbl.GetField(k)
+		for k := range obj.ChangedColumns {
+			f := schTbl.GetColumn(k)
 			if f == nil {
 				return "", nil, nil, errors.New("BindingUpdate: field config unavailable for object Type: " + obj.Type + ", key: " + k)
 			}
@@ -101,7 +101,7 @@ func BindingUpdate(g *sg.SQLGenerator, sch *schema.Schema, obj *object.Object) (
 				newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, vStr)
 				bindArgs[i] = nil
 			} else {
-				if g.IsTimestampType(schTbl.GetField(k).DBType) {
+				if g.IsTimestampType(schTbl.GetColumn(k).DBType) {
 					v = safeConvert(v)
 				}
 				if v == nil || zeroTime(v) {
@@ -122,7 +122,7 @@ func BindingUpdate(g *sg.SQLGenerator, sch *schema.Schema, obj *object.Object) (
 		newValuesAry = make([]string, len(obj.KV)-1)
 
 		for k, v := range obj.KV {
-			f := schTbl.GetField(k)
+			f := schTbl.GetColumn(k)
 			if f == nil {
 				return "", nil, nil, errors.New("BindingUpdate: field config unavailable for object Type: " + obj.Type + ", key: " + k)
 			}
@@ -135,7 +135,7 @@ func BindingUpdate(g *sg.SQLGenerator, sch *schema.Schema, obj *object.Object) (
 				newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, vStr)
 				bindArgs[i] = nil
 			} else {
-				if g.IsTimestampType(schTbl.GetField(k).DBType) {
+				if g.IsTimestampType(schTbl.GetColumn(k).DBType) {
 					v = safeConvert(v)
 				}
 				if v == nil || zeroTime(v) {

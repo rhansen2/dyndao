@@ -18,11 +18,11 @@ type Table struct {
 	// MultiKey must be set to true if a table has
 	// foreign keys.
 	ForeignKeys []string `json:"ForeignKeys"`
-	// Fields is the column definitions for the SQL table
-	Fields       map[string]*Field `json:"Fields"`
-	FieldAliases map[string]string `json:"FieldAliases"`
+	// Columns is the column definitions for the SQL table
+	Columns       map[string]*Column `json:"Columns"`
+	ColumnAliases map[string]string `json:"ColumnAliases"`
 
-	EssentialFields []string `json:"EssentialFields"`
+	EssentialColumns []string `json:"EssentialColumns"`
 
 	ParentTables []string               `json:"ParentTables"`
 	Children     map[string]*ChildTable `json:"Children"`
@@ -45,8 +45,8 @@ func GetTableName(override string, ourDefault string) string {
 	return name
 }
 
-// Field represents a single column in a SQL table
-type Field struct {
+// Column represents a single column in a SQL table
+type Column struct {
 	AllowNull    bool   `json:"AllowNull"`
 	IsNumber     bool   `json:"IsNumber"`
 	IsIdentity   bool   `json:"IsIdentity"`
@@ -65,9 +65,9 @@ type ChildTable struct {
 	ParentTable string `json:"ParentTable"`
 
 	MultiKey     bool   `json:"MultiKey"`
-	LocalField   string `json:"LocalField"`
-	ForeignField string `json:"ForeignField"`
+	LocalColumn   string `json:"LocalColumn"`
+	ForeignColumn string `json:"ForeignColumn"`
 
-	LocalFields   []string `json:"LocalFields"`
-	ForeignFields []string `json:"ForeignFields"`
+	LocalColumns   []string `json:"LocalColumns"`
+	ForeignColumns []string `json:"ForeignColumns"`
 }

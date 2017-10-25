@@ -12,7 +12,7 @@ import (
 )
 
 // BindingRetrieve accepts a schema and an object, constructing the appropriate SELECT
-// statement to retrieve the object. It will return sqlStr, the EssentialFields used, and the
+// statement to retrieve the object. It will return sqlStr, the EssentialColumns used, and the
 // binding where clause.
 // DEBUG mode may be turned on by setting an environment parameter, "DEBUG".
 // TODO: We may consider using a different name in the future.
@@ -28,10 +28,10 @@ func BindingRetrieve(g *sg.SQLGenerator, sch *schema.Schema, obj *object.Object)
 		return "", nil, nil, errors.Wrap(err, "BindingRetrieve")
 	}
 
-	if schTable.EssentialFields == nil || len(schTable.EssentialFields) == 0 {
-		return "", nil, nil, errors.New("BindingRetrieve: EssentialFields is empty for table " + table)
+	if schTable.EssentialColumns == nil || len(schTable.EssentialColumns) == 0 {
+		return "", nil, nil, errors.New("BindingRetrieve: EssentialColumns is empty for table " + table)
 	}
-	columns := strings.Join(schTable.EssentialFields, ",")
+	columns := strings.Join(schTable.EssentialColumns, ",")
 
 	whereStr := ""
 	if whereClause != "" {
@@ -40,5 +40,5 @@ func BindingRetrieve(g *sg.SQLGenerator, sch *schema.Schema, obj *object.Object)
 	tableName := schema.GetTableName(schTable.Name, table)
 
 	sqlStr := fmt.Sprintf("SELECT %s FROM %s %s %s", columns, tableName, whereStr, whereClause)
-	return sqlStr, schTable.EssentialFields, bindWhere, nil
+	return sqlStr, schTable.EssentialColumns, bindWhere, nil
 }

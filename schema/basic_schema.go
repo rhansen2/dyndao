@@ -1,8 +1,8 @@
 package schema
 
 // Basic test mock
-func fieldName() *Field {
-	fld := DefaultField()
+func fieldName() *Column {
+	fld := DefaultColumn()
 	fld.IsNumber = false
 	fld.Name = "Name"
 	fld.DBType = "text"
@@ -11,8 +11,8 @@ func fieldName() *Field {
 	return fld
 }
 
-func fieldAddress(n string) *Field {
-	fld := DefaultField()
+func fieldAddress(n string) *Column {
+	fld := DefaultColumn()
 	fld.Source = n
 	fld.IsNumber = false
 
@@ -25,8 +25,8 @@ func fieldAddress(n string) *Field {
 	return fld
 }
 
-func primaryField(name string) *Field {
-	fld := DefaultField()
+func primaryColumn(name string) *Column {
+	fld := DefaultColumn()
 	fld.Name = name
 	fld.DBType = "integer"
 	fld.IsIdentity = true
@@ -35,8 +35,8 @@ func primaryField(name string) *Field {
 	return fld
 }
 
-func fkField(name string) *Field {
-	fld := DefaultField()
+func fkColumn(name string) *Column {
+	fld := DefaultColumn()
 	fld.Name = name
 	fld.DBType = "integer"
 	fld.IsIdentity = false
@@ -51,9 +51,9 @@ func peopleTable() *Table {
 	tbl.Name = "people"
 	tbl.MultiKey = false
 	tbl.Primary = "PersonID"
-	tbl.Fields["PersonID"] = primaryField("PersonID") //fieldID("PersonID")
-	tbl.Fields["Name"] = fieldName()
-	tbl.EssentialFields = []string{"PersonID", "Name"}
+	tbl.Columns["PersonID"] = primaryColumn("PersonID") //fieldID("PersonID")
+	tbl.Columns["Name"] = fieldName()
+	tbl.EssentialColumns = []string{"PersonID", "Name"}
 
 	return tbl
 }
@@ -66,15 +66,15 @@ func addressTable() *Table {
 	tbl.MultiKey = true
 	tbl.ForeignKeys = []string{"PersonID"}
 
-	tbl.Fields["AddressID"] = primaryField("AddressID")
-	tbl.Fields["Address1"] = fieldAddress("Address1")
-	tbl.Fields["Address2"] = fieldAddress("Address2")
-	tbl.Fields["City"] = fieldAddress("City")
-	tbl.Fields["State"] = fieldAddress("State")
-	tbl.Fields["PersonID"] = fkField("PersonID")
-	tbl.Fields["Zip"] = fieldAddress("Zip")
+	tbl.Columns["AddressID"] = primaryColumn("AddressID")
+	tbl.Columns["Address1"] = fieldAddress("Address1")
+	tbl.Columns["Address2"] = fieldAddress("Address2")
+	tbl.Columns["City"] = fieldAddress("City")
+	tbl.Columns["State"] = fieldAddress("State")
+	tbl.Columns["PersonID"] = fkColumn("PersonID")
+	tbl.Columns["Zip"] = fieldAddress("Zip")
 
-	tbl.EssentialFields = []string{"AddressID", "PersonID", "Address1", "Address2", "City", "State", "Zip"}
+	tbl.EssentialColumns = []string{"AddressID", "PersonID", "Address1", "Address2", "City", "State", "Zip"}
 
 	tbl.ParentTables = []string{"people"}
 	return tbl

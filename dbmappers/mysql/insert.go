@@ -10,8 +10,8 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func RenderInsertValue(f *schema.Field, value interface{}) (interface{}, error) {
-	// TODO do we need the schema.Field for more than debugging information?
+func RenderInsertValue(f *schema.Column, value interface{}) (interface{}, error) {
+	// TODO do we need the schema.Column for more than debugging information?
 	switch value.(type) {
 	case string:
 		str, ok := value.(string)

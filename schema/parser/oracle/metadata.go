@@ -35,7 +35,7 @@ func LoadSchema(ctx context.Context, db *sql.DB, dbName string) (*schema.Schema,
 	if err != nil {
 		return nil, err
 	}
-	SetDefaultEssentialFields(sch)
+	SetDefaultEssentialColumns(sch)
 	return sch, nil
 }
 
@@ -115,7 +115,7 @@ func setTableCol(sch *schema.Schema, tblName string, colName sql.NullString, dat
 	tbl := sch.Tables[tblName]
 	tbl.Name = tblName
 
-	df := schema.DefaultField()
+	df := schema.DefaultColumn()
 	df.Name = colName.String
 	df.DBType = dataType
 
@@ -125,19 +125,19 @@ func setTableCol(sch *schema.Schema, tblName string, colName sql.NullString, dat
 	}
 	df.AllowNull = isNullBool
 
-	tbl.Fields[colName.String] = df
+	tbl.Columns[colName.String] = df
 }
 
-// SetDefaultEssentialFields configures the EssentialFields
+// SetDefaultEssentialColumns configures the EssentialColumns
 // for each schema.Table to be the entire list of field names.
-func SetDefaultEssentialFields(sch *schema.Schema) {
+func SetDefaultEssentialColumns(sch *schema.Schema) {
 	for _, tbl := range sch.Tables {
-		numf := len(tbl.Fields)
-		tbl.EssentialFields = make([]string, numf)
+		numf := len(tbl.Columns)
+		tbl.EssentialColumns = make([]string, numf)
 
 		i := 0
-		for _, v := range tbl.Fields {
-			tbl.EssentialFields[i] = v.Name
+		for _, v := range tbl.Columns {
+			tbl.EssentialColumns[i] = v.Name
 			i++
 		}
 	}

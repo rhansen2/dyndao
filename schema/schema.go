@@ -77,12 +77,12 @@ func (s *Schema) GetTable(n string) *Table {
 	return s.Tables[n]
 }
 
-// GetFieldName returns the correct field name in a potentially aliased environment.
+// GetColumnName returns the correct field name in a potentially aliased environment.
 // This is useful in situations where you aren't sure what the 'real' key name
 // may potentially be.
-func (t *Table) GetFieldName(n string) string {
-	if t.FieldAliases != nil {
-		realName, ok := t.FieldAliases[n]
+func (t *Table) GetColumnName(n string) string {
+	if t.ColumnAliases != nil {
+		realName, ok := t.ColumnAliases[n]
 		if !ok {
 			// Perhaps it is not an alias
 			return n
@@ -92,37 +92,37 @@ func (t *Table) GetFieldName(n string) string {
 	return n
 }
 
-// GetField returns the correct field in a potentially aliased environment.
-func (t *Table) GetField(n string) *Field {
-	if t.FieldAliases != nil {
-		realName, ok := t.FieldAliases[n]
+// GetColumn returns the correct field in a potentially aliased environment.
+func (t *Table) GetColumn(n string) *Column {
+	if t.ColumnAliases != nil {
+		realName, ok := t.ColumnAliases[n]
 		if !ok {
 			// Perhaps it is not an alias
-			return t.Fields[n]
+			return t.Columns[n]
 		}
-		return t.Fields[realName]
+		return t.Columns[realName]
 	}
-	return t.Fields[n]
+	return t.Columns[n]
 }
 
 // DefaultTable returns an empty table ready to be populated
 func DefaultTable() *Table {
-	fieldsMap := make(map[string]*Field)
+	fieldsMap := make(map[string]*Column)
 	childrenMap := make(map[string]*ChildTable)
 
 	tbl := &Table{
 		MultiKey:        false,
 		Primary:         "",
-		Fields:          fieldsMap,
-		EssentialFields: nil,
+		Columns:          fieldsMap,
+		EssentialColumns: nil,
 		Children:        childrenMap,
 	}
 	return tbl
 }
 
-// DefaultField returns an empty field struct ready to be populated
-func DefaultField() *Field {
-	fld := &Field{
+// DefaultColumn returns an empty field struct ready to be populated
+func DefaultColumn() *Column {
+	fld := &Column{
 		Name:         "",
 		AllowNull:    false,
 		DefaultValue: "",
@@ -139,11 +139,11 @@ func DefaultChildTable() *ChildTable {
 	chld := &ChildTable{
 		ParentTable:  "",
 		MultiKey:     false,
-		LocalField:   "",
-		ForeignField: "",
+		LocalColumn:   "",
+		ForeignColumn: "",
 
-		LocalFields:   nil,
-		ForeignFields: nil,
+		LocalColumns:   nil,
+		ForeignColumns: nil,
 	}
 	return chld
 }

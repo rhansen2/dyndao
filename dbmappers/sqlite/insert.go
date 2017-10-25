@@ -13,8 +13,8 @@ func quotedString(value string) string {
 	return fmt.Sprintf(`"%s"`, value)
 }
 
-func RenderInsertValue(f *schema.Field, value interface{}) (interface{}, error) {
-	// TODO do we need the schema.Field for more than debugging information?
+func RenderInsertValue(f *schema.Column, value interface{}) (interface{}, error) {
+	// TODO do we need the schema.Column for more than debugging information?
 	switch v := value.(type) {
 	case string:
 		if v == "" {
@@ -55,10 +55,10 @@ func RenderInsertValue(f *schema.Field, value interface{}) (interface{}, error) 
 	}
 }
 
-func RenderBindingValue(f *schema.Field) string {
+func RenderBindingValue(f *schema.Column) string {
 	return ":" + f.Name
 }
 
-func RenderBindingValueWithInt(f *schema.Field, i int64) string {
+func RenderBindingValueWithInt(f *schema.Column, i int64) string {
 	return fmt.Sprintf(":%s%d", f.Name, i)
 }

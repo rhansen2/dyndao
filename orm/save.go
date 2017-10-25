@@ -22,7 +22,7 @@ func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName s
 	}
 	schemaPrimary := schemaTable.Primary
 
-	for fName, field := range schemaTable.Fields {
+	for fName, field := range schemaTable.Columns {
 		if field.IsIdentity || field.IsForeignKey || field.Name == schemaPrimary {
 			qv[fName] = obj.Get(fName)
 		}
@@ -50,7 +50,7 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 			// saved from previous recursive saves
 			// ... check if the child schema table contains
 			// the parent's primary key field as a name
-			_, ok = childTable.Fields[table.Primary]
+			_, ok = childTable.Columns[table.Primary]
 			if ok {
 				// set in the child object if the table contains the primary
 				childObj.Set(table.Primary, pkVal)
@@ -145,7 +145,7 @@ func (o ORM) SaveObjectButErrorIfUpdate(ctx context.Context, tx *sql.Tx, obj *ob
 		return 0, errors.New("SaveObjectButErrorIfUpdate: empty primary key for " + obj.Type)
 	}
 	// skip if primary key has no field configuration in table schema
-	fieldMap := objTable.Fields
+	fieldMap := objTable.Columns
 	f := fieldMap[pk]
 	if f == nil {
 		return 0, errors.New("SaveObjectButErrorIfUpdate: empty field " + pk + " for " + obj.Type)
@@ -183,7 +183,7 @@ func (o ORM) SaveObjectButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *ob
 		return 0, errors.New("SaveObjectButErrorIfInsert: empty primary key for " + obj.Type)
 	}
 	// ensure the primary key has a field config
-	fieldMap := objTable.Fields
+	fieldMap := objTable.Columns
 	f := fieldMap[pk]
 	if f == nil {
 		return 0, errors.New("SaveObjectButErrorIfInsert: empty field " + pk + " for " + obj.Type)
@@ -220,7 +220,7 @@ func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (in
 		return 0, errors.New("SaveObject: empty primary key for " + obj.Type)
 	}
 	// skip if primary key has no field configuration in table schema
-	fieldMap := objTable.Fields
+	fieldMap := objTable.Columns
 	f := fieldMap[pk]
 	if f == nil {
 		return 0, errors.New("SaveObject: empty field " + pk + " for " + obj.Type)

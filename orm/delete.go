@@ -54,7 +54,7 @@ func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	}
 
 	obj.SetSaved(true)       // Flag that the object has been recently saved
-	obj.ResetChangedFields() // Reset the 'changed fields', if any
+	obj.ResetChangedColumns() // Reset the 'changed fields', if any
 
 	return rowsAff, nil
 

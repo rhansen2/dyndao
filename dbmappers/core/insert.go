@@ -14,18 +14,18 @@ import (
 
 // TODO: refactor this?
 func getRealColumnName(tbl *schema.Table, col string) string {
-	if tbl.FieldAliases == nil {
+	if tbl.ColumnAliases == nil {
 		return col
 	}
 
-	realName, ok := tbl.FieldAliases[col]
+	realName, ok := tbl.ColumnAliases[col]
 	if ok {
 		return realName
 	}
 	return col
 }
 
-func CoreBindingInsert(g *sg.SQLGenerator, schTable *schema.Table, data map[string]interface{}, identityCol string, fieldsMap map[string]*schema.Field) ([]string, []string, []interface{}) {
+func CoreBindingInsert(g *sg.SQLGenerator, schTable *schema.Table, data map[string]interface{}, identityCol string, fieldsMap map[string]*schema.Column) ([]string, []string, []interface{}) {
 	dataLen := len(data)
 	bindNames := make([]string, dataLen)
 	colNames := make([]string, dataLen)
@@ -89,9 +89,9 @@ func BindingInsert(g *sg.SQLGenerator, sch *schema.Schema, table string, data ma
 
 	tableName := schema.GetTableName(schTable.Name, table)
 
-	fieldsMap := schTable.Fields
+	fieldsMap := schTable.Columns
 	if fieldsMap == nil {
-		return "", nil, errors.New("BindingInsert: Field map unavailable for table " + table)
+		return "", nil, errors.New("BindingInsert: Column map unavailable for table " + table)
 	}
 
 	identityCol := schTable.Primary

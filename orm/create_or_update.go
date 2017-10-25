@@ -80,7 +80,7 @@ func (o ORM) CreateOrUpdateKV(ctx context.Context, typ string, queryKV map[strin
 	return o.CreateOrUpdateKVTx(ctx, nil, typ, queryKV, createKV)
 }
 
-func (o ORM) CreateOrUpdateKVHookUpdate(ctx context.Context, tx *sql.Tx, typ string, queryKV, createKV map[string]interface{}, beforeUpdateCopyFields []string) (int64, *object.Object, error) {
+func (o ORM) CreateOrUpdateKVHookUpdate(ctx context.Context, tx *sql.Tx, typ string, queryKV, createKV map[string]interface{}, beforeUpdateCopyColumns []string) (int64, *object.Object, error) {
 
 	var err error
 	var retObj *object.Object
@@ -103,7 +103,7 @@ func (o ORM) CreateOrUpdateKVHookUpdate(ctx context.Context, tx *sql.Tx, typ str
 		// TODO: what about situations where fields dont exist in the createKV,
 		// indicating they were deleted? how do we handle nils here,
 		// for example?
-		for _, k := range beforeUpdateCopyFields {
+		for _, k := range beforeUpdateCopyColumns {
 			newV, ok := createKV[k]
 			if ok {
 				retObj.Set(k, newV)

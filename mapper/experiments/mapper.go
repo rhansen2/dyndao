@@ -15,7 +15,7 @@ import (
 func ToJSONFromObject(sch *schema.Schema, obj *object.Object, rootJSON string, rootPath string, setRootPath bool) (string, error) {
 	tbl := obj.Type
 	table := sch.Tables[tbl]
-	fieldsMap := table.Fields
+	fieldsMap := table.Columns
 
 	if rootJSON == "" {
 		rootJSON = "{}"
@@ -80,7 +80,7 @@ func ToObjectFromJSON(sch *schema.Schema, consumedPath string, tbl string, json 
 	obj := object.New(tbl)
 
 	table := sch.Tables[tbl]
-	fieldsMap := table.Fields
+	fieldsMap := table.Columns
 
 	keys := make([]string, len(fieldsMap))    // list of keys we're going to set
 	sources := make([]string, len(fieldsMap)) // list of paths we'll retrieve them from

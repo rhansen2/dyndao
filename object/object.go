@@ -29,7 +29,7 @@ type Array []*Object
 
 // Object struct encapsulates our key-value pairs (KV) and a single-item
 // per-key history of the previous value stored for a given key
-// (ChangedFields).  We also store any instances of 'child records' which may
+// (ChangedColumns).  We also store any instances of 'child records' which may
 // be relevant (for instance, when saving with nested transactions).  'saved'
 // is used to track the internal state of whether an object was recently
 // retrieved or remapped from internal database state.
@@ -37,14 +37,14 @@ type Object struct {
 	Type          string
 	KV            map[string]interface{}
 	HiddenKV      map[string]interface{}
-	ChangedFields map[string]interface{}
+	ChangedColumns map[string]interface{}
 	Children      map[string]Array
 	saved         bool
 }
 
 // New is an empty constructor
 func New(objType string) *Object {
-	return &Object{Type: objType, KV: makeEmptyMap(), HiddenKV: nil, ChangedFields: makeEmptyMap(), Children: makeEmptyChildrenMap(), saved: false}
+	return &Object{Type: objType, KV: makeEmptyMap(), HiddenKV: nil, ChangedColumns: makeEmptyMap(), Children: makeEmptyChildrenMap(), saved: false}
 }
 
 // MakeArray will construct an array of length 'size'
@@ -280,7 +280,7 @@ func (o *Object) Set(k string, v interface{}) {
 		if oldVal == v {
 			return
 		}
-		o.FieldChanged(k, oldVal)
+		o.ColumnChanged(k, oldVal)
 	}
 	if o.GetSaved() {
 		o.SetSaved(false)
@@ -288,10 +288,10 @@ func (o *Object) Set(k string, v interface{}) {
 	o.SetCore(k, v)
 }
 
-// FieldChanged records the previous value for something that is about to be
+// ColumnChanged records the previous value for something that is about to be
 // set
-func (o *Object) FieldChanged(k string, oldVal interface{}) {
-	o.ChangedFields[k] = oldVal
+func (o *Object) ColumnChanged(k string, oldVal interface{}) {
+	o.ChangedColumns[k] = oldVal
 }
 
 // SetCore just mutates the internal object KV without any of the usual
@@ -303,7 +303,7 @@ func (o *Object) SetCore(k string, v interface{}) {
 // SetWhereNeeded is useful in situations where you aren't quite sure what Set()
 // method to use (because yes, sometimes, it is not super clear.) If you are forcing
 // UPDATEs to an entire row by turning SetSaved() off, then calling Set() will populate
-// ChangedFields, and you will lose the rest of your UPDATE statement. If the object
+// ChangedColumns, and you will lose the rest of your UPDATE statement. If the object
 // is already changed, then Set() is fine. Sometimes, you would want SetCore().
 // This has the necessary logic to determine the approach Set() method to call.
 // This can be particularly useful when constructing hook functions as part of a
@@ -312,10 +312,10 @@ func (o *Object) SetCore(k string, v interface{}) {
 func (o *Object) SetWhereNeeded(k string, v interface{}) {
 	// If the object has already been changed, then we need to try to use Set().
 	// Otherwise, SetCore() is the right method to use.
-	if len(o.ChangedFields) > 0 {
+	if len(o.ChangedColumns) > 0 {
 		o.Set(k, v)
 	} else if !o.GetSaved() && len(o.KV) > 0 {
-		// If the object is a forced UPDATE (meaning ChangedFields are
+		// If the object is a forced UPDATE (meaning ChangedColumns are
 		// not set), for example, then we have to set this value in the
 		// KV without affecting a change that will force us away from
 		// updating the other values. (Due to how Update is coded in
@@ -325,10 +325,10 @@ func (o *Object) SetWhereNeeded(k string, v interface{}) {
 
 }
 
-// ResetChangedFields can be used in conjunction with an ORM... For instance,
+// ResetChangedColumns can be used in conjunction with an ORM... For instance,
 // once a Save() method is invoked
-func (o *Object) ResetChangedFields() {
-	o.ChangedFields = make(map[string]interface{})
+func (o *Object) ResetChangedColumns() {
+	o.ChangedColumns = make(map[string]interface{})
 }
 
 // SetSaved is our setter for the 'object is saved' status field

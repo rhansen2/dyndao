@@ -15,11 +15,11 @@ func TestObject(t *testing.T) {
 
 	fmt.Println("obj is ", obj)
 
-	obj.ResetChangedFields()
+	obj.ResetChangedColumns()
 
 	obj.Set("age", 31)
 	obj.Set("id", NewSQLValue("SYS_GUID()"))
 
-	fmt.Println(obj.ChangedFields)
+	fmt.Println(obj.ChangedColumns)
 	fmt.Println(obj.KV)
 }

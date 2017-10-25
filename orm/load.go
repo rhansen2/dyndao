@@ -269,7 +269,7 @@ func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr
 		}
 
 		obj.SetSaved(true)
-		obj.ResetChangedFields()
+		obj.ResetChangedColumns()
 
 		objectArray = append(objectArray, obj)
 	}
@@ -284,12 +284,12 @@ func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr
 func (o ORM) makeQueryObj(objTable *schema.Table, queryVals map[string]interface{}) *object.Object {
 	queryObj := object.New(objTable.Name)
 
-	if objTable.FieldAliases == nil {
+	if objTable.ColumnAliases == nil {
 		queryObj.KV = queryVals
 		return queryObj
 	}
 	for k, v := range queryVals {
-		realName := objTable.GetFieldName(k)
+		realName := objTable.GetColumnName(k)
 		queryObj.KV[realName] = v
 	}
 	return queryObj
@@ -382,7 +382,7 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 		}
 
 		obj.SetSaved(true)
-		obj.ResetChangedFields()
+		obj.ResetChangedColumns()
 		objectArray = append(objectArray, obj)
 	}
 

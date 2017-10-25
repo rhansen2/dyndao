@@ -15,8 +15,8 @@ func TestDefaultTable(t *testing.T) {
 	fmt.Println(tbl)
 }
 
-func TestDefaultField(t *testing.T) {
-	fld := DefaultField()
+func TestDefaultColumn(t *testing.T) {
+	fld := DefaultColumn()
 	fmt.Println(fld)
 }
 

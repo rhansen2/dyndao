@@ -18,21 +18,21 @@ func CreateTable(g *sg.SQLGenerator, s *schema.Schema, table string) (string, er
 		return "", errors.New("unknown schema for table with name " + table)
 	}
 	tableName := schema.GetTableName(tbl.Name, table)
-	fieldsMap := tbl.Fields
+	fieldsMap := tbl.Columns
 
-	sqlFields := make([]string, len(fieldsMap))
+	sqlColumns := make([]string, len(fieldsMap))
 	i := 0
 	// TODO: Have field map in order, or allow one to specify key output order for iterating fields
 	// map and generating create SQL....
 	for _, v := range fieldsMap {
-		sqlFields[i] = g.RenderCreateField(g, v)
+		sqlColumns[i] = g.RenderCreateColumn(g, v)
 		i++
 	}
 
 	sql := fmt.Sprintf(`CREATE TABLE %s (
 	%s
 )
-`, tableName, strings.Join(sqlFields, ",\n"))
+`, tableName, strings.Join(sqlColumns, ",\n"))
 
 	return sql, nil
 }

@@ -13,7 +13,7 @@ import (
 // TODO: AUTOINCREMENT attribute support.
 // See http://www.sqlitetutorial.net/sqlite-autoincrement/
 
-func RenderCreateField(sg *sg.SQLGenerator, f *schema.Field) string {
+func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
 	dataType := f.DBType
 	notNull := ""
 	identity := ""

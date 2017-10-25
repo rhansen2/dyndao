@@ -11,7 +11,7 @@ import (
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
-func RenderUpdateWhereClause(g *sg.SQLGenerator, schTable *schema.Table, fieldsMap map[string]*schema.Field, obj *object.Object) (string, []interface{}, error) {
+func RenderUpdateWhereClause(g *sg.SQLGenerator, schTable *schema.Table, fieldsMap map[string]*schema.Column, obj *object.Object) (string, []interface{}, error) {
 	var bindArgs []interface{}
 	var whereClause string
 
@@ -83,7 +83,7 @@ func RenderWhereClause(g *sg.SQLGenerator, schTable *schema.Table, obj *object.O
 
 	i := 0
 	for k, v := range obj.KV {
-		f := schTable.GetField(k)
+		f := schTable.GetColumn(k)
 		if f == nil {
 			return "", nil, errors.New("dyndao: RenderWhereClause: unknown field " + k + " in table " + obj.Type)
 		}
@@ -97,10 +97,10 @@ func RenderWhereClause(g *sg.SQLGenerator, schTable *schema.Table, obj *object.O
 	return whereClause, bindArgs, nil
 }
 
-func RenderBindingValue(f *schema.Field) string {
+func RenderBindingValue(f *schema.Column) string {
 	return ":" + f.Name
 }
 
-func RenderBindingValueWithInt(f *schema.Field, i int64) string {
+func RenderBindingValueWithInt(f *schema.Column, i int64) string {
 	return fmt.Sprintf(":%s%d", f.Name, i)
 }

@@ -19,7 +19,7 @@ func (r *SQLValue) String() string {
 // s := object.NewSQLValue("LAST_INSERT_ID()")
 // Passing this as a value for an object using:
 // obj := obj.New("SomeDbType")
-// obj.Set("primaryKeyField", s)
+// obj.Set("primaryKeyColumn", s)
 // should result in a query that renders LAST_INSERT_ID() unquoted
 // rather than as an unquoted string, so it can be used as a
 // function call within SQL.

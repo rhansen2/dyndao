@@ -13,7 +13,7 @@ func errorHelper(tbl *Table, msg string) error {
 }
 
 // Validate is a basic schema validator. It ensures that each table inside the
-// schema has a name, some Fields, and EssentialFields is set. Any other database
+// schema has a name, some Columns, and EssentialColumns is set. Any other database
 // requirements are not yet considered.
 func Validate(sch *Schema) error {
 	for _, tbl := range sch.Tables {
@@ -21,12 +21,12 @@ func Validate(sch *Schema) error {
 			return errorHelper(tbl, "empty Name property")
 		}
 
-		if tbl.EssentialFields == nil {
-			return errorHelper(tbl, "EssentialFields is nil")
+		if tbl.EssentialColumns == nil {
+			return errorHelper(tbl, "EssentialColumns is nil")
 		}
 
-		if len(tbl.EssentialFields) == 0 {
-			return errorHelper(tbl, "EssentialFields is of length zero")
+		if len(tbl.EssentialColumns) == 0 {
+			return errorHelper(tbl, "EssentialColumns is of length zero")
 		}
 
 		// TODO: What other requirements do we have for defining a valid
