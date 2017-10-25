@@ -1,5 +1,5 @@
-// Package mapper is a DAO mapper for mapping between JSON, an generic object, and a configurable database schema
-package mapper
+// Package jsonmapper is a DAO mapper for mapping between JSON, an generic object, and a configurable database schema
+package jsonmapper
 
 import (
 	"errors"
