@@ -1,4 +1,4 @@
-package mssqlgen
+package mssql
 
 import (
 	"database/sql"

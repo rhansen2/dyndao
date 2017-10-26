@@ -1,4 +1,4 @@
-package mssqlgen
+package mssql
 
 var stringTypes = map[string]bool{
 	"VARCHAR2": true,

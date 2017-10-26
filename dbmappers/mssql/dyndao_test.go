@@ -1,9 +1,9 @@
-// Package mssqlgen is a set of tests that put the various components together and
+// Package mssql is a set of tests that put the various components together and
 // demonstrate how they can be combined. (As well as serving as a bit of a test suite...)
 //
 // In other words, we run database tests, use the generator, use the ORM, etc.
 // TODO: More complex test schemas.
-package mssqlgen
+package mssql
 
 import (
 	// Load preferred Oracle driver. Mattn's oci8 had race conditions

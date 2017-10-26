@@ -1,6 +1,6 @@
-// Package mssqlgen encapsulates an implementation for a given schema attached to
+// Package mssql encapsulates an implementation for a given schema attached to
 // a generator. This code represents an example implementation for oracle
-package mssqlgen
+package mssql
 
 import (
 	"fmt"
