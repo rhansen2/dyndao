@@ -7,6 +7,8 @@ import (
 	"github.com/rbastic/dyndao/object"
 )
 
+// CreateOrUpdateTx is a typical "Retrieve and Update or Insert" operation. Feed it a context, the current transaction,
+// and the dyndao object you are trying to save. It will return rows affected, the resulting object, or an error.
 func (o ORM) CreateOrUpdateTx(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, *object.Object, error) {
 	var err error
 	var retObj *object.Object
@@ -100,9 +102,9 @@ func (o ORM) CreateOrUpdateKVHookUpdate(ctx context.Context, tx *sql.Tx, typ str
 		numRows, err = o.Insert(ctx, tx, obj)
 		opType = "Insert"
 	} else {
-		// TODO: what about situations where fields dont exist in the createKV,
-		// indicating they were deleted? how do we handle nils here,
-		// for example?
+		// TODO: what about situations where fields dont exist in the
+		// createKV, which might indicate that they were deleted? how
+		// do we handle nils here, for example?
 		for _, k := range beforeUpdateCopyColumns {
 			newV, ok := createKV[k]
 			if ok {
