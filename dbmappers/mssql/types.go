@@ -1,17 +1,62 @@
 package mssql
 
+/*
+	MSSQL Data types.
+
+	For CLOB support: varchar(max) vs text .. is a bit of a tricky situation. A
+string length instead of an integer length (i.e. int(11) vs varchar(max), 11
+and max are the 'lengths'.
+
+	NOTE TODO FIXME One thought: perhaps add length as a parameter to the
+Is$DATA_TYPE$Type() functions.  Then edge-cases can be dealt with using custom
+logic. This may or may not be more suitable than exploring the possibility of
+implementing type affinity and data type synonyms.
+
+	The above idea may not be a bad one. Considering Oracle has a NUMBER(i,
+j) data type where i and j can determine whether a data type is an integer, a
+float, etc., we may need to get even more complex.
+
+	See NOTES file for a link to one of the resources used.
+*/
+
+// TODO: Some of these are unicode types. Do we need to use and support runes instead
+// of string here?
 var stringTypes = map[string]bool{
-	"VARCHAR2": true,
-	"varchar2": true,
+	"VARCHAR": true,
+	"varchar": true,
+
+	"NVARCHAR": true,
+	"nvarchar": true,
+
+	"CHAR": true,
+	"char": true,
+
+	"NCHAR": true,
+	"nchar": true,
 }
 
 var numTypes = map[string]bool{
 	"NUMBER": true,
 	"number": true,
+
+	"BIGINT": true,
+	"bigint": true,
+
+	"INT": true,
+	"int": true,
+	"SMALLINT": true,
+	"smallint": true,
+
+	"TINYINT": true,
+	"tinyint": true,
+
+	"BIT": true,
+	"bit": true,
+
+	// numeric, decimal, money, smallmoney, float, real
 }
 
 var floatTypes = map[string]bool{
-	// Haha, of course, Oracle...
 	"float": true,
 	"FLOAT": true,
 }
@@ -19,11 +64,22 @@ var floatTypes = map[string]bool{
 var timestampTypes = map[string]bool{
 	"timestamp": true,
 	"TIMESTAMP": true,
+
+	// date, datetime, datetime2, datetimeoffset, smalldatetime, time
 }
+
+// TODO: binary string types
 
 var lobTypes = map[string]bool{
 	"CLOB": true,
 	"clob": true,
+
+	"TEXT": true,
+	"text": true,
+
+	"NTEXT": true,
+	"ntext": true,
+	// VARCHAR(MAX)
 }
 
 // IsStringType can be used to help determine whether a certain data type is a string type.
