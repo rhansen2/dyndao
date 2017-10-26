@@ -32,7 +32,7 @@ func (o ORM) FindOrCreateTx(ctx context.Context, tx *sql.Tx, obj *object.Object)
 	return 0, obj, nil
 }
 
-// FindOrCreate is a transaction-less FindOrCreate operation. This is not recommended unless you
+// FindOrCreate is a transactionless FindOrCreate operation. This may not be recommended unless you
 // know what you are doing and are comfortable potentially violating transactional integrity.
 func (o ORM) FindOrCreate(ctx context.Context, obj *object.Object) (int64, *object.Object, error) {
 	return o.FindOrCreateTx(ctx, nil, obj)
@@ -68,7 +68,8 @@ func (o ORM) FindOrCreateKVTx(ctx context.Context, tx *sql.Tx, typ string, query
 	return 0, obj, nil
 }
 
-// FindOrCreateKV is a transaction-less FindOrCreate.
+// FindOrCreateKV is a transactionless FindOrCreate. This may not be recommended unless you
+// know what you are doing and are comfortable potentially violating transactional integrity.
 func (o ORM) FindOrCreateKV(ctx context.Context, typ string, queryKV map[string]interface{}, createKV map[string]interface{}) (int64, *object.Object, error) {
 	return o.FindOrCreateKVTx(ctx, nil, typ, queryKV, createKV)
 }
