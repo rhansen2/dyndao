@@ -23,5 +23,7 @@ func New(g *sg.SQLGenerator) *sg.SQLGenerator {
 	g.RenderCreateColumn = sg.FnRenderCreateColumn(RenderCreateColumn)
 	g.RenderInsertValue = sg.FnRenderInsertValue(RenderInsertValue)
 	g.BindingInsertSQL = sg.FnBindingInsertSQL(BindingInsertSQL)
+	g.RenderBindingValue = sg.FnRenderBindingValue(RenderBindingValue)
+	g.RenderBindingValueWithInt = sg.FnRenderBindingValueWithInt(RenderBindingValueWithInt)
 	return g
 }

@@ -5,6 +5,7 @@ package core
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/rbastic/dyndao/schema"
@@ -33,6 +34,10 @@ func CreateTable(g *sg.SQLGenerator, s *schema.Schema, table string) (string, er
 	%s
 )
 `, tableName, strings.Join(sqlColumns, ",\n"))
+
+	if os.Getenv("DB_TRACE") != "" {
+		fmt.Printf("dyndao: CreateTable SQL:[%s]\n", sql)
+	}
 
 	return sql, nil
 }

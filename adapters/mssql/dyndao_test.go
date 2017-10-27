@@ -10,10 +10,11 @@ import (
 	// during testing. rana/ora.v4 has crashes when used for extended
 	// testing in server workloads.
 	"database/sql"
-	_ "gopkg.in/goracle.v2"
+	_ "github.com/denisenkom/go-mssqldb"
 
 	"os"
 	"testing"
+	"fmt"
 
 	"github.com/rbastic/dyndao/adapters/core"
 	"github.com/rbastic/dyndao/adapters/core/test"
@@ -24,11 +25,12 @@ import (
 // to abstract the DSN
 func GetDB() *sql.DB {
 	// TODO: externalize the DSN and store it in vault
-	dsn := os.Getenv("ORACLE_DSN")
+	dsn := os.Getenv("MSSQL_DSN")
 	if dsn == "" {
-		panic("ORACLE_DSN environment variable is not set, cannot initialize database")
+		panic("MSSQL_DSN environment variable is not set, cannot initialize database")
 	}
-	db, err := sql.Open("goracle", dsn)
+	fmt.Println("Opening with dsn: ", dsn)
+	db, err := sql.Open("mssql", dsn)
 	if err != nil {
 		panic(err)
 	}

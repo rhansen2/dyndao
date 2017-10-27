@@ -98,9 +98,9 @@ func RenderWhereClause(g *sg.SQLGenerator, schTable *schema.Table, obj *object.O
 }
 
 func RenderBindingValue(f *schema.Column) string {
-	return ":" + f.Name
+	return "?"
 }
 
 func RenderBindingValueWithInt(f *schema.Column, i int64) string {
-	return fmt.Sprintf(":%s%d", f.Name, i)
+	return "?"
 }

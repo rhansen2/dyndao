@@ -70,3 +70,5 @@ func RenderInsertValue(f *schema.Column, value interface{}) (interface{}, error)
 		return "", fmt.Errorf("renderInsertValue: unknown type %v for the value of %s", reflect.TypeOf(value), f.Name)
 	}
 }
+
+

@@ -2,7 +2,10 @@
 
 # Just a test rule for now.
 test:
-	ORACLE_SID=GDL_CURRENT4 ORACLE_DSN=SYSTEM/oracle@//localhost:1521/XE go test -v 
+	# This DSN broke things.
+	#MSSQL_DSN='sqlserver://$(MSSQL_USER):$(MSSQL_PASS)@$(MSSQL_HOST):1433/instance?database=test' go test -cover
+	MSSQL_DSN='sqlserver://$(MSSQL_USER):$(MSSQL_PASS)@$(MSSQL_HOST):1433' go test -v 
 
 cover:
-	ORACLE_SID=GDL_CURRENT4 ORACLE_DSN=SYSTEM/oracle@//localhost:1521/XE go test -cover
+	
+	MSSQL_DSN='sqlserver://$(MSSQL_USER):$(MSSQL_PASS)@$(MSSQL_HOST):1433' go test -cover

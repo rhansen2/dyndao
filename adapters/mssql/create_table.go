@@ -1,5 +1,3 @@
-// Package mssql encapsulates an implementation for a given schema attached to
-// a generator. This code represents an example implementation for oracle
 package mssql
 
 import (
@@ -16,7 +14,7 @@ func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
 	identity := ""
 	unique := ""
 	if f.IsIdentity {
-		identity = "PRIMARY KEY"
+		identity = "IDENTITY"
 	}
 	if !f.AllowNull {
 		notNull = "NOT NULL"
@@ -37,19 +35,16 @@ func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
 	if dataType == "" {
 		panic("Empty dataType in renderCreateColumn for " + f.Name)
 	}
-	if f.IsIdentity {
-		return strings.Join([]string{f.Name, dataType, "GENERATED ALWAYS AS IDENTITY"}, " ")
-	}
 	return strings.Join([]string{f.Name, dataType, identity, notNull, unique}, " ")
 }
 
 func mapType(s string) string {
 	// Map 'integer' to 'number' for now for Oracle
 	if s == "integer" {
-		return "NUMBER"
+		return "int"
 	}
 	if s == "text" {
-		return "CLOB"
+		return "text"
 	}
 	return s
 }

@@ -90,7 +90,6 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 		} else {
 			return errors.New("dynamicObjectSetter: Unrecognized type: " + typeName)
 		}
-		// TODO: add timestamp support.?
 	}
 	return nil
 }

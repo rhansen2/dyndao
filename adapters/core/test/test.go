@@ -11,6 +11,7 @@ import (
 	"context"
 	"database/sql"
 	"reflect"
+	"time"
 
 	"testing"
 
@@ -36,6 +37,25 @@ var (
 	getSQLGen FnGetSG
 )
 
+
+// getDefaultContext returns the standard context used by the test package.
+func getDefaultContext() (context.Context, context.CancelFunc) {
+        return context.WithTimeout(context.Background(), 2*time.Second)
+}
+
+func fatalIf(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func PingCheck(t *testing.T, db *sql.DB) {
+	ctx, cancel := getDefaultContext()
+	err := db.PingContext(ctx)
+	cancel()
+	fatalIf(err)
+}
+
 func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
 	// Set our functions locally
 	GetDB = getDBFn
@@ -47,15 +67,23 @@ func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
 	}
 	defer func() {
 		err := db.Close()
-		if err != nil {
-			t.Fatal(err)
-		}
+		fatalIf(err)
 	}()
 
 	// Bootstrap the db, run the test suite, drop tables
-	TestCreateTables(t, db)
+	t.Run("TestPingCheck", func(t * testing.T) {
+		PingCheck(t, db)
+	})
+
+	t.Run("TestCreateTables", func(t *testing.T) {
+		TestCreateTables(t, db)
+	})
+
 	TestSuiteNested(t, db)
-	TestDropTables(t, db)
+
+	t.Run("TestDropTables", func(t *testing.T) {
+		TestDropTables(t, db)
+	})
 }
 
 func TestCreateTables(t *testing.T, db *sql.DB) {
@@ -73,9 +101,7 @@ func TestDropTables(t *testing.T, db *sql.DB) {
 	o := orm.New(getSQLGen(), sch, db)
 
 	err := dropTables(o.RawConn, sch)
-	if err != nil {
-		t.Fatal(err)
-	}
+	fatalIf(err)
 }
 
 func TestSuiteNested(t *testing.T, db *sql.DB) {
@@ -101,10 +127,10 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 	// Test second additional Save to ensure that we don't save
 	// the object twice needlessly... This caught a silly bug early on.
 	t.Run("TestAdditionalSave", func(t *testing.T) {
-		rowsAff, err := o.SaveObject(context.TODO(), nil, obj)
-		if err != nil {
-			t.Fatal(err)
-		}
+		ctx, cancel := getDefaultContext()
+		rowsAff, err := o.SaveObject(ctx, nil, obj)
+		cancel()
+		fatalIf(err)
 		if rowsAff != 0 {
 			t.Fatal("rowsAff should be zero the second time")
 		}
@@ -161,10 +187,10 @@ func makeDefaultPersonWithAddress() *object.Object {
 }
 
 func saveMockObject(t *testing.T, o *orm.ORM, obj *object.Object) {
-	rowsAff, err := o.SaveAll(context.TODO(), obj)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx, cancel := getDefaultContext()
+	rowsAff, err := o.SaveAll(ctx, obj)
+	cancel()
+	fatalIf(err)
 	if !obj.GetSaved() {
 		t.Fatal("Unknown object error, object not saved")
 	}
@@ -201,10 +227,11 @@ func validateChildrenSaved(t *testing.T, obj *object.Object) {
 }
 
 func testSaveObject(o *orm.ORM, t *testing.T, obj *object.Object) {
-	rowsAff, err := o.SaveObject(context.TODO(), nil, obj)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx, cancel := getDefaultContext()
+	rowsAff, err := o.SaveObject(ctx, nil, obj)
+	cancel()
+
+	fatalIf(err)
 	if rowsAff == 0 {
 		t.Fatalf("rowsAff should not be zero")
 	}
@@ -219,7 +246,9 @@ func testRetrieve(o *orm.ORM, t *testing.T, sch *schema.Schema) {
 		"PersonID": 1,
 	}
 	// refleshen our object
-	latestJoe, err := o.Retrieve(context.TODO(), PeopleObjectType, queryVals)
+	ctx, cancel := getDefaultContext()
+	latestJoe, err := o.Retrieve(ctx, PeopleObjectType, queryVals)
+	cancel()
 	if err != nil {
 		t.Fatal("retrieve failed: " + err.Error())
 	}
@@ -237,7 +266,9 @@ func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
 	nobj := object.New(rootTable)
 	nobj.Set("Name", "Joe")
 	{
-		rowsAff, err := o.SaveAll(context.TODO(), nobj)
+		ctx, cancel := getDefaultContext()
+		rowsAff, err := o.SaveAll(ctx, nobj)
+		cancel()
 		if err != nil {
 			t.Fatal("Save:" + err.Error())
 		}
@@ -250,7 +281,9 @@ func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
 	}
 
 	// try a full table scan
-	all, err := o.RetrieveMany(context.TODO(), rootTable, make(map[string]interface{}))
+	ctx, cancel := getDefaultContext()
+	all, err := o.RetrieveMany(ctx, rootTable, make(map[string]interface{}))
+	cancel()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -279,10 +312,11 @@ func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 	queryVals := make(map[string]interface{})
 	queryVals["PersonID"] = 1
 	// Retrieve a single child object
-	childObj, err := o.Retrieve(context.TODO(), "addresses", queryVals)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx, cancel := getDefaultContext()
+	childObj, err := o.Retrieve(ctx, "addresses", queryVals)
+	cancel()
+
+	fatalIf(err)
 	if childObj == nil {
 		t.Fatal("testGetParentsViaChild: childObj was nil")
 	}
@@ -290,11 +324,11 @@ func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 	if childObj.Type != "addresses" {
 		t.Fatal("Unknown child object retrieved", childObj)
 	}
+
 	// Retrieve the parents of that child object
-	objs, err := o.GetParentsViaChild(context.TODO(), childObj)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx, cancel = getDefaultContext()
+	objs, err := o.GetParentsViaChild(ctx, childObj)
+	fatalIf(err)
 	// Validate expected data
 	if len(objs) != 1 {
 		t.Fatal("Unknown length of objs, expected 1, got ", len(objs))
@@ -306,44 +340,51 @@ func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 }
 
 func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
-	obj, err := o.Retrieve(context.TODO(), rootTable, map[string]interface{}{
+	ctx, cancel := getDefaultContext()
+	obj, err := o.Retrieve(ctx, rootTable, map[string]interface{}{
 		"PersonID": 1,
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	cancel()
+	fatalIf(err)
+
 	if obj == nil {
 		t.Fatal("object should not be nil")
 	}
-	fleshened, err := o.FleshenChildren(context.TODO(), obj)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if fleshened.Type != PeopleObjectType {
-		t.Fatal("fleshened object has wrong type, expected", AddressesObjectType)
-	}
-	if fleshened.Children[AddressesObjectType] == nil {
-		t.Fatal("expected Addresses children")
-	}
-	address1 := fleshened.Children["addresses"][0].Get("Address1")
-	expectedStr := "Test"
-	if address1 != "Test" {
-		t.Fatalf("expected %s for 'Address1', address1 was %s", expectedStr, address1)
+
+	{
+		ctx, cancel := getDefaultContext()
+		fleshened, err := o.FleshenChildren(ctx, obj)
+		cancel()
+		fatalIf(err)
+
+		if fleshened.Type != PeopleObjectType {
+			t.Fatal("fleshened object has wrong type, expected", AddressesObjectType)
+		}
+		if fleshened.Children[AddressesObjectType] == nil {
+			t.Fatal("expected Addresses children")
+		}
+		address1 := fleshened.Children["addresses"][0].Get("Address1")
+		expectedStr := "Test"
+		if address1 != "Test" {
+			t.Fatalf("expected %s for 'Address1', address1 was %s", expectedStr, address1)
+		}
 	}
 }
 
 func prepareAndExecSQL(db *sql.DB, sqlStr string) (sql.Result, error) {
-	stmt, err := db.PrepareContext(context.TODO(), sqlStr)
+	ctx, cancel := getDefaultContext()
+	stmt, err := db.PrepareContext(ctx, sqlStr)
+	cancel()
 	if err != nil {
 		return nil, errors.Wrap(err, "prepareAndExecSQL/PrepareContext")
 	}
+	ctx, cancel = getDefaultContext()
 	defer func() {
 		err := stmt.Close()
-		if err != nil {
-			panic(err)
-		}
+		fatalIf(err)
 	}()
-	r, err := stmt.ExecContext(context.TODO())
+	r, err := stmt.ExecContext(ctx)
+	cancel()
 	if err != nil {
 		return nil, errors.Wrap(err, "prepareAndExecSQL/ExecContext")
 	}
