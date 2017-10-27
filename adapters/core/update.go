@@ -74,82 +74,53 @@ func BindingUpdate(g *sg.SQLGenerator, sch *schema.Schema, obj *object.Object) (
 		return "", nil, nil, err
 	}
 
-	i := 0
-
 	var bindArgs []interface{}
 	var newValuesAry []string
+	var kv map[string]interface{}
 
-	// If some things have changed, then only use fields that we're sure have changed
-
-	// TODO: Refactor this code.
 	if len(obj.ChangedColumns) > 0 {
 		bindArgs = make([]interface{}, len(obj.ChangedColumns))
 		newValuesAry = make([]string, len(obj.ChangedColumns))
-
-		for k := range obj.ChangedColumns {
-			f := schTbl.GetColumn(k)
-			if f == nil {
-				return "", nil, nil, errors.New("BindingUpdate: field config unavailable for object Type: " + obj.Type + ", key: " + k)
-			}
-			if f.IsIdentity {
-				continue
-			}
-			v := obj.KV[k]
-
-			vStr, wasSV := sqlValueConvert(v)
-			if wasSV {
-				newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, vStr)
-				bindArgs[i] = nil
-			} else {
-				if g.IsTimestampType(schTbl.GetColumn(k).DBType) {
-					v = safeConvert(v)
-				}
-				if v == nil || zeroTime(v) {
-					newValuesAry[i] = fmt.Sprintf("%s = NULL", f.Name)
-					bindArgs[i] = nil
-				} else {
-					newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, g.RenderBindingValueWithInt(f, int64(i)))
-					bindArgs[i] = v
-				}
-			}
-			i++
-		}
+		kv = obj.ChangedColumns
 	} else {
 		// An update where it's not explicitly clear that anything has changed should
 		// just set every field we have available.
 		bindArgs = make([]interface{}, len(obj.KV)-1)
 		// TODO: -1 for Oracle because we expect an identity field
+		// TODO FIXME: Is this correct / incorrect still?
 		newValuesAry = make([]string, len(obj.KV)-1)
+		kv = obj.KV
+	}
 
-		for k, v := range obj.KV {
-			f := schTbl.GetColumn(k)
-			if f == nil {
-				return "", nil, nil, errors.New("BindingUpdate: field config unavailable for object Type: " + obj.Type + ", key: " + k)
-			}
-			if f.IsIdentity {
-				continue
-			}
+	i := 0
+	for k, v := range kv {
+		f := schTbl.GetColumn(k)
+		if f == nil {
+			return "", nil, nil, errors.New("BindingUpdate: field config unavailable for object Type: " + obj.Type + ", key: " + k)
+		}
+		if f.IsIdentity {
+			continue
+		}
 
-			vStr, wasSV := sqlValueConvert(v)
-			if wasSV {
-				newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, vStr)
+		vStr, wasSV := sqlValueConvert(v)
+		if wasSV {
+			newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, vStr)
+			bindArgs[i] = nil
+		} else {
+			if g.IsTimestampType(schTbl.GetColumn(k).DBType) {
+				v = safeConvert(v)
+			}
+			if v == nil || zeroTime(v) {
+				newValuesAry[i] = fmt.Sprintf("%s = NULL", f.Name)
 				bindArgs[i] = nil
 			} else {
-				if g.IsTimestampType(schTbl.GetColumn(k).DBType) {
-					v = safeConvert(v)
-				}
-				if v == nil || zeroTime(v) {
-					newValuesAry[i] = fmt.Sprintf("%s = NULL", f.Name)
-					bindArgs[i] = nil
-				} else {
-					newValuesAry[i] = fmt.Sprintf("%s = %s%d", f.Name, g.RenderBindingValue(f), i)
-					bindArgs[i] = v
-				}
+				newValuesAry[i] = fmt.Sprintf("%s = %s", f.Name, g.RenderBindingValueWithInt(f, int64(i)))
+				bindArgs[i] = v
 			}
-
-			i++
 		}
+		i++
 	}
+
 	bindArgs = nils.RemoveNilsIfNeeded(bindArgs)
 
 	tableName := schema.GetTableName(schTbl.Name, obj.Type)
