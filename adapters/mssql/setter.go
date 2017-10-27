@@ -110,7 +110,14 @@ func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.Col
 
 			}
 		} else if s.IsLOBType(typeName) {
-			panic("LOBType not implemented")
+			nullable, _ := ct.Nullable()
+			if nullable {
+				var s string
+				columnPointers[i] = &s
+			} else {
+				var s string
+				columnPointers[i] = &s
+			}
 		} else {
 			return nil, errors.New("makeColumnPointers: Unrecognized type: " + typeName)
 		}

@@ -10,7 +10,7 @@ import (
 // methods that it needs to. In some instances, this could be all methods,
 // or hardly any.
 func New(g *sg.SQLGenerator) *sg.SQLGenerator {
-	g.FixLastInsertIDbug = true
+	g.FixLastInsertIDbug = false
 	g.IsStringType = sg.FnIsStringType(IsStringType)
 	g.IsNumberType = sg.FnIsNumberType(IsNumberType)
 	g.IsFloatingType = sg.FnIsFloatingType(IsFloatingType)
@@ -19,5 +19,7 @@ func New(g *sg.SQLGenerator) *sg.SQLGenerator {
 	g.DynamicObjectSetter = sg.FnDynamicObjectSetter(DynamicObjectSetter)
 	g.MakeColumnPointers = sg.FnMakeColumnPointers(MakeColumnPointers)
 	g.RenderCreateColumn = sg.FnRenderCreateColumn(RenderCreateColumn)
+	g.RenderBindingValue = sg.FnRenderBindingValue(RenderBindingValue)
+	g.RenderBindingValueWithInt = sg.FnRenderBindingValueWithInt(RenderBindingValueWithInt)
 	return g
 }
