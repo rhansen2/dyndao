@@ -12,9 +12,9 @@ import (
 	"database/sql"
 	_ "github.com/denisenkom/go-mssqldb"
 
+	"fmt"
 	"os"
 	"testing"
-	"fmt"
 
 	"github.com/rbastic/dyndao/adapters/core"
 	"github.com/rbastic/dyndao/adapters/core/test"

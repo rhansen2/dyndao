@@ -111,11 +111,11 @@ func DefaultTable() *Table {
 	childrenMap := make(map[string]*ChildTable)
 
 	tbl := &Table{
-		MultiKey:        false,
-		Primary:         "",
+		MultiKey:         false,
+		Primary:          "",
 		Columns:          fieldsMap,
 		EssentialColumns: nil,
-		Children:        childrenMap,
+		Children:         childrenMap,
 	}
 	return tbl
 }
@@ -137,8 +137,8 @@ func DefaultColumn() *Column {
 // DefaultChildTable returns an empty child table ready to be populated
 func DefaultChildTable() *ChildTable {
 	chld := &ChildTable{
-		ParentTable:  "",
-		MultiKey:     false,
+		ParentTable:   "",
+		MultiKey:      false,
 		LocalColumn:   "",
 		ForeignColumn: "",
 

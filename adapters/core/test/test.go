@@ -37,10 +37,9 @@ var (
 	getSQLGen FnGetSG
 )
 
-
 // getDefaultContext returns the standard context used by the test package.
 func getDefaultContext() (context.Context, context.CancelFunc) {
-        return context.WithTimeout(context.Background(), 2*time.Second)
+	return context.WithTimeout(context.Background(), 2*time.Second)
 }
 
 func fatalIf(err error) {
@@ -71,7 +70,7 @@ func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
 	}()
 
 	// Bootstrap the db, run the test suite, drop tables
-	t.Run("TestPingCheck", func(t * testing.T) {
+	t.Run("TestPingCheck", func(t *testing.T) {
 		PingCheck(t, db)
 	})
 

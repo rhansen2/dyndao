@@ -3,8 +3,8 @@ package core
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"reflect"
+	"strings"
 
 	sg "github.com/rbastic/dyndao/sqlgen"
 

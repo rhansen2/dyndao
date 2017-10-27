@@ -42,8 +42,8 @@ var numTypes = map[string]bool{
 	"BIGINT": true,
 	"bigint": true,
 
-	"INT": true,
-	"int": true,
+	"INT":      true,
+	"int":      true,
 	"SMALLINT": true,
 	"smallint": true,
 

@@ -43,7 +43,7 @@ type SQLGenerator struct {
 	BindingRetrieve           FnBindingRetrieve
 	BindingDelete             FnBindingDelete
 	CreateTable               FnCreateTable
-	RenderCreateColumn         FnRenderCreateColumn
+	RenderCreateColumn        FnRenderCreateColumn
 	DropTable                 FnDropTable
 	RenderBindingValue        FnRenderBindingValue
 	RenderBindingValueWithInt FnRenderBindingValueWithInt

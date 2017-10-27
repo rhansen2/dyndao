@@ -20,7 +20,7 @@ type Table struct {
 	ForeignKeys []string `json:"ForeignKeys"`
 	// Columns is the column definitions for the SQL table
 	Columns       map[string]*Column `json:"Columns"`
-	ColumnAliases map[string]string `json:"ColumnAliases"`
+	ColumnAliases map[string]string  `json:"ColumnAliases"`
 
 	EssentialColumns []string `json:"EssentialColumns"`
 
@@ -61,7 +61,7 @@ type Column struct {
 type ChildTable struct {
 	ParentTable string `json:"ParentTable"`
 
-	MultiKey     bool   `json:"MultiKey"`
+	MultiKey      bool   `json:"MultiKey"`
 	LocalColumn   string `json:"LocalColumn"`
 	ForeignColumn string `json:"ForeignColumn"`
 

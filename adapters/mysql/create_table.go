@@ -43,7 +43,6 @@ func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
 	return strings.Join([]string{f.Name, dataType, identity, notNull, unique}, " ")
 }
 
-
 func mapType(s string) string {
 	// Map 'integer' to 'int(11)' for now for MySQL
 	if s == "integer" {

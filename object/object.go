@@ -35,12 +35,12 @@ type Array []*Object
 // is used to track the internal state of whether an object was recently
 // retrieved or remapped from internal database state.
 type Object struct {
-	Type          string
-	KV            map[string]interface{}
-	HiddenKV      map[string]interface{}
+	Type           string
+	KV             map[string]interface{}
+	HiddenKV       map[string]interface{}
 	ChangedColumns map[string]interface{}
-	Children      map[string]Array
-	saved         bool
+	Children       map[string]Array
+	saved          bool
 }
 
 // New is an empty constructor
