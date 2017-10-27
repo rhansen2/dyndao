@@ -1,9 +1,9 @@
-// Package mssql is a set of tests that put the various components together and
+// Package oracle is a set of tests that put the various components together and
 // demonstrate how they can be combined. (As well as serving as a bit of a test suite...)
 //
 // In other words, we run database tests, use the generator, use the ORM, etc.
 // TODO: More complex test schemas.
-package mssql
+package oracle
 
 import (
 	// Load preferred Oracle driver. Mattn's oci8 had race conditions
@@ -15,8 +15,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/rbastic/dyndao/dbmappers/core"
-	"github.com/rbastic/dyndao/dbmappers/core/test"
+	"github.com/rbastic/dyndao/adapters/core"
+	"github.com/rbastic/dyndao/adapters/core/test"
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 

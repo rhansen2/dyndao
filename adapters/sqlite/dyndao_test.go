@@ -14,8 +14,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/rbastic/dyndao/dbmappers/core"
-	"github.com/rbastic/dyndao/dbmappers/core/test"
+	"github.com/rbastic/dyndao/adapters/core"
+	"github.com/rbastic/dyndao/adapters/core/test"
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
