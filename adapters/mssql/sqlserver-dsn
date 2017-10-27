@@ -1,1 +1,0 @@
-sqlserver://{{.Username}}:{{.Password}}@{{.IP}:1433?database={{.Database}
