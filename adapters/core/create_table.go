@@ -23,8 +23,6 @@ func CreateTable(g *sg.SQLGenerator, s *schema.Schema, table string) (string, er
 
 	sqlColumns := make([]string, len(fieldsMap))
 	i := 0
-	// TODO: Have field map in order, or allow one to specify key output order for iterating fields
-	// map and generating create SQL....
 	for _, v := range fieldsMap {
 		sqlColumns[i] = g.RenderCreateColumn(g, v)
 		i++

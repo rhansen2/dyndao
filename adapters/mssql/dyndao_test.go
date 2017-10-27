@@ -10,6 +10,7 @@ import (
 	// during testing. rana/ora.v4 has crashes when used for extended
 	// testing in server workloads.
 	"database/sql"
+
 	_ "github.com/denisenkom/go-mssqldb"
 
 	"fmt"
@@ -24,7 +25,6 @@ import (
 // GetDB is a simple wrapper over sql.Open(), the main purpose being
 // to abstract the DSN
 func GetDB() *sql.DB {
-	// TODO: externalize the DSN and store it in vault
 	dsn := os.Getenv("MSSQL_DSN")
 	if dsn == "" {
 		panic("MSSQL_DSN environment variable is not set, cannot initialize database")

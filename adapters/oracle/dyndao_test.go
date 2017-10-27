@@ -23,7 +23,6 @@ import (
 // GetDB is a simple wrapper over sql.Open(), the main purpose being
 // to abstract the DSN
 func GetDB() *sql.DB {
-	// TODO: externalize the DSN and store it in vault
 	dsn := os.Getenv("ORACLE_DSN")
 	if dsn == "" {
 		panic("ORACLE_DSN environment variable is not set, cannot initialize database")

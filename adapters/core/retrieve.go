@@ -15,9 +15,8 @@ import (
 // statement to retrieve the object. It will return sqlStr, the EssentialColumns used, and the
 // binding where clause.
 // DEBUG mode may be turned on by setting an environment parameter, "DEBUG".
-// TODO: We may consider using a different name in the future.
 func BindingRetrieve(g *sg.SQLGenerator, sch *schema.Schema, obj *object.Object) (string, []string, []interface{}, error) {
-	table := obj.Type // TODO: we may want to map this
+	table := obj.Type
 	schTable := sch.GetTable(table)
 	if schTable == nil {
 		return "", nil, nil, errors.New("BindingRetrieve: Table map unavailable for table " + table)
