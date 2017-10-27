@@ -36,13 +36,10 @@ type Table struct {
 // that you'll pass in the table key (schema.Tables[key]) and the table name
 // (schema.Tables[key].Name), so that this wrapper function can decide.
 func GetTableName(override string, ourDefault string) string {
-	var name string
 	if override != "" {
-		name = override
-	} else {
-		name = ourDefault
+		return override
 	}
-	return name
+	return ourDefault
 }
 
 // Column represents a single column in a SQL table
