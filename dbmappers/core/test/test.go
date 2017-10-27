@@ -10,6 +10,7 @@ package test
 import (
 	"context"
 	"database/sql"
+	"reflect"
 
 	"testing"
 
@@ -57,7 +58,7 @@ func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
 	TestDropTables(t, db)
 }
 
-func TestCreateTables(t *testing.T, db * sql.DB) {
+func TestCreateTables(t *testing.T, db *sql.DB) {
 	sch := schema.MockNestedSchema()
 	o := orm.New(getSQLGen(), sch, db)
 
@@ -67,7 +68,7 @@ func TestCreateTables(t *testing.T, db * sql.DB) {
 	}
 }
 
-func TestDropTables(t *testing.T, db * sql.DB) {
+func TestDropTables(t *testing.T, db *sql.DB) {
 	sch := schema.MockNestedSchema()
 	o := orm.New(getSQLGen(), sch, db)
 
@@ -77,13 +78,11 @@ func TestDropTables(t *testing.T, db * sql.DB) {
 	}
 }
 
-func TestSuiteNested(t *testing.T, db * sql.DB) {
-	// Test schema
-	sch := schema.MockNestedSchema()
-	// Setup our ORM
-	o := orm.New(getSQLGen(), sch, db)
-	// Construct our default mock object
-	obj := makeDefaultPersonWithAddress()
+func TestSuiteNested(t *testing.T, db *sql.DB) {
+	sch := schema.MockNestedSchema()      // Use mock test schema
+	o := orm.New(getSQLGen(), sch, db)    // Setup our ORM
+	obj := makeDefaultPersonWithAddress() // Construct our default mock object
+
 	// Save our default object
 	t.Run("SaveMockObject", func(t *testing.T) {
 		saveMockObject(t, &o, obj)
@@ -258,8 +257,21 @@ func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
 	if len(all) != 2 {
 		t.Fatal("Should only be 2 rows inserted")
 	}
-	// TODO: How much further should we verify these objects?
 
+	car := all[0]
+	cdr := all[1]
+
+	{
+		if car.Get("Name") == cdr.Get("Name") && car.Get("PersonID") != cdr.Get("PersonID") {
+			// pass
+		} else {
+			t.Fatal("objects weren't what we expected? are they the same?")
+		}
+	}
+
+	if reflect.DeepEqual(car, cdr) {
+		t.Fatal("Objects matched, this was not expected")
+	}
 }
 
 func testGetParentsViaChild(o *orm.ORM, t *testing.T) {

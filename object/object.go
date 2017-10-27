@@ -23,8 +23,9 @@ var (
 	ErrValueWasNil = errors.New("object: value was nil")
 )
 
-// Array is our 'object array container' to assist with a couple of instances
-// where slices are needed.
+// Array is our 'object array container' to assist with any instance that may
+// return more than a single object (e.g. orm.RetrieveMany returning multiple
+// rows.)
 type Array []*Object
 
 // Object struct encapsulates our key-value pairs (KV) and a single-item

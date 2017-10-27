@@ -252,12 +252,13 @@ func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr
 		return nil, err
 	}
 	sg := o.sqlGen
-	for res.Next() {
-		columnPointers, err := sg.MakeColumnPointers(sg, len(columnNames), columnTypes)
-		if err != nil {
-			return nil, err
-		}
 
+	columnPointers, err := sg.MakeColumnPointers(sg, len(columnNames), columnTypes)
+	if err != nil {
+		return nil, err
+	}
+
+	for res.Next() {
 		if err := res.Scan(columnPointers...); err != nil {
 			return nil, err
 		}
@@ -365,12 +366,12 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 		return nil, err
 	}
 
-	for res.Next() {
-		columnPointers, err := sg.MakeColumnPointers(sg, len(columnNames), columnTypes)
-		if err != nil {
-			return nil, err
-		}
+	columnPointers, err := sg.MakeColumnPointers(sg, len(columnNames), columnTypes)
+	if err != nil {
+		return nil, err
+	}
 
+	for res.Next() {
 		obj := object.New(table)
 		if err := res.Scan(columnPointers...); err != nil {
 			return nil, err

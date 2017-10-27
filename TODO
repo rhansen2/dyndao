@@ -8,6 +8,8 @@
 mapper:
 	- not completely confident that mapper is in sufficient end-state
 
+	- add tests involving returning multiple rows (for the new columnpointers code)
+
 others:
 	- add tests for Delete
 
