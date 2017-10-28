@@ -16,7 +16,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"os"
 
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
@@ -214,6 +213,8 @@ func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.O
 // the column names and the binding arguments in addition to the SQL string, so that it can dynamically map
 // the column types accordingly to the destination object. (Mainly, so we know the array length..)
 func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr string, columnNames []string, bindArgs []interface{}) (object.Array, error) {
+	sg := o.sqlGen
+
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -221,7 +222,7 @@ func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr
 	}
 	var objectArray object.Array
 
-	if os.Getenv("DB_TRACE") != "" {
+	if sg.Tracing {
 		fmt.Println("RetrieveManyFromCustomSQL/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
 	}
 
@@ -251,7 +252,6 @@ func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr
 	if err != nil {
 		return nil, err
 	}
-	sg := o.sqlGen
 
 	columnPointers, err := sg.MakeColumnPointers(sg, len(columnNames), columnTypes)
 	if err != nil {
@@ -324,7 +324,8 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 	// arguments from the schema and the query object
 	sg := o.sqlGen
 	sqlStr, columnNames, bindArgs, err := sg.BindingRetrieve(sg, o.s, queryObj)
-	if os.Getenv("DB_TRACE") != "" {
+
+	if sg.Tracing {
 		fmt.Println("RetrieveMany/sqlStr=", sqlStr, "columnNames=", columnNames, "bindArgs=", bindArgs)
 	}
 

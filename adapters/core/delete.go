@@ -3,7 +3,6 @@ package core
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
@@ -30,7 +29,7 @@ func BindingDelete(g *sg.SQLGenerator, sch *schema.Schema, queryVals *object.Obj
 		whereString = ""
 	}
 	sqlStr := fmt.Sprintf("DELETE FROM %s %s %s", tableName, whereString, whereClause)
-	if os.Getenv("DB_TRACE") != "" {
+	if g.Tracing {
 		fmt.Println(sqlStr)
 	}
 	return sqlStr, bindWhere, nil

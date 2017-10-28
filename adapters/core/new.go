@@ -1,11 +1,17 @@
 package core
 
 import (
+	"os"
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
 func New() *sg.SQLGenerator {
 	g := new(sg.SQLGenerator)
+
+	if os.Getenv("DB_TRACE") != "" {
+		g.Tracing = true
+	}
+
 	g.CreateTable = sg.FnCreateTable(CreateTable)
 	g.DropTable = sg.FnDropTable(DropTable)
 	g.CoreBindingInsert = sg.FnCoreBindingInsert(CoreBindingInsert)

@@ -33,6 +33,10 @@ func (o ORM) GetSchema() *schema.Schema {
 	return o.s
 }
 
+func (o ORM) UseTracing() bool {
+	return o.sqlGen.Tracing
+}
+
 // GetGenerator returns the current sql generator object that is stored within a given ORM object.
 func (o ORM) GetGenerator() *sg.SQLGenerator {
 	return o.sqlGen

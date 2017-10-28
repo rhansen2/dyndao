@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"os"
 
 	"github.com/pkg/errors"
 
@@ -13,6 +12,8 @@ import (
 
 // Delete function will DELETE a record ...
 func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	sg := o.sqlGen
+
 	select {
 	case <-ctx.Done():
 		return 0, ctx.Err()
@@ -23,11 +24,11 @@ func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 	if objTable == nil {
 		return 0, errors.New("Delete: unknown object table " + obj.Type)
 	}
-	sqlStr, bindWhere, err := o.sqlGen.BindingDelete(o.sqlGen, o.s, obj)
+	sqlStr, bindWhere, err := sg.BindingDelete(o.sqlGen, o.s, obj)
 	if err != nil {
 		return 0, err
 	}
-	if os.Getenv("DB_TRACE") != "" {
+	if sg.Tracing {
 		fmt.Printf("Delete: sqlStr->%s, bindWhere->%v\n", sqlStr, bindWhere)
 	}
 

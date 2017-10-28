@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"os"
 
 	"github.com/inconshreveable/log15"
 	"github.com/pkg/errors"
@@ -13,6 +12,9 @@ import (
 
 // Update function will UPDATE a record ...
 func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+	sg := o.sqlGen
+	tracing := sg.Tracing
+
 	errorString := "Update error"
 
 	select {
@@ -23,21 +25,20 @@ func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	err := o.CallBeforeUpdateHookIfNeeded(obj)
 	if err != nil {
-		if os.Getenv("DB_TRACE") != "" {
+		if tracing {
 			log15.Error(errorString, "BeforeUpdateHookError", err)
 		}
 		return 0, err
 	}
 
-	sg := o.sqlGen
 	sqlStr, bindArgs, bindWhere, err := sg.BindingUpdate(sg, o.s, obj)
 	if err != nil {
-		if os.Getenv("DB_TRACE") != "" {
+		if tracing {
 			fmt.Println("Update/sqlStr, err=", err)
 		}
 		return 0, err
 	}
-	if os.Getenv("DB_TRACE") != "" {
+	if tracing {
 		fmt.Println("Update/sqlStr=", sqlStr, "bindArgs=", bindArgs, "bindWhere=", bindWhere)
 	}
 
@@ -73,7 +74,7 @@ func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	err = o.CallAfterUpdateHookIfNeeded(obj)
 	if err != nil {
-		if os.Getenv("DB_TRACE") != "" {
+		if tracing {
 			log15.Error(errorString, "BeforeAfterUpdateHookError", err)
 		}
 		return 0, err
