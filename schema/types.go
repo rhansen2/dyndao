@@ -2,6 +2,7 @@ package schema
 
 // Schema is the metadata container for a schema definition
 type Schema struct {
+	Name string
 	Tables map[string]*Table `json:"Tables"`
 	// For get ops
 	TableAliases map[string]string `json:"TableAliases"`
