@@ -1,8 +1,12 @@
-package schema
+package test
+
+import (
+	"github.com/rbastic/dyndao/schema"
+)
 
 // Basic test mock
-func fieldName() *Column {
-	fld := DefaultColumn()
+func fieldName() *schema.Column {
+	fld := schema.DefaultColumn()
 	fld.IsNumber = false
 	fld.Name = "Name"
 	fld.DBType = "text"
@@ -11,8 +15,8 @@ func fieldName() *Column {
 	return fld
 }
 
-func fieldAddress(n string) *Column {
-	fld := DefaultColumn()
+func fieldAddress(n string) *schema.Column {
+	fld := schema.DefaultColumn()
 	fld.Source = n
 	fld.IsNumber = false
 
@@ -25,8 +29,8 @@ func fieldAddress(n string) *Column {
 	return fld
 }
 
-func primaryColumn(name string) *Column {
-	fld := DefaultColumn()
+func primaryColumn(name string) *schema.Column {
+	fld := schema.DefaultColumn()
 	fld.Name = name
 	fld.DBType = "integer"
 	fld.IsIdentity = true
@@ -35,8 +39,8 @@ func primaryColumn(name string) *Column {
 	return fld
 }
 
-func fkColumn(name string) *Column {
-	fld := DefaultColumn()
+func fkColumn(name string) *schema.Column {
+	fld := schema.DefaultColumn()
 	fld.Name = name
 	fld.DBType = "integer"
 	fld.IsIdentity = false
@@ -46,8 +50,8 @@ func fkColumn(name string) *Column {
 }
 
 // Very simple person table initially
-func peopleTable() *Table {
-	tbl := DefaultTable()
+func peopleTable() *schema.Table {
+	tbl := schema.DefaultTable()
 	tbl.Name = "people"
 	tbl.MultiKey = false
 	tbl.Primary = "PersonID"
@@ -59,8 +63,8 @@ func peopleTable() *Table {
 }
 
 // Very simple address table initially
-func addressTable() *Table {
-	tbl := DefaultTable()
+func addressTable() *schema.Table {
+	tbl := schema.DefaultTable()
 	tbl.Name = "addresses"
 	tbl.Primary = "AddressID"
 	tbl.MultiKey = true
@@ -81,8 +85,8 @@ func addressTable() *Table {
 }
 
 // MockBasicSchema is the basic mock for one table
-func MockBasicSchema() *Schema {
-	sch := DefaultSchema()
+func MockBasicSchema() *schema.Schema {
+	sch := schema.DefaultSchema()
 	personTable := peopleTable()
 
 	sch.Tables["people"] = personTable
@@ -90,11 +94,11 @@ func MockBasicSchema() *Schema {
 }
 
 // MockNestedSchema is the basic mock for two tables (one table that references a foreign table)
-func MockNestedSchema() *Schema {
+func MockNestedSchema() *schema.Schema {
 	sch := MockBasicSchema()
 	personTable := sch.Tables["people"]
 
-	childTable := DefaultChildTable()
+	childTable := schema.DefaultChildTable()
 	personTable.Children["addresses"] = childTable
 
 	addrTable := addressTable()

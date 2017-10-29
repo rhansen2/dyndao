@@ -20,6 +20,8 @@ import (
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/orm"
 	"github.com/rbastic/dyndao/schema"
+	schemaTest "github.com/rbastic/dyndao/schema/test"
+
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
@@ -86,7 +88,7 @@ func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
 }
 
 func TestCreateTables(t *testing.T, db *sql.DB) {
-	sch := schema.MockNestedSchema()
+	sch := schemaTest.MockNestedSchema()
 	o := orm.New(getSQLGen(), sch, db)
 
 	err := createTables(o.RawConn, sch)
@@ -96,7 +98,7 @@ func TestCreateTables(t *testing.T, db *sql.DB) {
 }
 
 func TestDropTables(t *testing.T, db *sql.DB) {
-	sch := schema.MockNestedSchema()
+	sch := schemaTest.MockNestedSchema()
 	o := orm.New(getSQLGen(), sch, db)
 
 	err := dropTables(o.RawConn, sch)
@@ -104,7 +106,7 @@ func TestDropTables(t *testing.T, db *sql.DB) {
 }
 
 func TestSuiteNested(t *testing.T, db *sql.DB) {
-	sch := schema.MockNestedSchema()      // Use mock test schema
+	sch := schemaTest.MockNestedSchema()      // Use mock test schema
 	o := orm.New(getSQLGen(), sch, db)    // Setup our ORM
 	obj := makeDefaultPersonWithAddress() // Construct our default mock object
 

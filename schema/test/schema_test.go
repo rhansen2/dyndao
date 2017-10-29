@@ -1,27 +1,28 @@
-package schema
+package test
 
 import (
+	"github.com/rbastic/dyndao/schema"
 	"fmt"
 	"testing"
 )
 
 func TestDefaultSchema(t *testing.T) {
-	sch := DefaultSchema()
+	sch := schema.DefaultSchema()
 	fmt.Println(sch)
 }
 
 func TestDefaultTable(t *testing.T) {
-	tbl := DefaultTable()
+	tbl := schema.DefaultTable()
 	fmt.Println(tbl)
 }
 
 func TestDefaultColumn(t *testing.T) {
-	fld := DefaultColumn()
+	fld := schema.DefaultColumn()
 	fmt.Println(fld)
 }
 
 func TestDefaultChildTable(t *testing.T) {
-	chld := DefaultChildTable()
+	chld := schema.DefaultChildTable()
 	fmt.Println(chld)
 }
 
