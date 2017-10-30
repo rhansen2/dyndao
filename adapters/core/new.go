@@ -1,8 +1,8 @@
 package core
 
 import (
-	"os"
 	sg "github.com/rbastic/dyndao/sqlgen"
+	"os"
 )
 
 func New() *sg.SQLGenerator {

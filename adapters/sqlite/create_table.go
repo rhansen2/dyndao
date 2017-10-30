@@ -21,7 +21,9 @@ func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
 	if f.IsIdentity {
 		identity = "PRIMARY KEY"
 	}
-	if !f.AllowNull {
+	if f.AllowNull {
+		notNull = "NULL"
+	} else {
 		notNull = "NOT NULL"
 	}
 	if f.IsNumber {

@@ -21,10 +21,10 @@ func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
 		f.AllowNull = false
 	}
 
-	if !f.AllowNull {
-		notNull = "NOT NULL"
-	} else {
+	if f.AllowNull {
 		notNull = "NULL"
+	} else {
+		notNull = "NOT NULL"
 	}
 
 	if f.Length > 0 {

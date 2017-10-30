@@ -1,8 +1,8 @@
 package test
 
 import (
-	"github.com/rbastic/dyndao/schema"
 	"fmt"
+	"github.com/rbastic/dyndao/schema"
 	"testing"
 )
 

@@ -8,8 +8,8 @@ package object
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"reflect"
+	"strconv"
 )
 
 var (
@@ -119,7 +119,6 @@ func (o Object) GetFloat(k string) (float64, bool) {
 	v, ok := o.KV[k].(float64)
 	return v, ok
 }
-
 
 // HiddenGetStringAlways is a safe, typed string accessor for the Hidden KV. It
 // will force conversion away from float64, int64, uint64, string, and nil
@@ -343,5 +342,3 @@ func (o *Object) SetSaved(status bool) {
 func (o Object) GetSaved() bool {
 	return o.saved
 }
-
-

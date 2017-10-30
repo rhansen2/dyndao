@@ -37,7 +37,7 @@ type FnBindingInsertSQL func(schTable *schema.Table, tableName string, colNames 
 // runtime, it allows us to share common SQL idioms between implementations
 // much more easily.
 type SQLGenerator struct {
-	Tracing			  bool
+	Tracing                   bool
 	FixLastInsertIDbug        bool
 	BindingInsert             FnBindingInsert
 	BindingUpdate             FnBindingUpdate

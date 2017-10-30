@@ -35,13 +35,13 @@ func NewNULLValue() *SQLValue {
 
 func (o Object) ValueIsNULL(v interface{}) bool {
 	switch v.(type) {
-		case *SQLValue:
-			sv := v.(*SQLValue)
-			if sv.Value == "NULL" {
-				return true
-			}
-			return false
-		default:
-			return false
+	case *SQLValue:
+		sv := v.(*SQLValue)
+		if sv.Value == "NULL" {
+			return true
+		}
+		return false
+	default:
+		return false
 	}
 }

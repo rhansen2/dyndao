@@ -5,6 +5,15 @@
 // driver folders have their own dyndao_test.go which bootstraps this
 // code.
 
+/*
+	TODO: I need to research Go testing patterns more thoroughly.
+	For database driver testing, it would appear that panic()
+	would be more suitable than t.Fatal() or t.Fatalf()...
+
+	Then I would get a stacktrace, and program execution would halt,
+	making it much more apparent that something had gone wrong.
+*/
+
 package test
 
 import (
@@ -119,8 +128,12 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 		validatePersonID(t, obj)
 		// TODO: Make sure we saved the Address with a person id also
 	})
-	t.Run("ValidatePerson/NullableMetadata", func(t *testing.T) {
-		validateNullableMetadata(t, obj)
+	t.Run("ValidatePerson/NullStr", func(t *testing.T) {
+		validateNullStr(t, obj)
+	})
+
+	t.Run("ValidatePerson/NullInt", func(t *testing.T) {
+		validateNullInt(t, obj)
 	})
 
 	// Validate that we correctly saved the children
@@ -182,8 +195,8 @@ func sampleAddressObject() *object.Object {
 func makeDefaultPersonWithAddress() *object.Object {
 	obj := object.New(PeopleObjectType)
 	obj.Set("Name", "Ryan")
-	obj.Set("NullableMetadata", object.NewSQLValue("NULL"))
-
+	obj.Set("NullStr", object.NewNULLValue())
+	obj.Set("NullInt", object.NewNULLValue())
 	addrObj := sampleAddressObject()
 	obj.Children["addresses"] = object.NewArray(addrObj)
 	return obj
@@ -215,9 +228,15 @@ func validatePersonID(t *testing.T, obj *object.Object) {
 	}
 }
 
-func validateNullableMetadata(t *testing.T, obj *object.Object) {
-	if !obj.ValueIsNULL(obj.Get("NullableMetadata")) {
-		t.Fatal("validateNullableMetadata: expected NULL value")
+func validateNullStr(t *testing.T, obj *object.Object) {
+	if !obj.ValueIsNULL(obj.Get("NullStr")) {
+		t.Fatal("validateNullStr: expected NULL value")
+	}
+}
+
+func validateNullInt(t *testing.T, obj *object.Object) {
+	if !obj.ValueIsNULL(obj.Get("NullInt")) {
+		t.Fatal("validateNullInt: expected NULL value")
 	}
 }
 

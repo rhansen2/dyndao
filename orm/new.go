@@ -27,7 +27,7 @@ type ORM struct {
 	AfterUpdateHooks  map[string]HookFunction
 }
 
-// GetSchema returns the ORM's active schema 
+// GetSchema returns the ORM's active schema
 func (o ORM) GetSchema() *schema.Schema {
 	return o.s
 }

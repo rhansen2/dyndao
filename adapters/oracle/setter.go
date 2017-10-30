@@ -2,11 +2,13 @@ package oracle
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
 	sg "github.com/rbastic/dyndao/sqlgen"
 	"gopkg.in/goracle.v2"
 	"io/ioutil"
+	"reflect"
 	"time"
 )
 
@@ -15,9 +17,14 @@ type LobDST string
 
 // Scan is necessary here to deal with oracle BLOB/CLOB data type.
 func (l *LobDST) Scan(src interface{}) error {
+	// Scan ignores NULLs, and our DynamicObjectSetter handles them.
+	if src == nil {
+		return nil
+	}
+
 	lob, ok := src.(*goracle.Lob)
 	if !ok {
-		return errors.New("LobDST can only be used with goracle.Lib")
+		return fmt.Errorf("LobDST can only be used with goracle.Lib, type was %v", reflect.TypeOf(src))
 	}
 	res, err := ioutil.ReadAll(lob)
 	if err != nil {
@@ -85,8 +92,12 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 				obj.Set(columnNames[i], *val)
 			}
 		} else if s.IsLOBType(typeName) {
-			val := v.(*LobDST)
-			obj.Set(columnNames[i], string(*val))
+			if v == nil {
+				obj.Set(columnNames[i], object.NewSQLValue("NULL"))
+			} else {
+				val := v.(*LobDST)
+				obj.Set(columnNames[i], string(*val))
+			}
 		} else {
 			return errors.New("dynamicObjectSetter: Unrecognized type: " + typeName)
 		}
