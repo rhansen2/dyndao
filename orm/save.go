@@ -103,7 +103,6 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 	if err != nil {
 		rollErr := tx.Rollback()
 		if rollErr != nil {
-			// TODO: Not sure if this wrap is right.
 			return 0, errors.Wrap(err, rollErr.Error())
 		}
 		return 0, err
@@ -113,7 +112,6 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 	if err != nil {
 		rollErr := tx.Rollback()
 		if rollErr != nil {
-			// TODO: Not sure if this wrap is right.
 			return 0, errors.Wrap(err, rollErr.Error())
 		}
 		return 0, err
