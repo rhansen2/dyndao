@@ -57,7 +57,6 @@ type SQLGenerator struct {
 	IsTimestampType FnIsTimestampType
 	IsLOBType       FnIsLOBType
 
-	// HACK TODO At least replace this with a boolean on the Generator struct.
 	DynamicObjectSetter FnDynamicObjectSetter
 	MakeColumnPointers  FnMakeColumnPointers
 
