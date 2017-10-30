@@ -31,7 +31,7 @@ const AddressesObjectType string = "addresses"
 // function type for GetDB
 type FnGetDB func() *sql.DB
 
-// function type for 'GetSQLGenerator'
+// function type for GetSQLGenerator
 type FnGetSG func() *sg.SQLGenerator
 
 var (
@@ -106,7 +106,7 @@ func TestDropTables(t *testing.T, db *sql.DB) {
 }
 
 func TestSuiteNested(t *testing.T, db *sql.DB) {
-	sch := schemaTest.MockNestedSchema()      // Use mock test schema
+	sch := schemaTest.MockNestedSchema()  // Use mock test schema
 	o := orm.New(getSQLGen(), sch, db)    // Setup our ORM
 	obj := makeDefaultPersonWithAddress() // Construct our default mock object
 
@@ -115,9 +115,12 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 		saveMockObject(t, &o, obj)
 	})
 	// Validate that we correctly fleshened the primary key
-	t.Run("ValidatePersonID", func(t *testing.T) {
+	t.Run("ValidatePerson/ID", func(t *testing.T) {
 		validatePersonID(t, obj)
 		// TODO: Make sure we saved the Address with a person id also
+	})
+	t.Run("ValidatePerson/NullableMetadata", func(t *testing.T) {
+		validateNullableMetadata(t, obj)
 	})
 
 	// Validate that we correctly saved the children
@@ -177,10 +180,9 @@ func sampleAddressObject() *object.Object {
 	return addr
 }
 func makeDefaultPersonWithAddress() *object.Object {
-	// NOTE: This should force insert
 	obj := object.New(PeopleObjectType)
-	//obj.Set("PersonID", 1)
 	obj.Set("Name", "Ryan")
+	obj.Set("NullableMetadata", object.NewSQLValue("NULL"))
 
 	addrObj := sampleAddressObject()
 	obj.Children["addresses"] = object.NewArray(addrObj)
@@ -210,6 +212,12 @@ func validatePersonID(t *testing.T, obj *object.Object) {
 			t.Fatal("Tests are not in a ready state. Pre-existing data is present.")
 		}
 		t.Fatalf("PersonID has the wrong value, has value %d", personID)
+	}
+}
+
+func validateNullableMetadata(t *testing.T, obj *object.Object) {
+	if !obj.ValueIsNULL(obj.Get("NullableMetadata")) {
+		t.Fatal("validateNullableMetadata: expected NULL value")
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"reflect"
 )
 
 var (
@@ -119,6 +120,7 @@ func (o Object) GetFloat(k string) (float64, bool) {
 	return v, ok
 }
 
+
 // HiddenGetStringAlways is a safe, typed string accessor for the Hidden KV. It
 // will force conversion away from float64, int64, uint64, string, and nil
 // values. Nils and unrecognized values are marked as an error (nil values will
@@ -146,7 +148,7 @@ func (o Object) HiddenGetStringAlways(k string) (string, error) {
 		return "", ErrValueWasNil
 	// TODO: what about booleans?
 	default:
-		return "", fmt.Errorf("HiddenGetStringAlways: unrecognized type %v", v)
+		return "", fmt.Errorf("HiddenGetStringAlways: unrecognized type %v", reflect.TypeOf(v))
 	}
 }
 
@@ -176,7 +178,7 @@ func (o Object) GetStringAlways(k string) (string, error) {
 		return "", ErrValueWasNil
 	// TODO: what about booleans?
 	default:
-		return "", fmt.Errorf("GetStringAlways: unrecognized type %v", v)
+		return "", fmt.Errorf("GetStringAlways: unrecognized type %v", reflect.TypeOf(v))
 	}
 }
 
@@ -206,7 +208,7 @@ func (o Object) GetFloatAlways(k string) (float64, error) {
 		return 0, ErrValueWasNil
 	// TODO: what about booleans?
 	default:
-		return 0, fmt.Errorf("GetFloatAlways: unrecognized type %v", v)
+		return 0, fmt.Errorf("GetFloatAlways: unrecognized type %v", reflect.TypeOf(v))
 	}
 }
 
@@ -236,7 +238,7 @@ func (o Object) GetIntAlways(k string) (int64, error) {
 		return 0, ErrValueWasNil
 	// TODO: what about booleans?
 	default:
-		return 0, fmt.Errorf("GetIntAlways: unrecognized type %v", v)
+		return 0, fmt.Errorf("GetIntAlways: unrecognized type %v", reflect.TypeOf(v))
 	}
 }
 
@@ -266,7 +268,7 @@ func (o Object) GetUintAlways(k string) (uint64, error) {
 		return uint64(0), ErrValueWasNil
 	// TODO: what about booleans?
 	default:
-		return 0, fmt.Errorf("GetUintAlways: unrecognized type %v", v)
+		return 0, fmt.Errorf("GetUintAlways: unrecognized type %v", reflect.TypeOf(v))
 	}
 }
 
@@ -341,3 +343,5 @@ func (o *Object) SetSaved(status bool) {
 func (o Object) GetSaved() bool {
 	return o.saved
 }
+
+

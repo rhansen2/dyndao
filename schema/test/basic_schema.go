@@ -15,6 +15,16 @@ func fieldName() *schema.Column {
 	return fld
 }
 
+func fieldMetadata() *schema.Column {
+	fld := schema.DefaultColumn()
+	fld.IsNumber = false
+	fld.Name = "NullableMetadata"
+	fld.DBType = "text"
+	fld.Source = "NullableMetadata"
+	fld.AllowNull = true
+	return fld
+}
+
 func fieldAddress(n string) *schema.Column {
 	fld := schema.DefaultColumn()
 	fld.Source = n
@@ -39,6 +49,20 @@ func primaryColumn(name string) *schema.Column {
 	return fld
 }
 
+// Very simple person table initially
+func peopleTable() *schema.Table {
+	tbl := schema.DefaultTable()
+	tbl.Name = "people"
+	tbl.MultiKey = false
+	tbl.Primary = "PersonID"
+	tbl.Columns["PersonID"] = primaryColumn("PersonID")
+	tbl.Columns["Name"] = fieldName()
+	tbl.Columns["NullableMetadata"] = fieldMetadata()
+	tbl.EssentialColumns = []string{"PersonID", "Name"}
+
+	return tbl
+}
+
 func fkColumn(name string) *schema.Column {
 	fld := schema.DefaultColumn()
 	fld.Name = name
@@ -47,19 +71,6 @@ func fkColumn(name string) *schema.Column {
 	fld.IsNumber = true
 	fld.Source = name
 	return fld
-}
-
-// Very simple person table initially
-func peopleTable() *schema.Table {
-	tbl := schema.DefaultTable()
-	tbl.Name = "people"
-	tbl.MultiKey = false
-	tbl.Primary = "PersonID"
-	tbl.Columns["PersonID"] = primaryColumn("PersonID") //fieldID("PersonID")
-	tbl.Columns["Name"] = fieldName()
-	tbl.EssentialColumns = []string{"PersonID", "Name"}
-
-	return tbl
 }
 
 // Very simple address table initially
