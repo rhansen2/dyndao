@@ -302,7 +302,9 @@ func testRetrieve(o *orm.ORM, t *testing.T, sch *schema.Schema) {
 		t.Fatal("LatestJoe Should not be nil!")
 	}
 	// TODO: Do a common refactor on this sort of code
-	if latestJoe.Get("PersonID").(int64) != 1 || latestJoe.Get("Name") != "Joe" {
+	nameStr, err := latestJoe.GetStringAlways("Name")
+	fatalIf(err)
+	if latestJoe.Get("PersonID").(int64) != 1 || nameStr != "Joe" {
 		t.Fatal("latestJoe does not match expectations")
 	}
 }
@@ -380,7 +382,10 @@ func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 		t.Fatal("Unknown length of objs, expected 1, got ", len(objs))
 	}
 	obj := objs[0]
-	if obj.Get("PersonID").(int64) != 1 || obj.Get("Name").(string) != "Joe" {
+
+	nameStr, err := obj.GetStringAlways("Name")
+	fatalIf(err)
+	if obj.Get("PersonID").(int64) != 1 || nameStr != "Joe" {
 		t.Fatal("Object values differed from expectations", obj)
 	}
 }
@@ -409,7 +414,10 @@ func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
 		if fleshened.Children[AddressesObjectType] == nil {
 			t.Fatal("expected Addresses children")
 		}
-		address1 := fleshened.Children["addresses"][0].Get("Address1")
+		address1, err := fleshened.Children["addresses"][0].GetStringAlways("Address1")
+		if err != nil {
+			panic(err)
+		}
 		expectedStr := "Test"
 		if address1 != "Test" {
 			t.Fatalf("expected %s for 'Address1', address1 was %s", expectedStr, address1)

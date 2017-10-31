@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -24,10 +25,10 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 			val := v.(*time.Time)
 			obj.Set(columnNames[i], *val)
 			continue
-		} else if s.IsStringType(typeName) {
+		} else if s.IsStringType(typeName) || strings.Contains(typeName, "VARCHAR") {
 			nullable, _ := ct.Nullable()
 			if nullable {
-				val := v.(*string)
+				val := v.(*sql.NullString)
 				obj.Set(columnNames[i], *val)
 			} else {
 				val := v.(*string)
@@ -73,16 +74,7 @@ func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.Col
 		ct := columnTypes[i]
 		typeName := ct.DatabaseTypeName()
 
-		if s.IsStringType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				var s string
-				columnPointers[i] = &s
-			} else {
-				var s string
-				columnPointers[i] = &s
-			}
-		} else if s.IsNumberType(typeName) {
+		if s.IsNumberType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
 				var j sql.NullInt64
@@ -104,6 +96,15 @@ func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.Col
 			}
 		} else if s.IsLOBType(typeName) {
 			return nil, errors.New("MakeColumnPointers: LOB type isn't supported for SQLite")
+		} else if s.IsStringType(typeName) || strings.Contains(typeName, "VARCHAR") {
+			nullable, _ := ct.Nullable()
+			if nullable {
+				var s sql.NullString
+				columnPointers[i] = &s
+			} else {
+				var s string
+				columnPointers[i] = &s
+			}
 		} else {
 			return nil, errors.New("MakeColumnPointers: Unrecognized type: " + typeName)
 		}

@@ -6,6 +6,7 @@
 package object
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"reflect"
@@ -173,6 +174,12 @@ func (o Object) GetStringAlways(k string) (string, error) {
 	case string:
 		fl := v.(string)
 		return fl, nil
+	case sql.NullString:
+		fl := v.(sql.NullString)
+		return fl.String, nil
+	case *sql.NullString:
+		fl := v.(*sql.NullString)
+		return fl.String, nil
 	case nil:
 		return "", ErrValueWasNil
 	// TODO: what about booleans?
