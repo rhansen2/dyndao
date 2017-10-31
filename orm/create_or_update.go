@@ -7,8 +7,10 @@ import (
 	"github.com/rbastic/dyndao/object"
 )
 
-// CreateOrUpdateTx is a typical "Retrieve and Update or Insert" operation. Feed it a context, the current transaction,
-// and the dyndao object you are trying to save. It will return rows affected, the resulting object, or an error.
+// CreateOrUpdateTx is a typical "Retrieve and Update or Insert" operation.
+// Feed it a context, the current transaction, and the dyndao object you are
+// trying to save. It will return rows affected, the resulting object, or an
+// error.
 func (o ORM) CreateOrUpdateTx(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, *object.Object, error) {
 	var err error
 	var retObj *object.Object

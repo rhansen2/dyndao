@@ -2,12 +2,12 @@ package mysql
 
 var stringTypes = map[string]bool{
 	"VARSTRING": true,
-	"VARCHAR2": true,
-	"varchar2": true,
-	"VARCHAR":  true,
-	"varchar":  true,
-	"CHAR":     true,
-	"char":     true,
+	"VARCHAR2":  true,
+	"varchar2":  true,
+	"VARCHAR":   true,
+	"varchar":   true,
+	"CHAR":      true,
+	"char":      true,
 }
 
 // TODO: fix numTypes, floatTypes...

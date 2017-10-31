@@ -7,10 +7,11 @@ import (
 	"github.com/rbastic/dyndao/object"
 )
 
-// FindOrCreateTx accepts a context, transaction, and dyndao object. It returns the number of rows affected,
-// the resulting dyndao object (either freshly Retrieved or freshly Created) and any error that may have occurred.
-// This is one of the recommended methods to use for a FindOrCreate. FindOrCreateKVTx is likely better to use
-// in certain situations.
+// FindOrCreateTx accepts a context, transaction, and dyndao object. It returns
+// the number of rows affected, the resulting dyndao object (either freshly
+// Retrieved or freshly Created) and any error that may have occurred.  This is
+// one of the recommended methods to use for a FindOrCreate. FindOrCreateKVTx
+// is likely better to use in certain situations.
 func (o ORM) FindOrCreateTx(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, *object.Object, error) {
 	obj, err := o.RetrieveTx(ctx, tx, obj.Type, obj.KV)
 	if err != nil {
@@ -32,8 +33,9 @@ func (o ORM) FindOrCreateTx(ctx context.Context, tx *sql.Tx, obj *object.Object)
 	return 0, obj, nil
 }
 
-// FindOrCreate is a transactionless FindOrCreate operation. This may not be recommended unless you
-// know what you are doing and are comfortable potentially violating transactional integrity.
+// FindOrCreate is a transactionless FindOrCreate operation. This may not be
+// recommended unless you know what you are doing and are comfortable
+// potentially violating transactional integrity.
 func (o ORM) FindOrCreate(ctx context.Context, obj *object.Object) (int64, *object.Object, error) {
 	return o.FindOrCreateTx(ctx, nil, obj)
 }
@@ -68,8 +70,9 @@ func (o ORM) FindOrCreateKVTx(ctx context.Context, tx *sql.Tx, typ string, query
 	return 0, obj, nil
 }
 
-// FindOrCreateKV is a transactionless FindOrCreate. This may not be recommended unless you
-// know what you are doing and are comfortable potentially violating transactional integrity.
+// FindOrCreateKV is a transactionless FindOrCreate. This may not be
+// recommended unless you know what you are doing and are comfortable
+// potentially violating transactional integrity.
 func (o ORM) FindOrCreateKV(ctx context.Context, typ string, queryKV map[string]interface{}, createKV map[string]interface{}) (int64, *object.Object, error) {
 	return o.FindOrCreateKVTx(ctx, nil, typ, queryKV, createKV)
 }
