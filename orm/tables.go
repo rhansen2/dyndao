@@ -13,9 +13,9 @@ import (
 
 // CreateTables executes a CreateTable operation for every table specified in
 // the schema.
-func (o ORM) CreateTables() error {
+func (o ORM) CreateTables(ctx context.Context) error {
 	for tName := range o.s.Tables {
-		err := o.CreateTable(o.s, tName)
+		err := o.CreateTable(ctx, o.s, tName)
 		if err != nil {
 			return err
 		}
@@ -26,9 +26,9 @@ func (o ORM) CreateTables() error {
 
 // DropTables executes a DropTable operation for every table specified in the
 // schema.
-func (o ORM) DropTables() error {
+func (o ORM) DropTables(ctx context.Context) error {
 	for tName := range o.s.Tables {
-		err := o.DropTable(tName)
+		err := o.DropTable(ctx, tName)
 		if err != nil {
 			return err
 		}
@@ -39,7 +39,7 @@ func (o ORM) DropTables() error {
 
 // CreateTable will execute a CreateTable operation for the specified table in
 // a given schema.
-func (o ORM) CreateTable(sch *schema.Schema, tableName string) error {
+func (o ORM) CreateTable(ctx context.Context, sch *schema.Schema, tableName string) error {
 	sqlStr, err := o.sqlGen.CreateTable(o.sqlGen, sch, tableName)
 	if err != nil {
 		return err
@@ -51,7 +51,7 @@ func (o ORM) CreateTable(sch *schema.Schema, tableName string) error {
 		fmt.Println("CreateTable:", sqlStr)
 	}
 
-	_, err = prepareAndExecSQL(o.RawConn, sqlStr)
+	_, err = prepareAndExecSQL(ctx, o.RawConn, sqlStr)
 	if err != nil {
 		return errors.Wrap(err, "CreateTable")
 	}
@@ -60,17 +60,17 @@ func (o ORM) CreateTable(sch *schema.Schema, tableName string) error {
 
 // DropTable will execute a DropTable operation for the specified table in
 // a given schema.
-func (o ORM) DropTable(tableName string) error {
+func (o ORM) DropTable(ctx context.Context, tableName string) error {
 	sqlStr := o.sqlGen.DropTable(tableName)
-	_, err := prepareAndExecSQL(o.RawConn, sqlStr)
+	_, err := prepareAndExecSQL(ctx, o.RawConn, sqlStr)
 	if err != nil {
 		return errors.Wrap(err, "DropTable")
 	}
 	return nil
 }
 
-func prepareAndExecSQL(db *sql.DB, sqlStr string) (sql.Result, error) {
-	stmt, err := db.PrepareContext(context.TODO(), sqlStr)
+func prepareAndExecSQL(ctx context.Context, db *sql.DB, sqlStr string) (sql.Result, error) {
+	stmt, err := db.PrepareContext(ctx, sqlStr)
 	if err != nil {
 		return nil, errors.Wrap(err, "prepareAndExecSQL/PrepareContext ("+sqlStr+")")
 	}
@@ -80,7 +80,7 @@ func prepareAndExecSQL(db *sql.DB, sqlStr string) (sql.Result, error) {
 			fmt.Println(stmtErr) // TODO: logging implementation
 		}
 	}()
-	r, err := stmt.ExecContext(context.TODO())
+	r, err := stmt.ExecContext(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "prepareAndExecSQL/ExecContext ("+sqlStr+")")
 	}
