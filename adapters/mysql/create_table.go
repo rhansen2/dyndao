@@ -3,50 +3,23 @@
 package mysql
 
 import (
-	"fmt"
-	"strings"
-
+	"github.com/rbastic/dyndao/adapters/common"
 	"github.com/rbastic/dyndao/schema"
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
 func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
-	dataType := f.DBType
-	var notNull string
-	identity := ""
-	unique := ""
-
 	if f.IsIdentity {
-		identity = "PRIMARY KEY AUTO_INCREMENT"
 		f.AllowNull = false
 	}
 
-	if f.AllowNull {
-		notNull = "NULL"
-	} else {
-		notNull = "NOT NULL"
-	}
-
-	if f.Length > 0 {
-		dataType = fmt.Sprintf("%s(%d)", f.DBType, f.Length)
-	}
-
-	if f.IsUnique {
-		unique = "UNIQUE"
-	}
-
-	dataType = mapType(dataType)
-
-	if dataType == "" {
-		panic("Empty dataType in renderCreateColumn for " + f.Name)
-	}
-	return strings.Join([]string{f.Name, dataType, identity, notNull, unique}, " ")
+	return common.RenderCreateColumn(sg, f, "PRIMARY KEY AUTO_INCREMENT", mapType)
 }
 
 func mapType(s string) string {
 	// Map 'integer' to 'int(11)' for now for MySQL
-	if s == "integer" {
-		return "int(11)"
+	if s == "INTEGER" {
+		return "INT(11)"
 	}
 	// no need to map text type
 	return s
