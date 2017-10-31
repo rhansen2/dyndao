@@ -1,6 +1,7 @@
 package mysql
 
 var stringTypes = map[string]bool{
+	"VARSTRING": true,
 	"VARCHAR2": true,
 	"varchar2": true,
 	"VARCHAR":  true,

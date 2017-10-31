@@ -2,10 +2,11 @@ package mssql
 
 import (
 	"database/sql"
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
 	sg "github.com/rbastic/dyndao/sqlgen"
-	"time"
 )
 
 // DynamicObjectSetter is used to dynamically set the values of an object by
@@ -16,8 +17,8 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 	// https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
 	for i, v := range columnPointers {
 		ct := columnTypes[i]
-
 		typeName := ct.DatabaseTypeName()
+
 		// TODO: Not sure this is actually correct?
 		if s.IsTimestampType(typeName) {
 			val := v.(*time.Time)
@@ -25,49 +26,48 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 		} else if s.IsStringType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
-				// TODO: Does this work properly across databases?
-				//val := v.(*sql.NullString)
-				val := v.(*string)
-				obj.Set(columnNames[i], *val)
-				/*
-					if val.Valid {
-					}
-				*/
-				// TODO: We don't set keys for null values. How else can we support this?
+				val := v.(*sql.NullString)
+				if val.Valid {
+					obj.Set(columnNames[i], val.String)
+
+				} else {
+					obj.Set(columnNames[i], nil)
+				}
 			} else {
 				val := v.(*string)
-				obj.Set(columnNames[i], *val)
-
+				obj.Set(columnNames[i], val)
 			}
 		} else if s.IsNumberType(typeName) {
-			// TODO: support more than 'int64' for integer...?
 			nullable, _ := ct.Nullable()
 			if nullable {
 				val := v.(*sql.NullInt64)
 				if val.Valid {
 					obj.Set(columnNames[i], val.Int64)
 				}
-				// TODO: We don't set keys for null values. How else can we support this?
 			} else {
 				val := v.(*int64)
 				obj.Set(columnNames[i], *val)
 			}
 		} else if s.IsFloatingType(typeName) {
-			// TODO: support more than 'int64' for integer...?
 			nullable, _ := ct.Nullable()
 			if nullable {
 				val := v.(*sql.NullFloat64)
 				if val.Valid {
 					obj.Set(columnNames[i], val.Float64)
 				}
-				// TODO: We don't set keys for null values. How else can we support this?
 			} else {
 				val := v.(*float64)
 				obj.Set(columnNames[i], *val)
 			}
 		} else if s.IsLOBType(typeName) {
-			val := v.(*string)
-			obj.Set(columnNames[i], string(*val))
+			nullable, _ := ct.Nullable()
+			if nullable {
+				val := v.(*sql.NullString)
+				obj.Set(columnNames[i], val.String)
+			} else {
+				val := v.(*string)
+				obj.Set(columnNames[i], string(*val))
+			}
 		} else {
 			return errors.New("dynamicObjectSetter: Unrecognized type: " + typeName)
 		}
@@ -83,7 +83,7 @@ func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.Col
 		if s.IsStringType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
-				var s string
+				var s sql.NullString
 				columnPointers[i] = &s
 			} else {
 				var s string
@@ -112,7 +112,7 @@ func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.Col
 		} else if s.IsLOBType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
-				var s string
+				var s sql.NullString
 				columnPointers[i] = &s
 			} else {
 				var s string

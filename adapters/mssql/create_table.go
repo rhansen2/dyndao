@@ -21,18 +21,14 @@ func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
 	} else {
 		notNull = "NOT NULL"
 	}
-	if f.IsNumber {
-		dataType = f.DBType
-	} else {
-		if f.Length > 0 {
-			dataType = fmt.Sprintf("%s(%d)", f.DBType, f.Length)
-		}
+	dataType = mapType(dataType)
+	if f.Length > 0 {
+		dataType = fmt.Sprintf("%s(%d)", dataType, f.Length)
 	}
+
 	if f.IsUnique {
 		unique = "UNIQUE"
 	}
-
-	dataType = mapType(dataType)
 
 	if dataType == "" {
 		panic("Empty dataType in renderCreateColumn for " + f.Name)

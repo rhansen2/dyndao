@@ -19,6 +19,7 @@ package test
 import (
 	"context"
 	"database/sql"
+	"os"
 	"reflect"
 	"time"
 
@@ -85,6 +86,12 @@ func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
 		PingCheck(t, db)
 	})
 
+	if os.Getenv("DROP_TABLES") != "" {
+		t.Run("TestDropTables", func(t *testing.T) {
+			TestDropTables(t, db)
+		})
+	}
+
 	t.Run("TestCreateTables", func(t *testing.T) {
 		TestCreateTables(t, db)
 	})
@@ -102,7 +109,7 @@ func TestCreateTables(t *testing.T, db *sql.DB) {
 
 	err := createTables(o.RawConn, sch)
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
 }
 
@@ -134,6 +141,9 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 
 	t.Run("ValidatePerson/NullInt", func(t *testing.T) {
 		validateNullInt(t, obj)
+	})
+	t.Run("ValidatePerson/NullVarchar", func(t *testing.T) {
+		validateNullVarchar(t, obj)
 	})
 
 	// Validate that we correctly saved the children
@@ -197,6 +207,8 @@ func makeDefaultPersonWithAddress() *object.Object {
 	obj.Set("Name", "Ryan")
 	obj.Set("NullText", object.NewNULLValue())
 	obj.Set("NullInt", object.NewNULLValue())
+	obj.Set("NullVarchar", object.NewNULLValue())
+
 	addrObj := sampleAddressObject()
 	obj.Children["addresses"] = object.NewArray(addrObj)
 	return obj
@@ -237,6 +249,12 @@ func validateNullText(t *testing.T, obj *object.Object) {
 func validateNullInt(t *testing.T, obj *object.Object) {
 	if !obj.ValueIsNULL(obj.Get("NullInt")) {
 		t.Fatal("validateNullInt: expected NULL value")
+	}
+}
+
+func validateNullVarchar(t *testing.T, obj *object.Object) {
+	if !obj.ValueIsNULL(obj.Get("NullVarchar")) {
+		t.Fatal("validateNullVarchar: expected NULL value")
 	}
 }
 

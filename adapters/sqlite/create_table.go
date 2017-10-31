@@ -14,7 +14,8 @@ import (
 // See http://www.sqlitetutorial.net/sqlite-autoincrement/
 
 func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
-	dataType := f.DBType
+	dataType := strings.ToUpper(f.DBType)
+
 	notNull := ""
 	identity := ""
 	unique := ""
@@ -26,13 +27,10 @@ func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
 	} else {
 		notNull = "NOT NULL"
 	}
-	if f.IsNumber {
-		dataType = f.DBType
-	} else {
-		if f.Length > 0 {
-			dataType = fmt.Sprintf("%s(%d)", f.DBType, f.Length)
-		}
+	if f.Length > 0 {
+		dataType = fmt.Sprintf("%s(%d)", dataType, f.Length)
 	}
+
 	if f.IsUnique {
 		unique = "UNIQUE"
 	}

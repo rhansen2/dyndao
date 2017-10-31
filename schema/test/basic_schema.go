@@ -10,17 +10,14 @@ func fieldName() *schema.Column {
 	fld.IsNumber = false
 	fld.Name = "Name"
 	fld.DBType = "text"
-	fld.Source = "Name"
-	//	fld.Length = 36
 	return fld
 }
 
-func fieldMetadata() *schema.Column {
+func fieldNullText() *schema.Column {
 	fld := schema.DefaultColumn()
 	fld.IsNumber = false
 	fld.Name = "NullText"
 	fld.DBType = "text"
-	fld.Source = "NullText"
 	fld.AllowNull = true
 	return fld
 }
@@ -30,8 +27,19 @@ func fieldNullInt() *schema.Column {
 	fld.IsNumber = true
 	fld.Name = "NullInt"
 	fld.DBType = "integer"
-	fld.Source = "NullInt"
 	fld.AllowNull = true
+	return fld
+}
+
+// TODO: Int field
+
+func fieldNullVarchar() *schema.Column {
+	fld := schema.DefaultColumn()
+	fld.IsNumber = true
+	fld.Name = "NullVarchar"
+	fld.DBType = "varchar"
+	fld.AllowNull = true
+	fld.Length = 30
 	return fld
 }
 
@@ -55,7 +63,6 @@ func primaryColumn(name string) *schema.Column {
 	fld.DBType = "integer"
 	fld.IsIdentity = true
 	fld.IsNumber = true
-	fld.Source = name
 	return fld
 }
 
@@ -67,12 +74,13 @@ func peopleTable() *schema.Table {
 	tbl.Primary = "PersonID"
 	tbl.Columns["PersonID"] = primaryColumn("PersonID")
 	tbl.Columns["Name"] = fieldName()
-	tbl.Columns["NullText"] = fieldMetadata()
+	tbl.Columns["NullText"] = fieldNullText()
 	tbl.Columns["NullInt"] = fieldNullInt()
+	tbl.Columns["NullVarchar"] = fieldNullVarchar()
 
-	// TODO: Why was NullTextgetting retrieved as NULL when we didn't have it in the EssentialColumns
-	// list?
-	tbl.EssentialColumns = []string{"PersonID", "Name", "NullText", "NullInt"}
+	// TODO: Why was NullText getting retrieved as NULL when we didn't
+	// have it in the EssentialColumns list?
+	tbl.EssentialColumns = []string{"PersonID", "Name", "NullText", "NullInt", "NullVarchar"}
 
 	return tbl
 }
