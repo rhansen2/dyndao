@@ -43,6 +43,15 @@ func fieldNullVarchar() *schema.Column {
 	return fld
 }
 
+func fieldNullBlob() *schema.Column {
+	fld := schema.DefaultColumn()
+	fld.IsNumber = true
+	fld.Name = "NullBlob"
+	fld.DBType = "blob"
+	fld.AllowNull = true
+	return fld
+}
+
 func fieldAddress(n string) *schema.Column {
 	fld := schema.DefaultColumn()
 	fld.Source = n
@@ -77,10 +86,11 @@ func peopleTable() *schema.Table {
 	tbl.Columns["NullText"] = fieldNullText()
 	tbl.Columns["NullInt"] = fieldNullInt()
 	tbl.Columns["NullVarchar"] = fieldNullVarchar()
+	tbl.Columns["NullBlob"] = fieldNullBlob()
 
 	// TODO: Why was NullText getting retrieved as NULL when we didn't
 	// have it in the EssentialColumns list?
-	tbl.EssentialColumns = []string{"PersonID", "Name", "NullText", "NullInt", "NullVarchar"}
+	tbl.EssentialColumns = []string{"PersonID", "Name", "NullText", "NullInt", "NullVarchar", "NullBlob"}
 
 	return tbl
 }

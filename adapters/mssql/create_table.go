@@ -44,5 +44,8 @@ func mapType(s string) string {
 	if s == "text" {
 		return "text"
 	}
+	if s == "blob" {
+		return "image"
+	}
 	return s
 }

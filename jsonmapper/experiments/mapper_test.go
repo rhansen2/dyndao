@@ -3,7 +3,7 @@ package mapper
 import (
 	"testing"
 
-	"github.com/rbastic/dyndao/schema"
+	schemaTest "github.com/rbastic/dyndao/schema/test"
 	"github.com/tidwall/gjson"
 )
 
@@ -11,7 +11,7 @@ const PeopleObjectType string = "people"
 const AddressesObjectType string = "addresses"
 
 func TestBasicMapper(t *testing.T) {
-	sch := schema.MockBasicSchema()
+	sch := schemaTest.MockBasicSchema()
 	objs, err := ToObjectsFromJSON(sch, getJSONData())
 	if err != nil {
 		t.Fatal(err)
@@ -36,7 +36,7 @@ func TestBasicMapper(t *testing.T) {
 }
 
 func TestBasicMapperToJSON(t *testing.T) {
-	sch := schema.MockBasicSchema()
+	sch := schemaTest.MockBasicSchema()
 	obj, err := ToObjectFromJSON(sch, "", PeopleObjectType, getJSONData())
 	if err != nil {
 		t.Fatal(err)
@@ -70,7 +70,7 @@ func getNestedJSONData() string {
 }
 
 func TestNestedMapper(t *testing.T) {
-	sch := schema.MockNestedSchema()
+	sch := schemaTest.MockNestedSchema()
 	obj, err := ToObjectFromJSON(sch, "", PeopleObjectType, getNestedJSONData())
 	if err != nil {
 		t.Fatal(err)
@@ -105,7 +105,7 @@ func getNestedArrayJSONData() string {
 }
 
 func TestNestedArrayMapper(t *testing.T) {
-	sch := schema.MockNestedSchema()
+	sch := schemaTest.MockNestedSchema()
 	objs, err := ToObjectsFromJSON(sch, getNestedArrayJSONData())
 	if err != nil {
 		t.Fatal(err)
@@ -158,7 +158,7 @@ func getNestedArrayJSONData2() string {
 }
 
 func TestNestedArrayMapper2(t *testing.T) {
-	sch := schema.MockNestedSchema()
+	sch := schemaTest.MockNestedSchema()
 	objs, err := ToObjectsFromJSON(sch, getNestedArrayJSONData2())
 	if err != nil {
 		t.Fatal(err)

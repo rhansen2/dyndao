@@ -24,6 +24,8 @@ var timestampTypes = map[string]bool{
 var lobTypes = map[string]bool{
 	"CLOB": true,
 	"clob": true,
+	"BLOB": true,
+	"blob": true,
 }
 
 // IsStringType can be used to help determine whether a certain data type is a string type.

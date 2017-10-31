@@ -22,6 +22,7 @@ import (
 	"os"
 	"reflect"
 	"time"
+	//"fmt"
 
 	"testing"
 
@@ -145,6 +146,9 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 	t.Run("ValidatePerson/NullVarchar", func(t *testing.T) {
 		validateNullVarchar(t, obj)
 	})
+	t.Run("ValidatePerson/NullBlob", func(t *testing.T) {
+		validateNullBlob(t, obj)
+	})
 
 	// Validate that we correctly saved the children
 	t.Run("ValidateChildrenSaved", func(t *testing.T) {
@@ -208,6 +212,7 @@ func makeDefaultPersonWithAddress() *object.Object {
 	obj.Set("NullText", object.NewNULLValue())
 	obj.Set("NullInt", object.NewNULLValue())
 	obj.Set("NullVarchar", object.NewNULLValue())
+	obj.Set("NullBlob", object.NewNULLValue())
 
 	addrObj := sampleAddressObject()
 	obj.Children["addresses"] = object.NewArray(addrObj)
@@ -255,6 +260,12 @@ func validateNullInt(t *testing.T, obj *object.Object) {
 func validateNullVarchar(t *testing.T, obj *object.Object) {
 	if !obj.ValueIsNULL(obj.Get("NullVarchar")) {
 		t.Fatal("validateNullVarchar: expected NULL value")
+	}
+}
+
+func validateNullBlob(t *testing.T, obj *object.Object) {
+	if !obj.ValueIsNULL(obj.Get("NullBlob")) {
+		t.Fatal("validateNullBlob: expected NULL value")
 	}
 }
 

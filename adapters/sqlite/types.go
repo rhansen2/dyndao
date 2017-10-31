@@ -58,7 +58,10 @@ var timestampTypes = map[string]bool{
 	"DATETIME": true,
 }
 
-// TODO: blob types
+var lobTypes = map[string]bool{
+	"BLOB": true,
+	"blob": true,
+}
 
 // IsStringType can be used to help determine whether a certain data type is a string type.
 func IsStringType(k string) bool {
@@ -75,8 +78,6 @@ func IsNumberType(k string) bool {
 	return numTypes[k]
 }
 
-// TODO: strings.ToUpper on key name? just in case?
-
 // IsTimestampType can be used to help determine whether a certain data type is a number type.
 // Note that it is case-sensitive.
 func IsTimestampType(k string) bool {
@@ -85,5 +86,5 @@ func IsTimestampType(k string) bool {
 
 // IsLOBType remains unimplemented for SQLite.
 func IsLOBType(k string) bool {
-	return false
+	return lobTypes[k]
 }

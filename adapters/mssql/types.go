@@ -68,8 +68,6 @@ var timestampTypes = map[string]bool{
 	// date, datetime, datetime2, datetimeoffset, smalldatetime, time
 }
 
-// TODO: binary string types
-
 var lobTypes = map[string]bool{
 	"CLOB": true,
 	"clob": true,
@@ -79,7 +77,11 @@ var lobTypes = map[string]bool{
 
 	"NTEXT": true,
 	"ntext": true,
-	// VARCHAR(MAX)
+
+	"image": true,
+	"IMAGE": true,
+	// TODO: VARCHAR(MAX)
+	// TODO: VARBINARY?
 }
 
 // IsStringType can be used to help determine whether a certain data type is a string type.

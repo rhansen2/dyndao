@@ -61,7 +61,16 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 			}
 			continue
 		} else if s.IsLOBType(typeName) {
-			return errors.New("DynamicObjectSetter: LOB type isn't supported for SQLite")
+			nullable, _ := ct.Nullable()
+			if nullable {
+				val := v.(*sql.NullString)
+				obj.Set(columnNames[i], *val)
+			} else {
+				val := v.(*string)
+				obj.Set(columnNames[i], *val)
+
+			}
+			continue
 		}
 		return errors.New("DynamicObjectSetter: Unrecognized type: " + typeName)
 	}
@@ -95,7 +104,14 @@ func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.Col
 
 			}
 		} else if s.IsLOBType(typeName) {
-			return nil, errors.New("MakeColumnPointers: LOB type isn't supported for SQLite")
+			nullable, _ := ct.Nullable()
+			if nullable {
+				var s sql.NullString
+				columnPointers[i] = &s
+			} else {
+				var s string
+				columnPointers[i] = &s
+			}
 		} else if s.IsStringType(typeName) || strings.Contains(typeName, "VARCHAR") {
 			nullable, _ := ct.Nullable()
 			if nullable {
