@@ -18,9 +18,9 @@ func fieldName() *schema.Column {
 func fieldMetadata() *schema.Column {
 	fld := schema.DefaultColumn()
 	fld.IsNumber = false
-	fld.Name = "NullStr"
+	fld.Name = "NullText"
 	fld.DBType = "text"
-	fld.Source = "NullStr"
+	fld.Source = "NullText"
 	fld.AllowNull = true
 	return fld
 }
@@ -67,12 +67,12 @@ func peopleTable() *schema.Table {
 	tbl.Primary = "PersonID"
 	tbl.Columns["PersonID"] = primaryColumn("PersonID")
 	tbl.Columns["Name"] = fieldName()
-	tbl.Columns["NullStr"] = fieldMetadata()
+	tbl.Columns["NullText"] = fieldMetadata()
 	tbl.Columns["NullInt"] = fieldNullInt()
 
-	// TODO: Why was NullStr getting retrieved as NULL when we didn't have it in the EssentialColumns
+	// TODO: Why was NullTextgetting retrieved as NULL when we didn't have it in the EssentialColumns
 	// list?
-	tbl.EssentialColumns = []string{"PersonID", "Name", "NullStr", "NullInt"}
+	tbl.EssentialColumns = []string{"PersonID", "Name", "NullText", "NullInt"}
 
 	return tbl
 }

@@ -128,8 +128,8 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 		validatePersonID(t, obj)
 		// TODO: Make sure we saved the Address with a person id also
 	})
-	t.Run("ValidatePerson/NullStr", func(t *testing.T) {
-		validateNullStr(t, obj)
+	t.Run("ValidatePerson/NullText", func(t *testing.T) {
+		validateNullText(t, obj)
 	})
 
 	t.Run("ValidatePerson/NullInt", func(t *testing.T) {
@@ -195,7 +195,7 @@ func sampleAddressObject() *object.Object {
 func makeDefaultPersonWithAddress() *object.Object {
 	obj := object.New(PeopleObjectType)
 	obj.Set("Name", "Ryan")
-	obj.Set("NullStr", object.NewNULLValue())
+	obj.Set("NullText", object.NewNULLValue())
 	obj.Set("NullInt", object.NewNULLValue())
 	addrObj := sampleAddressObject()
 	obj.Children["addresses"] = object.NewArray(addrObj)
@@ -228,9 +228,9 @@ func validatePersonID(t *testing.T, obj *object.Object) {
 	}
 }
 
-func validateNullStr(t *testing.T, obj *object.Object) {
-	if !obj.ValueIsNULL(obj.Get("NullStr")) {
-		t.Fatal("validateNullStr: expected NULL value")
+func validateNullText(t *testing.T, obj *object.Object) {
+	if !obj.ValueIsNULL(obj.Get("NullText")) {
+		t.Fatal("validateNullText expected NULL value")
 	}
 }
 
