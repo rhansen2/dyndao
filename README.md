@@ -7,10 +7,17 @@ dyndao is a dynamic Golang ORM, drawing influence from the Active Record
 pattern, Martin Fowler's Data Mapper pattern, and the author's experience with Perl's
 database packages (DBI, Class::DBI, DBIx::Class, etc.)
 
-Currently, basic support for SQLite, MySQL, and Oracle are included. If you
-intend on working with MySQL, please be sure to check out (as in, `git
-checkout`) the 'columntype' branch for github.com/go-sql-driver/mysql.  Support
-for additional database drivers is planned.
+Currently, basic support for the following databases is included:
+* SQLite
+* MySQL
+* Microsoft SQL Server
+* Oracle
+
+If you intend on working with MySQL, please be sure to check out
+(as in, `git checkout`) the 'columntype' branch for
+github.com/go-sql-driver/mysql.  Support for additional database drivers is
+planned. If you encounter problems using dyndao with any of the currently
+supported databases, please feel free to file a detailed issue.
 
 dyndao started out due to the fact that Go lacks a 'very dynamic' ORM,
 and the author had some requirements for dynamic schemas and a vision for
