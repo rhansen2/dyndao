@@ -117,8 +117,9 @@ func BindingUpdate(g *sg.SQLGenerator, sch *schema.Schema, obj *object.Object) (
 	} else {
 		// An update where it's not explicitly clear that anything has changed should
 		// just set every field we have available.
+
+		// - 1 because we expect to provide the identity field separately
 		bindArgs = make([]interface{}, len(obj.KV)-1)
-		// TODO: -1 for Oracle because we expect an identity field
 		newValuesAry = make([]string, len(obj.KV)-1)
 
 		for k, v := range obj.KV {

@@ -78,6 +78,7 @@ var lobTypes = map[string]bool{
 	"NTEXT": true,
 	"ntext": true,
 
+	// image is deprecated, varbinary is recommended now
 	"image": true,
 	"IMAGE": true,
 	// TODO: VARCHAR(MAX)
@@ -111,5 +112,3 @@ func IsTimestampType(k string) bool {
 func IsLOBType(k string) bool {
 	return lobTypes[k]
 }
-
-// TODO: strings.ToUpper on key name? just in case?

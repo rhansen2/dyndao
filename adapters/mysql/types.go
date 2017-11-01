@@ -10,7 +10,6 @@ var stringTypes = map[string]bool{
 	"char":      true,
 }
 
-// TODO: fix numTypes, floatTypes...
 var numTypes = map[string]bool{
 	"NUMBER": true,
 	"number": true,

@@ -40,18 +40,14 @@ func (o *ORM) Transact(ctx context.Context, txFunc TxFuncType, opts *sql.TxOptio
 		if err != nil {
 			rollbackErr := tx.Rollback()
 
-			// TODO: If rollback has an error, does
-			// this mean the code below executes
-			// and we end up with an additional
-			// error?
 			if rollbackErr != nil {
 				err = errors.Wrap(err, rollbackErr.Error())
 			}
 			return
 		}
-		err = tx.Commit()
-		if err != nil {
-			// TODO: ???
+		err2 := tx.Commit()
+		if err2 != nil {
+			err = errors.Wrap(err, err2.Error())
 		}
 	}()
 

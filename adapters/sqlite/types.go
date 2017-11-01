@@ -34,8 +34,9 @@ var numTypes = map[string]bool{
 	"mediumint":        true,
 	"BIGINT":           true,
 	"bigint":           true,
-	"UNSIGNED BIG INT": true,
-	"unsigned big int": true,
+	// TODO: Better support unsigned num types.
+	//"UNSIGNED BIG INT": true,
+	//"unsigned big int": true,
 	"INT2":             true,
 	"int2":             true,
 	"INT8":             true,

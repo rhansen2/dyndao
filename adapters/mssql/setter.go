@@ -19,7 +19,6 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 		ct := columnTypes[i]
 		typeName := ct.DatabaseTypeName()
 
-		// TODO: Not sure this is actually correct?
 		if s.IsTimestampType(typeName) {
 			val := v.(*time.Time)
 			obj.Set(columnNames[i], *val)

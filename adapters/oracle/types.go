@@ -55,5 +55,3 @@ func IsTimestampType(k string) bool {
 func IsLOBType(k string) bool {
 	return lobTypes[k]
 }
-
-// TODO: strings.ToUpper on key name? just in case?

@@ -116,7 +116,6 @@ func BindingInsertSQL(schTable *schema.Table, tableName string, colNames []strin
 }
 
 func RenderInsertValue(f *schema.Column, value interface{}) (interface{}, error) {
-	// TODO do we need the schema.Column for more than debugging information?
 	switch value.(type) {
 	case string:
 		str, ok := value.(string)
@@ -141,7 +140,6 @@ func RenderInsertValue(f *schema.Column, value interface{}) (interface{}, error)
 		if f.IsNumber {
 			return int64(num), nil
 		}
-		// TODO: when we support more than regular integers, we'll need to care about this more
 		return fmt.Sprintf("%f", num), nil
 	case *object.SQLValue:
 		val := value.(*object.SQLValue)

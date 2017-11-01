@@ -296,7 +296,6 @@ func (o ORM) makeQueryObj(objTable *schema.Table, queryVals map[string]interface
 	return queryObj
 }
 
-// TODO: Have a more powerful querying mechanism, queryVals is very limited.
 func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, queryVals map[string]interface{}) (object.Array, error) {
 	// Check for timeout
 	select {

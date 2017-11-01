@@ -79,7 +79,6 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		//fmt.Println("DEFER INSERT CLOSED")
 	}()
 
-	// TODO: Still necessary?
 	newBindArgs := make([]interface{}, len(bindArgs))
 	for i, arg := range bindArgs {
 		newBindArgs[i] = maybeDereferenceArgs(arg)

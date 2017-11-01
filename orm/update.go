@@ -58,7 +58,6 @@ func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	allBind := append(bindArgs, bindWhere...)
 	newAllBind := make([]interface{}, len(allBind))
-	// TODO: Still necessary?
 	for i, arg := range allBind {
 		newAllBind[i] = maybeDereferenceArgs(arg)
 	}
