@@ -13,7 +13,8 @@ import (
 	"strconv"
 )
 
-var ( // ErrKeyWasMissing is returned by the Get* family of functions in
+var (
+	// ErrKeyWasMissing is returned by the Get* family of functions in
 	// situations where a value must be returned, but we would like to
 	// signal that the requested key was empty.
 	ErrKeyWasMissing = errors.New("object: key was missing")

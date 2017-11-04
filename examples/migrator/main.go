@@ -17,7 +17,7 @@ import (
 // TODO: refactor this so it is available from somewhere else
 // (so that user code doesn't have to replicate this)
 func getSQLGen() *sg.SQLGenerator {
-	sqlGen := mysqlAdapter.New( core.New() )
+	sqlGen := mysqlAdapter.New(core.New())
 	sg.PanicIfInvalid(sqlGen)
 	return sqlGen
 }
@@ -66,4 +66,3 @@ func main() {
 		}
 	}
 }
-
