@@ -161,7 +161,7 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 	// the object twice needlessly... This caught a silly bug early on.
 	t.Run("TestAdditionalSave", func(t *testing.T) {
 		ctx, cancel := getDefaultContext()
-		rowsAff, err := o.SaveObject(ctx, nil, obj)
+		rowsAff, err := o.Save(ctx, nil, obj)
 		cancel()
 		fatalIf(err)
 		if rowsAff != 0 {
@@ -175,7 +175,7 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 		// update when we save
 		obj.Set("Name", "Joe")
 		// Test saving the object
-		testSaveObject(&o, t, obj)
+		testSave(&o, t, obj)
 	})
 
 	t.Run("Retrieve", func(t *testing.T) {
@@ -288,9 +288,9 @@ func validateChildrenSaved(t *testing.T, obj *object.Object) {
 	}
 }
 
-func testSaveObject(o *orm.ORM, t *testing.T, obj *object.Object) {
+func testSave(o *orm.ORM, t *testing.T, obj *object.Object) {
 	ctx, cancel := getDefaultContext()
-	rowsAff, err := o.SaveObject(ctx, nil, obj)
+	rowsAff, err := o.Save(ctx, nil, obj)
 	cancel()
 
 	fatalIf(err)

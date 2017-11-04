@@ -31,7 +31,7 @@ func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName s
 }
 
 func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
-	rowsAff, err := o.SaveObject(ctx, tx, obj)
+	rowsAff, err := o.Save(ctx, tx, obj)
 	if err != nil {
 		return 0, err
 	}
@@ -120,10 +120,10 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 	return rowsAff, nil
 }
 
-// SaveObjectButErrorIfUpdate function will INSERT or UPDATE a record. It does not attempt to
+// SaveButErrorIfUpdate function will INSERT or UPDATE a record. It does not attempt to
 // save any of the children. If given a transaction, it will use that to
 // attempt to insert the data.
-func (o ORM) SaveObjectButErrorIfUpdate(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+func (o ORM) SaveButErrorIfUpdate(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	select {
 	case <-ctx.Done():
 		return 0, ctx.Err()
@@ -132,7 +132,7 @@ func (o ORM) SaveObjectButErrorIfUpdate(ctx context.Context, tx *sql.Tx, obj *ob
 	objTable := o.s.GetTable(obj.Type)
 	// skip if object has invalid type
 	if objTable == nil {
-		return 0, errors.New("SaveObjectButErrorIfUpdate: unknown object table " + obj.Type)
+		return 0, errors.New("SaveButErrorIfUpdate: unknown object table " + obj.Type)
 	}
 	// skip if object is clean
 	if !obj.IsDirty() {
@@ -141,27 +141,27 @@ func (o ORM) SaveObjectButErrorIfUpdate(ctx context.Context, tx *sql.Tx, obj *ob
 	// retrieve primary key value
 	pk := objTable.Primary
 	if pk == "" {
-		return 0, errors.New("SaveObjectButErrorIfUpdate: empty primary key for " + obj.Type)
+		return 0, errors.New("SaveButErrorIfUpdate: empty primary key for " + obj.Type)
 	}
 	// skip if primary key has no field configuration in table schema
 	fieldMap := objTable.Columns
 	f := fieldMap[pk]
 	if f == nil {
-		return 0, errors.New("SaveObjectButErrorIfUpdate: empty field " + pk + " for " + obj.Type)
+		return 0, errors.New("SaveButErrorIfUpdate: empty field " + pk + " for " + obj.Type)
 	}
 	// Check the primary key to see if we should insert or update
 	_, ok := obj.KV[f.Name]
 	if !ok {
 		return o.Insert(ctx, tx, obj)
 	}
-	return 0, fmt.Errorf("SaveObjectButErrorIfUpdate: ORM was told to expect an Insert for this obj: %v", obj)
+	return 0, fmt.Errorf("SaveButErrorIfUpdate: ORM was told to expect an Insert for this obj: %v", obj)
 }
 
-// SaveObjectButErrorIfInsert function will UPDATE a record and error if it
+// SaveButErrorIfInsert function will UPDATE a record and error if it
 // appears that an INSERT should have been performed. This could be necessary in
 // situations where an INSERT would compromise the integrity of the data.  If
 // given a transaction, it will use that to attempt to insert the data.
-func (o ORM) SaveObjectButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+func (o ORM) SaveButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	select {
 	case <-ctx.Done():
 		return 0, ctx.Err()
@@ -170,7 +170,7 @@ func (o ORM) SaveObjectButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *ob
 	objTable := o.s.GetTable(obj.Type)
 	// skip if object has invalid type
 	if objTable == nil {
-		return 0, errors.New("SaveObjectButErrorIfInsert: unknown object table " + obj.Type)
+		return 0, errors.New("SaveButErrorIfInsert: unknown object table " + obj.Type)
 	}
 	// skip objects that are saved
 	if !obj.IsDirty() {
@@ -179,26 +179,26 @@ func (o ORM) SaveObjectButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *ob
 	// ensure we have a primary key
 	pk := objTable.Primary
 	if pk == "" {
-		return 0, errors.New("SaveObjectButErrorIfInsert: empty primary key for " + obj.Type)
+		return 0, errors.New("SaveButErrorIfInsert: empty primary key for " + obj.Type)
 	}
 	// ensure the primary key has a field config
 	fieldMap := objTable.Columns
 	f := fieldMap[pk]
 	if f == nil {
-		return 0, errors.New("SaveObjectButErrorIfInsert: empty field " + pk + " for " + obj.Type)
+		return 0, errors.New("SaveButErrorIfInsert: empty field " + pk + " for " + obj.Type)
 	}
 	// Check the primary key to see if we should insert or update
 	_, ok := obj.KV[f.Name]
 	if !ok {
-		return 0, fmt.Errorf("SaveObjectButErrorIfInsert: ORM was told to expect an Update for this obj: %v", obj)
+		return 0, fmt.Errorf("SaveButErrorIfInsert: ORM was told to expect an Update for this obj: %v", obj)
 	}
 	return o.Update(ctx, tx, obj)
 }
 
-// SaveObject function will INSERT or UPDATE a record. It does not attempt to
+// Save function will INSERT or UPDATE a record. It does not attempt to
 // save any of the children. If given a transaction, it will use that to
 // attempt to insert the data.
-func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+func (o ORM) Save(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	select {
 	case <-ctx.Done():
 		return 0, ctx.Err()
@@ -207,7 +207,7 @@ func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (in
 	objTable := o.s.GetTable(obj.Type)
 	// skip if object has invalid type
 	if objTable == nil {
-		return 0, errors.New("SaveObject: unknown object table " + obj.Type)
+		return 0, errors.New("Save: unknown object table " + obj.Type)
 	}
 	// skip if object is saved
 	if !obj.IsDirty() {
@@ -216,13 +216,13 @@ func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (in
 	// retrieve primary key value
 	pk := objTable.Primary
 	if pk == "" {
-		return 0, errors.New("SaveObject: empty primary key for " + obj.Type)
+		return 0, errors.New("Save: empty primary key for " + obj.Type)
 	}
 	// skip if primary key has no field configuration in table schema
 	fieldMap := objTable.Columns
 	f := fieldMap[pk]
 	if f == nil {
-		return 0, errors.New("SaveObject: empty field " + pk + " for " + obj.Type)
+		return 0, errors.New("Save: empty field " + pk + " for " + obj.Type)
 	}
 	// Check the primary key to see if we should insert or update
 	_, ok := obj.KV[f.Name]

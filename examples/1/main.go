@@ -48,7 +48,7 @@ func getDSN() string {
 
 // TODO: refactor this so it is available from somewhere else
 // (so that user code doesn't have to replicate this)
-func GetSQLGen() *sg.SQLGenerator {
+func getSQLGen() *sg.SQLGenerator {
 	sqlGen := core.New()
 	sqlGen = sqliteAdapter.New(sqlGen)
 	sg.PanicIfInvalid(sqlGen)
@@ -71,8 +71,9 @@ func main() {
 	}()
 
 	sch := mock.NestedSchema()
-	orm := dorm.New(GetSQLGen(), sch, db)
+	orm := dorm.New(getSQLGen(), sch, db)
 
+	// CreateTables will create all tables within a given schema
 	{
 		ctx, cancel := getDefaultContext()
 		err = orm.CreateTables(ctx)
@@ -82,6 +83,7 @@ func main() {
 
 	// TODO: code to work with the database goes here
 
+	// DropTables will create all tables within a given schema
 	{
 		ctx, cancel := getDefaultContext()
 		err = orm.DropTables(ctx)
