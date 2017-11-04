@@ -26,8 +26,6 @@ import (
 
 	"testing"
 
-	"github.com/pkg/errors"
-
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/orm"
 	"github.com/rbastic/dyndao/schema"
@@ -108,7 +106,9 @@ func TestCreateTables(t *testing.T, db *sql.DB) {
 	sch := mock.NestedSchema()
 	o := orm.New(getSQLGen(), sch, db)
 
-	err := createTables(o.RawConn, sch)
+	ctx, cancel := getDefaultContext()
+	err := o.CreateTables(ctx)
+	cancel()
 	if err != nil {
 		panic(err)
 	}
@@ -118,7 +118,9 @@ func TestDropTables(t *testing.T, db *sql.DB) {
 	sch := mock.NestedSchema()
 	o := orm.New(getSQLGen(), sch, db)
 
-	err := dropTables(o.RawConn, sch)
+	ctx, cancel := getDefaultContext()
+	err := o.DropTables(ctx)
+	cancel()
 	fatalIf(err)
 }
 
@@ -197,6 +199,7 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 	})
 }
 
+// TODO: move this into the mock package
 func sampleAddressObject() *object.Object {
 	addr := object.New("addresses")
 	addr.Set("Address1", "Test")
@@ -206,6 +209,8 @@ func sampleAddressObject() *object.Object {
 	addr.Set("Zip", "02865")
 	return addr
 }
+
+// TODO: move this into the mock package
 func makeDefaultPersonWithAddress() *object.Object {
 	obj := object.New(PeopleObjectType)
 	obj.Set("Name", "Ryan")
@@ -436,55 +441,3 @@ func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
 	}
 }
 
-func prepareAndExecSQL(db *sql.DB, sqlStr string) (sql.Result, error) {
-	ctx, cancel := getDefaultContext()
-	stmt, err := db.PrepareContext(ctx, sqlStr)
-	cancel()
-	if err != nil {
-		return nil, errors.Wrap(err, "prepareAndExecSQL/PrepareContext")
-	}
-	ctx, cancel = getDefaultContext()
-	defer func() {
-		err := stmt.Close()
-		fatalIf(err)
-	}()
-	r, err := stmt.ExecContext(ctx)
-	cancel()
-	if err != nil {
-		return nil, errors.Wrap(err, "prepareAndExecSQL/ExecContext")
-	}
-	return r, nil
-}
-
-func createTables(db *sql.DB, sch *schema.Schema) error {
-	gen := getSQLGen()
-
-	for k := range sch.Tables {
-		sql, err := gen.CreateTable(gen, sch, k)
-		if err != nil {
-			return err
-		}
-		_, err = prepareAndExecSQL(db, sql)
-		if err != nil {
-			return errors.Wrap(err, "createTables")
-		}
-	}
-	return nil
-}
-
-func dropTables(db *sql.DB, sch *schema.Schema) error {
-	gen := getSQLGen()
-
-	for k := range sch.Tables {
-		sql := gen.DropTable(k)
-		r, err := prepareAndExecSQL(db, sql)
-		if err != nil {
-			return errors.Wrap(err, "dropTables")
-		}
-		_, err = r.RowsAffected()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}

@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	// TODO: refactor this so it's available from somewhere else
 	defaultDSN = "file::memory:?mode=memory&cache=shared"
 )
 
@@ -28,6 +29,8 @@ func GetDB() *sql.DB {
 	return db
 }
 
+// TODO: refactor this so it is available from somewhere else
+// (so that user code doesn't have to replicate this)
 func GetSQLGen() *sg.SQLGenerator {
 	sqlGen := core.New()
 	sqlGen = New(sqlGen)
