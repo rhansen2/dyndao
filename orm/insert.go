@@ -15,15 +15,16 @@ import (
 func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	sg := o.sqlGen
 	tracing := sg.Tracing
-
 	errorString := "Insert error"
 
+	// Check context
 	select {
 	case <-ctx.Done():
 		return 0, ctx.Err()
 	default:
 	}
 
+	// Lookup schema table
 	objTable := o.s.GetTable(obj.Type)
 	if objTable == nil {
 		if tracing {
@@ -34,6 +35,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 
 	callerSuppliesPK := objTable.CallerSuppliesPK
 
+	// Call any before create hooks
 	err := o.CallBeforeCreateHookIfNeeded(obj)
 	if err != nil {
 		if tracing {
@@ -42,6 +44,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, err
 	}
 
+	// Prepare our binding insert SQL statement and the binding parameters
 	sqlStr, bindArgs, err := sg.BindingInsert(sg, o.s, obj.Type, obj.KV)
 	if err != nil {
 		if tracing {
@@ -53,14 +56,16 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		fmt.Println("Insert/sqlStr=", sqlStr, "bindArgs=", bindArgs)
 	}
 
+	// Potential way to capture LastInsertID
 	var lastID int64
-	// Oracle-specific fix
+	// Oracle-specific fix. Possibly Postgres also.
 	if (!callerSuppliesPK) && o.sqlGen.FixLastInsertIDbug {
 		bindArgs = append(bindArgs, sql.Named(o.s.GetTable(obj.Type).Primary, sql.Out{
 			Dest: &lastID,
 		}))
 	}
 
+	// Prepare statement handle from either the database or the transaction
 	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)
 	if err != nil {
 		if tracing {
@@ -79,11 +84,13 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		//fmt.Println("DEFER INSERT CLOSED")
 	}()
 
+	// TODO: Check if this is still necessary
 	newBindArgs := make([]interface{}, len(bindArgs))
 	for i, arg := range bindArgs {
 		newBindArgs[i] = maybeDereferenceArgs(arg)
 	}
 
+	// Execute our statement
 	res, err := stmt.ExecContext(ctx, bindArgs...)
 	if err != nil {
 		if tracing {
@@ -115,6 +122,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		obj.SetCore(objTable.Primary, newID) // Set the new primary key in the object
 	}
 
+	// Check rows affected
 	rowsAff, err := res.RowsAffected()
 	if err != nil {
 		if tracing {
@@ -123,6 +131,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, err
 	}
 
+	// Call after create hook
 	err = o.CallAfterCreateHookIfNeeded(obj)
 	if err != nil {
 		if tracing {

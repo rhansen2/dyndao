@@ -46,16 +46,19 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 			if !ok {
 				return 0, fmt.Errorf("recurseAndSave: Unknown child object type %s for parent type %s", childObj.Type, obj.Type)
 			}
-			// TODO: support propagation of additional primary keys that are
-			// saved from previous recursive saves
-			// ... check if the child schema table contains
-			// the parent's primary key field as a name
+			// TODO: support propagation of additional primary keys
+			// that are saved from previous recursive saves ...
+			// check if the child schema table contains the
+			// parent's primary key field as a name
 			_, ok = childTable.Columns[table.Primary]
 			if ok {
 				// set in the child object if the table contains the primary
 				childObj.Set(table.Primary, pkVal)
 			}
 
+			// TODO: Likely we can just use pkQueryValsFromKV here,
+			// but I would like to add some test cases and verify
+			// the functionality under different scenarios.
 			aff, err := o.recurseAndSave(ctx, tx, childObj)
 			if err != nil {
 				return rowsAff + aff, err
@@ -72,12 +75,10 @@ func (o ORM) SaveAllInsideTx(ctx context.Context, tx *sql.Tx, obj *object.Object
 		return 0, ctx.Err()
 	default:
 	}
-	// TODO: Review this code for how it uses transactions / rollbacks.
 	rowsAff, err := o.recurseAndSave(ctx, tx, obj)
 	if err != nil {
 		err2 := tx.Rollback()
 		if err2 != nil {
-			// TODO: Not sure if this wrap is right.
 			return 0, errors.Wrap(err, err2.Error())
 		}
 		return 0, err
@@ -133,7 +134,7 @@ func (o ORM) SaveObjectButErrorIfUpdate(ctx context.Context, tx *sql.Tx, obj *ob
 	if objTable == nil {
 		return 0, errors.New("SaveObjectButErrorIfUpdate: unknown object table " + obj.Type)
 	}
-	// skip if object is saved
+	// skip if object is clean
 	if !obj.IsDirty() {
 		return 0, nil
 	}
