@@ -1,20 +1,21 @@
 package main
 
 import (
+	"time"
 	"context"
 	"os"
 
 	sg "github.com/rbastic/dyndao/sqlgen"
 
-	"github.com/rbastic/dyndao/object"
+//	"github.com/rbastic/dyndao/object"
 	dorm "github.com/rbastic/dyndao/orm"
 
-	"github.com/rbastic/dyndao/schema"
-	"github.com/rbastic/dyndao/schema/mock"
+//	"github.com/rbastic/dyndao/schema"
+	"github.com/rbastic/dyndao/schema/test/mock"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rbastic/dyndao/adapters/core"
-	"github.com/rbastic/dyndao/adapters/sqlite"
+	sqliteAdapter "github.com/rbastic/dyndao/adapters/sqlite"
 )
 
 var (
@@ -49,7 +50,7 @@ func getDSN() string {
 // (so that user code doesn't have to replicate this)
 func GetSQLGen() *sg.SQLGenerator {
 	sqlGen := core.New()
-	sqlGen = New(sqlGen)
+	sqlGen = sqliteAdapter.New(sqlGen)
 	sg.PanicIfInvalid(sqlGen)
 	return sqlGen
 }
@@ -72,5 +73,19 @@ func main() {
 	sch := mock.NestedSchema()
 	orm := dorm.New(GetSQLGen(), sch, db)
 
-	
+	{
+		ctx, cancel := getDefaultContext()
+		err = orm.CreateTables(ctx)
+		cancel()
+		fatalIf(err)
+	}
+
+	// TODO: code to work with the database goes here
+
+	{
+		ctx, cancel := getDefaultContext()
+		err = orm.DropTables(ctx)
+		cancel()
+		fatalIf(err)
+	}
 }

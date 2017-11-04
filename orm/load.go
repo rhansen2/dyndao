@@ -269,7 +269,7 @@ func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr
 			return nil, err
 		}
 
-		obj.SetSaved(true)
+		obj.MarkDirty(false)
 		obj.ResetChangedColumns()
 
 		objectArray = append(objectArray, obj)
@@ -382,7 +382,7 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 			return nil, err
 		}
 
-		obj.SetSaved(true)
+		obj.MarkDirty(false)
 		obj.ResetChangedColumns()
 		objectArray = append(objectArray, obj)
 	}

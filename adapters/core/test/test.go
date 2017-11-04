@@ -229,7 +229,7 @@ func saveMockObject(t *testing.T, o *orm.ORM, obj *object.Object) {
 	rowsAff, err := o.SaveAll(ctx, obj)
 	cancel()
 	fatalIf(err)
-	if !obj.GetSaved() {
+	if obj.IsDirty() {
 		t.Fatal("Unknown object error, object not saved")
 	}
 	if rowsAff == 0 {
@@ -277,7 +277,7 @@ func validateNullBlob(t *testing.T, obj *object.Object) {
 func validateChildrenSaved(t *testing.T, obj *object.Object) {
 	for _, childs := range obj.Children {
 		for _, v := range childs {
-			if !v.GetSaved() {
+			if v.IsDirty() {
 				t.Fatal("Child object wasn't saved")
 			}
 			addrID := v.Get("AddressID").(int64)
@@ -297,7 +297,7 @@ func testSaveObject(o *orm.ORM, t *testing.T, obj *object.Object) {
 	if rowsAff == 0 {
 		t.Fatalf("rowsAff should not be zero")
 	}
-	if !obj.GetSaved() {
+	if obj.IsDirty() {
 		t.Fatal("system is claiming object isn't saved")
 	}
 
@@ -336,7 +336,7 @@ func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
 		if err != nil {
 			t.Fatal("Save:" + err.Error())
 		}
-		if !nobj.GetSaved() {
+		if nobj.IsDirty() {
 			t.Fatal("Unknown object error, object not saved")
 		}
 		if rowsAff == 0 {
@@ -369,8 +369,7 @@ func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
 	if reflect.DeepEqual(car, cdr) {
 		t.Fatal("Objects matched, this was not expected")
 	}
-}
-
+} 
 func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 	// Configure our database query
 	queryVals := make(map[string]interface{})

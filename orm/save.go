@@ -134,7 +134,7 @@ func (o ORM) SaveObjectButErrorIfUpdate(ctx context.Context, tx *sql.Tx, obj *ob
 		return 0, errors.New("SaveObjectButErrorIfUpdate: unknown object table " + obj.Type)
 	}
 	// skip if object is saved
-	if obj.GetSaved() {
+	if !obj.IsDirty() {
 		return 0, nil
 	}
 	// retrieve primary key value
@@ -172,7 +172,7 @@ func (o ORM) SaveObjectButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *ob
 		return 0, errors.New("SaveObjectButErrorIfInsert: unknown object table " + obj.Type)
 	}
 	// skip objects that are saved
-	if obj.GetSaved() {
+	if !obj.IsDirty() {
 		return 0, nil
 	}
 	// ensure we have a primary key
@@ -209,7 +209,7 @@ func (o ORM) SaveObject(ctx context.Context, tx *sql.Tx, obj *object.Object) (in
 		return 0, errors.New("SaveObject: unknown object table " + obj.Type)
 	}
 	// skip if object is saved
-	if obj.GetSaved() {
+	if !obj.IsDirty() {
 		return 0, nil
 	}
 	// retrieve primary key value

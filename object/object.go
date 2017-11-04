@@ -42,12 +42,12 @@ type Object struct {
 	HiddenKV       map[string]interface{}
 	ChangedColumns map[string]interface{}
 	Children       map[string]Array
-	saved          bool
+	dirty          bool
 }
 
 // New is an empty constructor
 func New(objType string) *Object {
-	return &Object{Type: objType, KV: makeEmptyMap(), HiddenKV: nil, ChangedColumns: makeEmptyMap(), Children: makeEmptyChildrenMap(), saved: false}
+	return &Object{Type: objType, KV: makeEmptyMap(), HiddenKV: nil, ChangedColumns: makeEmptyMap(), Children: makeEmptyChildrenMap(), dirty: true}
 }
 
 // MakeArray will construct an array of length 'size'
@@ -291,8 +291,8 @@ func (o *Object) Set(k string, v interface{}) {
 		}
 		o.ColumnChanged(k, oldVal)
 	}
-	if o.GetSaved() {
-		o.SetSaved(false)
+	if !o.IsDirty() {
+		o.MarkDirty(true)
 	}
 	o.SetCore(k, v)
 }
@@ -323,7 +323,7 @@ func (o *Object) SetWhereNeeded(k string, v interface{}) {
 	// Otherwise, SetCore() is the right method to use.
 	if len(o.ChangedColumns) > 0 {
 		o.Set(k, v)
-	} else if !o.GetSaved() && len(o.KV) > 0 {
+	} else if o.IsDirty() && len(o.KV) > 0 {
 		// If the object is a forced UPDATE (meaning ChangedColumns are
 		// not set), for example, then we have to set this value in the
 		// KV without affecting a change that will force us away from
@@ -340,12 +340,12 @@ func (o *Object) ResetChangedColumns() {
 	o.ChangedColumns = make(map[string]interface{})
 }
 
-// SetSaved is our setter for the 'object is saved' status field
-func (o *Object) SetSaved(status bool) {
-	o.saved = status
+// MarkDirty is our setter for the 'object is saved' status field
+func (o *Object) MarkDirty(status bool) {
+	o.dirty = status
 }
 
-// GetSaved is our getter for the 'object is saved' bool field
-func (o Object) GetSaved() bool {
-	return o.saved
+// IsDirty is our getter for the 'object is saved' bool field
+func (o Object) IsDirty() bool {
+	return o.dirty
 }
