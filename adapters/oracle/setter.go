@@ -44,49 +44,37 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 		ct := columnTypes[i]
 
 		typeName := ct.DatabaseTypeName()
-		// TODO: Not sure this is actually correct?
 		if s.IsTimestampType(typeName) {
 			val := v.(*time.Time)
 			obj.Set(columnNames[i], *val)
 		} else if s.IsStringType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
-				// TODO: Does this work properly across databases?
-				//val := v.(*sql.NullString)
 				val := v.(*string)
 				obj.Set(columnNames[i], *val)
-				/*
-					if val.Valid {
-					}
-				*/
-				// TODO: We don't set keys for null values. How else can we support this?
 			} else {
 				val := v.(*string)
 				obj.Set(columnNames[i], *val)
 
 			}
 		} else if s.IsNumberType(typeName) {
-			// TODO: support more than 'int64' for integer...?
 			nullable, _ := ct.Nullable()
 			if nullable {
 				val := v.(*sql.NullInt64)
 				if val.Valid {
 					obj.Set(columnNames[i], val.Int64)
 				}
-				// TODO: We don't set keys for null values. How else can we support this?
 			} else {
 				val := v.(*int64)
 				obj.Set(columnNames[i], *val)
 			}
 		} else if s.IsFloatingType(typeName) {
-			// TODO: support more than 'int64' for integer...?
 			nullable, _ := ct.Nullable()
 			if nullable {
 				val := v.(*sql.NullFloat64)
 				if val.Valid {
 					obj.Set(columnNames[i], val.Float64)
 				}
-				// TODO: We don't set keys for null values. How else can we support this?
 			} else {
 				val := v.(*float64)
 				obj.Set(columnNames[i], *val)

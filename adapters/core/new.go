@@ -25,5 +25,7 @@ func New() *sg.SQLGenerator {
 	g.RenderWhereClause = sg.FnRenderWhereClause(RenderWhereClause)
 	g.RenderInsertValue = sg.FnRenderInsertValue(RenderInsertValue)
 	g.RenderUpdateWhereClause = sg.FnRenderUpdateWhereClause(RenderUpdateWhereClause)
+	g.DynamicObjectSetter = sg.FnDynamicObjectSetter(DynamicObjectSetter)
+	g.MakeColumnPointers = sg.FnMakeColumnPointers(MakeColumnPointers)
 	return g
 }

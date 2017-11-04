@@ -1,12 +1,14 @@
-package sqlite
+// Package common encapsulates common functionality that can be leveraged
+// by all (or almost all) necessary database adapters. It differs from core
+// in that common is still leveraged from the individual adapter code.
+package core
 
 import (
 	"database/sql"
-	"time"
-
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
 	sg "github.com/rbastic/dyndao/sqlgen"
+	"time"
 )
 
 // DynamicObjectSetter is used to dynamically set the values of an object by

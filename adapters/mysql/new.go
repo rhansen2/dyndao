@@ -14,8 +14,6 @@ func New(g *sg.SQLGenerator) *sg.SQLGenerator {
 	g.IsFloatingType = sg.FnIsFloatingType(IsFloatingType)
 	g.IsTimestampType = sg.FnIsTimestampType(IsTimestampType)
 	g.IsLOBType = sg.FnIsLOBType(IsLOBType)
-	g.DynamicObjectSetter = sg.FnDynamicObjectSetter(DynamicObjectSetter)
-	g.MakeColumnPointers = sg.FnMakeColumnPointers(MakeColumnPointers)
 	g.RenderCreateColumn = sg.FnRenderCreateColumn(RenderCreateColumn)
 	return g
 }
