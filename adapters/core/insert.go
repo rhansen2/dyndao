@@ -14,19 +14,6 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-// TODO: refactor this?
-func getRealColumnName(tbl *schema.Table, col string) string {
-	if tbl.ColumnAliases == nil {
-		return col
-	}
-
-	realName, ok := tbl.ColumnAliases[col]
-	if ok {
-		return realName
-	}
-	return col
-}
-
 func CoreBindingInsert(g *sg.SQLGenerator, schTable *schema.Table, data map[string]interface{}, identityCol string, fieldsMap map[string]*schema.Column) ([]string, []string, []interface{}) {
 	dataLen := len(data)
 	bindNames := make([]string, dataLen)
@@ -34,17 +21,17 @@ func CoreBindingInsert(g *sg.SQLGenerator, schTable *schema.Table, data map[stri
 	bindArgs := make([]interface{}, dataLen)
 	i := 0
 	for k, v := range data {
-		realName := getRealColumnName(schTable, k)
+		realName := schTable.GetColumnName(k)
+
 		colNames[i] = realName
 		var r string
 
 		if r == "" {
 			f, ok := fieldsMap[realName]
-			if ok {
-				r = g.RenderBindingValue(f)
-			} else {
+			if !ok {
 				panic(fmt.Sprintf("coreBindingInsert: Unknown field for key: [%s] realName: [%s] for table %s", k, realName, schTable.Name))
 			}
+			r = g.RenderBindingValue(f)
 		}
 
 		if v == nil {
@@ -65,7 +52,7 @@ func CoreBindingInsert(g *sg.SQLGenerator, schTable *schema.Table, data map[stri
 				bindNames[i] = r
 				barg, err := g.RenderInsertValue(fieldsMap[realName], v)
 				if err != nil {
-					panic(err.Error())
+					panic(err)
 				}
 				bindArgs[i] = barg
 			}

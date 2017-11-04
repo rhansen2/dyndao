@@ -34,14 +34,8 @@ import (
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
-const PeopleObjectType string = "people"
-const AddressesObjectType string = "addresses"
-
-// function type for GetDB
-type FnGetDB func() *sql.DB
-
-// function type for GetSQLGenerator
-type FnGetSG func() *sg.SQLGenerator
+type FnGetDB func() *sql.DB // function type for GetDB
+type FnGetSG func() *sg.SQLGenerator // function type for GetSQLGenerator
 
 var (
 	GetDB     FnGetDB
@@ -64,6 +58,12 @@ func PingCheck(t *testing.T, db *sql.DB) {
 	err := db.PingContext(ctx)
 	cancel()
 	fatalIf(err)
+}
+
+func dirtyTest(obj * object.Object) {
+	if obj.IsDirty() {
+		panic("system claims object is not saved")
+	}
 }
 
 func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
@@ -124,18 +124,11 @@ func TestDropTables(t *testing.T, db *sql.DB) {
 	fatalIf(err)
 }
 
-func TestSuiteNested(t *testing.T, db *sql.DB) {
-	sch := mock.NestedSchema()            // Use mock test schema
-	o := orm.New(getSQLGen(), sch, db)    // Setup our ORM
-	obj := makeDefaultPersonWithAddress() // Construct our default mock object
-
-	// Save our default object
-	t.Run("SaveMockObject", func(t *testing.T) {
-		saveMockObject(t, &o, obj)
-	})
+func validateMock(t * testing.T, obj * object.Object) {
 	// Validate that we correctly fleshened the primary key
 	t.Run("ValidatePerson/ID", func(t *testing.T) {
 		validatePersonID(t, obj)
+
 		// TODO: Make sure we saved the Address with a person id also
 	})
 	t.Run("ValidatePerson/NullText", func(t *testing.T) {
@@ -156,6 +149,19 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 	t.Run("ValidateChildrenSaved", func(t *testing.T) {
 		validateChildrenSaved(t, obj)
 	})
+}
+
+func TestSuiteNested(t *testing.T, db *sql.DB) {
+	sch := mock.NestedSchema()            // Use mock test schema
+	o := orm.New(getSQLGen(), sch, db)    // Setup our ORM
+	obj := mock.DefaultPersonWithAddress() // Construct our default mock object
+
+	// Save our default object
+	t.Run("SaveMockObject", func(t *testing.T) {
+		saveMockObject(t, &o, obj)
+	})
+
+	validateMock(t, obj)
 
 	// Test second additional Save to ensure that we don't save
 	// the object twice needlessly... This caught a silly bug early on.
@@ -185,12 +191,12 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 
 	t.Run("RetrieveMany", func(t *testing.T) {
 		// test multiple retrieve
-		testRetrieveMany(&o, t, PeopleObjectType)
+		testRetrieveMany(&o, t, mock.PeopleObjectType)
 	})
 
 	t.Run("FleshenChildren", func(t *testing.T) {
 		// try fleshen children on person id 1
-		testFleshenChildren(&o, t, PeopleObjectType)
+		testFleshenChildren(&o, t, mock.PeopleObjectType)
 	})
 
 	t.Run("GetParentsViaChild", func(t *testing.T) {
@@ -199,39 +205,14 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 	})
 }
 
-// TODO: move this into the mock package
-func sampleAddressObject() *object.Object {
-	addr := object.New("addresses")
-	addr.Set("Address1", "Test")
-	addr.Set("Address2", "Test2")
-	addr.Set("City", "Nowhere")
-	addr.Set("State", "AZ")
-	addr.Set("Zip", "02865")
-	return addr
-}
-
-// TODO: move this into the mock package
-func makeDefaultPersonWithAddress() *object.Object {
-	obj := object.New(PeopleObjectType)
-	obj.Set("Name", "Ryan")
-	obj.Set("NullText", object.NewNULLValue())
-	obj.Set("NullInt", object.NewNULLValue())
-	obj.Set("NullVarchar", object.NewNULLValue())
-	obj.Set("NullBlob", object.NewNULLValue())
-
-	addrObj := sampleAddressObject()
-	obj.Children["addresses"] = object.NewArray(addrObj)
-	return obj
-}
-
 func saveMockObject(t *testing.T, o *orm.ORM, obj *object.Object) {
 	ctx, cancel := getDefaultContext()
 	rowsAff, err := o.SaveAll(ctx, obj)
 	cancel()
 	fatalIf(err)
-	if obj.IsDirty() {
-		t.Fatal("Unknown object error, object not saved")
-	}
+
+	dirtyTest(obj)
+
 	if rowsAff == 0 {
 		t.Fatal("Rows affected shouldn't be zero initially")
 	}
@@ -277,9 +258,8 @@ func validateNullBlob(t *testing.T, obj *object.Object) {
 func validateChildrenSaved(t *testing.T, obj *object.Object) {
 	for _, childs := range obj.Children {
 		for _, v := range childs {
-			if v.IsDirty() {
-				t.Fatal("Child object wasn't saved")
-			}
+			dirtyTest(v)
+
 			addrID := v.Get("AddressID").(int64)
 			if addrID < 1 {
 				t.Fatal("AddressID was not what we expected")
@@ -297,10 +277,8 @@ func testSave(o *orm.ORM, t *testing.T, obj *object.Object) {
 	if rowsAff == 0 {
 		t.Fatalf("rowsAff should not be zero")
 	}
-	if obj.IsDirty() {
-		t.Fatal("system is claiming object isn't saved")
-	}
 
+	dirtyTest(obj)
 }
 
 func testRetrieve(o *orm.ORM, t *testing.T, sch *schema.Schema) {
@@ -309,7 +287,7 @@ func testRetrieve(o *orm.ORM, t *testing.T, sch *schema.Schema) {
 	}
 	// refleshen our object
 	ctx, cancel := getDefaultContext()
-	latestJoe, err := o.Retrieve(ctx, PeopleObjectType, queryVals)
+	latestJoe, err := o.Retrieve(ctx, mock.PeopleObjectType, queryVals)
 	cancel()
 	if err != nil {
 		t.Fatal("retrieve failed: " + err.Error())
@@ -336,9 +314,8 @@ func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
 		if err != nil {
 			t.Fatal("Save:" + err.Error())
 		}
-		if nobj.IsDirty() {
-			t.Fatal("Unknown object error, object not saved")
-		}
+		dirtyTest(nobj)
+
 		if rowsAff == 0 {
 			t.Fatal("Rows affected shouldn't be zero initially")
 		}
@@ -362,7 +339,7 @@ func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
 		if car.Get("Name") == cdr.Get("Name") && car.Get("PersonID") != cdr.Get("PersonID") {
 			// pass
 		} else {
-			t.Fatal("objects weren't what we expected? are they the same?")
+			t.Fatal("objects weren't what we expected? they appear to be the same?")
 		}
 	}
 
@@ -370,6 +347,7 @@ func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
 		t.Fatal("Objects matched, this was not expected")
 	}
 }
+
 func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 	// Configure our database query
 	queryVals := make(map[string]interface{})
@@ -392,6 +370,7 @@ func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 	ctx, cancel = getDefaultContext()
 	objs, err := o.GetParentsViaChild(ctx, childObj)
 	fatalIf(err)
+
 	// Validate expected data
 	if len(objs) != 1 {
 		t.Fatal("Unknown length of objs, expected 1, got ", len(objs))
@@ -423,10 +402,10 @@ func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
 		cancel()
 		fatalIf(err)
 
-		if fleshened.Type != PeopleObjectType {
-			t.Fatal("fleshened object has wrong type, expected", AddressesObjectType)
+		if fleshened.Type != mock.PeopleObjectType {
+			t.Fatal("fleshened object has wrong type, expected", mock.AddressesObjectType)
 		}
-		if fleshened.Children[AddressesObjectType] == nil {
+		if fleshened.Children[mock.AddressesObjectType] == nil {
 			t.Fatal("expected Addresses children")
 		}
 		address1, err := fleshened.Children["addresses"][0].GetStringAlways("Address1")

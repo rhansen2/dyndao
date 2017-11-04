@@ -1,8 +1,12 @@
 package mock
 
 import (
+	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 )
+
+const PeopleObjectType string = "people"
+const AddressesObjectType string = "addresses"
 
 // Basic test mock
 func fieldName() *schema.Column {
@@ -146,3 +150,27 @@ func NestedSchema() *schema.Schema {
 	sch.Tables["addresses"] = addrTable
 	return sch
 }
+
+func SampleAddressObject() *object.Object {
+	addr := object.New("addresses")
+	addr.Set("Address1", "Test")
+	addr.Set("Address2", "Test2")
+	addr.Set("City", "Nowhere")
+	addr.Set("State", "AZ")
+	addr.Set("Zip", "02865")
+	return addr
+}
+
+func DefaultPersonWithAddress() *object.Object {
+	obj := object.New(PeopleObjectType)
+	obj.Set("Name", "Ryan")
+	obj.Set("NullText", object.NewNULLValue())
+	obj.Set("NullInt", object.NewNULLValue())
+	obj.Set("NullVarchar", object.NewNULLValue())
+	obj.Set("NullBlob", object.NewNULLValue())
+
+	addrObj := SampleAddressObject()
+	obj.Children["addresses"] = object.NewArray(addrObj)
+	return obj
+}
+
