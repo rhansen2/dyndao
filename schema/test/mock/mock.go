@@ -54,7 +54,6 @@ func fieldNullBlob() *schema.Column {
 
 func fieldAddress(n string) *schema.Column {
 	fld := schema.DefaultColumn()
-	fld.Source = n
 	fld.IsNumber = false
 
 	// Note: Name could be 'name', 'email', etc. or 'basic.name', 'basic.email',
@@ -101,7 +100,6 @@ func fkColumn(name string) *schema.Column {
 	fld.DBType = "integer"
 	fld.IsIdentity = false
 	fld.IsNumber = true
-	fld.Source = name
 	return fld
 }
 

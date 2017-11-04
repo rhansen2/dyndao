@@ -54,7 +54,6 @@ type Column struct {
 	Name         string `json:"Name"`
 	DefaultValue string `json:"DefaultValue"` // Converts to integer if IsNumber is set
 	DBType       string `json:"DBType"`
-	Source       string `json:"Source"` // Could be JSON source, could be something else...
 }
 
 // ChildTable represents a relationship between a parent table

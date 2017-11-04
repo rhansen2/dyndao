@@ -129,7 +129,6 @@ func DefaultColumn() *Column {
 		IsNumber:     false,
 		DBType:       "",
 		IsIdentity:   false,
-		Source:       "",
 	}
 	return fld
 }
