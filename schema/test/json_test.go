@@ -1,13 +1,14 @@
 package test
 
 import (
+	"github.com/rbastic/dyndao/schema/test/mock"
 	"encoding/json"
 	"fmt"
 	"testing"
 )
 
 func TestJSONMarshalUnmarshal(t *testing.T) {
-	sch := MockBasicSchema()
+	sch := mock.BasicSchema()
 	buf, err := json.Marshal(sch)
 	if err != nil {
 		t.Fatal(err)

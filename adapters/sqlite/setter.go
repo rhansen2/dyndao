@@ -2,7 +2,6 @@ package sqlite
 
 import (
 	"database/sql"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -20,12 +19,12 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 		ct := columnTypes[i]
 
 		typeName := ct.DatabaseTypeName()
-		// TODO: Not sure this is actually correct?
+
 		if s.IsTimestampType(typeName) {
 			val := v.(*time.Time)
 			obj.Set(columnNames[i], *val)
 			continue
-		} else if s.IsStringType(typeName) || strings.HasPrefix(typeName, "VARCHAR") {
+		} else if s.IsStringType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
 				val := v.(*sql.NullString)
@@ -112,7 +111,7 @@ func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.Col
 				var s string
 				columnPointers[i] = &s
 			}
-		} else if s.IsStringType(typeName) || strings.HasPrefix(typeName, "VARCHAR") {
+		} else if s.IsStringType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
 				var s sql.NullString

@@ -3,6 +3,7 @@ package test
 import (
 	"fmt"
 	"github.com/rbastic/dyndao/schema"
+	"github.com/rbastic/dyndao/schema/test/mock"
 	"testing"
 )
 
@@ -27,5 +28,5 @@ func TestDefaultChildTable(t *testing.T) {
 }
 
 func TestSchemaBasic(t *testing.T) {
-	_ = MockBasicSchema()
+	_ = mock.BasicSchema()
 }

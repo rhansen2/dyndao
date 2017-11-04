@@ -1,4 +1,4 @@
-package test
+package mock
 
 import (
 	"github.com/rbastic/dyndao/schema"
@@ -127,8 +127,8 @@ func addressTable() *schema.Table {
 	return tbl
 }
 
-// MockBasicSchema is the basic mock for one table
-func MockBasicSchema() *schema.Schema {
+// BasicSchema is the basic mock for one table
+func BasicSchema() *schema.Schema {
 	sch := schema.DefaultSchema()
 	personTable := peopleTable()
 
@@ -136,9 +136,9 @@ func MockBasicSchema() *schema.Schema {
 	return sch
 }
 
-// MockNestedSchema is the basic mock for two tables (one table that references a foreign table)
-func MockNestedSchema() *schema.Schema {
-	sch := MockBasicSchema()
+// NestedSchema is the basic mock for two tables (one table that references a foreign table)
+func NestedSchema() *schema.Schema {
+	sch := BasicSchema()
 	personTable := sch.Tables["people"]
 
 	childTable := schema.DefaultChildTable()

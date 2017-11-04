@@ -1,13 +1,6 @@
-// Package oraclegen is a set of tests that put the various components together and
-// demonstrate how they can be combined. (As well as serving as a bit of a test suite...)
-//
-// In other words, we run database tests, use the generator, use the ORM, etc.
-// TODO: More complex test schemas.
 package sqlite
 
 import (
-	// Load preferred Oracle driver. Mattn's oci8 had race conditions
-	// during testing
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 

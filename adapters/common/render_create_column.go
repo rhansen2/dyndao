@@ -1,5 +1,6 @@
 // Package common encapsulates common functionality that can be leveraged
-// by all (or almost all) necessary database adapters.
+// by all (or almost all) necessary database adapters. It differs from core
+// in that common is still leveraged from the individual adapter code.
 package common
 
 import (

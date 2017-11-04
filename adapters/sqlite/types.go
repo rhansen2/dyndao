@@ -1,5 +1,9 @@
 package sqlite
 
+import (
+	"strings"
+)
+
 // Derived from: www.sqlite.org/datatype3.html
 // TODO: That table only shows a small subset of the datatypes SQLite will accept.
 var stringTypes = map[string]bool{
@@ -66,6 +70,9 @@ var lobTypes = map[string]bool{
 
 // IsStringType can be used to help determine whether a certain data type is a string type.
 func IsStringType(k string) bool {
+	if strings.HasPrefix(k, "VARCHAR") {
+		return true
+	}
 	return stringTypes[k]
 }
 
