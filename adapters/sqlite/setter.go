@@ -25,7 +25,7 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 			val := v.(*time.Time)
 			obj.Set(columnNames[i], *val)
 			continue
-		} else if s.IsStringType(typeName) || strings.Contains(typeName, "VARCHAR") {
+		} else if s.IsStringType(typeName) || strings.HasPrefix(typeName, "VARCHAR") {
 			nullable, _ := ct.Nullable()
 			if nullable {
 				val := v.(*sql.NullString)
@@ -112,7 +112,7 @@ func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.Col
 				var s string
 				columnPointers[i] = &s
 			}
-		} else if s.IsStringType(typeName) || strings.Contains(typeName, "VARCHAR") {
+		} else if s.IsStringType(typeName) || strings.HasPrefix(typeName, "VARCHAR") {
 			nullable, _ := ct.Nullable()
 			if nullable {
 				var s sql.NullString
