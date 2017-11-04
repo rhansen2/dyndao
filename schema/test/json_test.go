@@ -1,9 +1,9 @@
 package test
 
 import (
-	"github.com/rbastic/dyndao/schema/test/mock"
 	"encoding/json"
 	"fmt"
+	"github.com/rbastic/dyndao/schema/test/mock"
 	"testing"
 )
 

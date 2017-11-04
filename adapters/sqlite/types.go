@@ -26,25 +26,25 @@ var stringTypes = map[string]bool{
 }
 
 var numTypes = map[string]bool{
-	"INTEGER":          true,
-	"integer":          true,
-	"INT":              true,
-	"int":              true,
-	"TINYINT":          true,
-	"tinyint":          true,
-	"SMALLINT":         true,
-	"smallint":         true,
-	"MEDIUMINT":        true,
-	"mediumint":        true,
-	"BIGINT":           true,
-	"bigint":           true,
+	"INTEGER":   true,
+	"integer":   true,
+	"INT":       true,
+	"int":       true,
+	"TINYINT":   true,
+	"tinyint":   true,
+	"SMALLINT":  true,
+	"smallint":  true,
+	"MEDIUMINT": true,
+	"mediumint": true,
+	"BIGINT":    true,
+	"bigint":    true,
 	// TODO: Better support unsigned num types.
 	//"UNSIGNED BIG INT": true,
 	//"unsigned big int": true,
-	"INT2":             true,
-	"int2":             true,
-	"INT8":             true,
-	"int8":             true,
+	"INT2": true,
+	"int2": true,
+	"INT8": true,
+	"int8": true,
 }
 
 var floatTypes = map[string]bool{

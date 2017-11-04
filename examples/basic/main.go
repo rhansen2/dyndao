@@ -1,16 +1,14 @@
 package main
 
 import (
-	"time"
 	"context"
 	"os"
+	"time"
 
 	sg "github.com/rbastic/dyndao/sqlgen"
 
-//	"github.com/rbastic/dyndao/object"
 	dorm "github.com/rbastic/dyndao/orm"
 
-//	"github.com/rbastic/dyndao/schema"
 	"github.com/rbastic/dyndao/schema/test/mock"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -20,7 +18,7 @@ import (
 
 var (
 	defaultDriver = "sqlite3"
-	defaultDSN = "file::memory:?mode=memory&cache=shared"
+	defaultDSN    = "file::memory:?mode=memory&cache=shared"
 )
 
 func fatalIf(err error) {
@@ -49,8 +47,7 @@ func getDSN() string {
 // TODO: refactor this so it is available from somewhere else
 // (so that user code doesn't have to replicate this)
 func getSQLGen() *sg.SQLGenerator {
-	sqlGen := core.New()
-	sqlGen = sqliteAdapter.New(sqlGen)
+	sqlGen := sqliteAdapter.New(core.New())
 	sg.PanicIfInvalid(sqlGen)
 	return sqlGen
 }
@@ -81,7 +78,7 @@ func main() {
 		fatalIf(err)
 	}
 
-	// TODO: code to work with the database goes here
+	// TODO: put code to work with the database here
 
 	// DropTables will create all tables within a given schema
 	{

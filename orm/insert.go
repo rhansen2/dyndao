@@ -140,7 +140,7 @@ func (o ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64,
 		return 0, err
 	}
 
-	obj.MarkDirty(false)        // Note that the object has been recently saved
+	obj.MarkDirty(false)      // Note that the object has been recently saved
 	obj.ResetChangedColumns() // Reset the 'changed fields', if any
 	return rowsAff, nil
 }

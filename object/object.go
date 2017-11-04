@@ -13,8 +13,7 @@ import (
 	"strconv"
 )
 
-var (
-	// ErrKeyWasMissing is returned by the Get* family of functions in
+var ( // ErrKeyWasMissing is returned by the Get* family of functions in
 	// situations where a value must be returned, but we would like to
 	// signal that the requested key was empty.
 	ErrKeyWasMissing = errors.New("object: key was missing")
@@ -78,6 +77,7 @@ func makeEmptyChildrenMap() map[string]Array {
 	return make(map[string]Array)
 }
 
+// MakeHiddenKVIfNeeded allocates an empty map and assigns it to HiddenKV if needed.
 func (o *Object) MakeHiddenKVIfNeeded() {
 	if o.HiddenKV == nil {
 		o.HiddenKV = makeEmptyMap()
@@ -86,37 +86,37 @@ func (o *Object) MakeHiddenKVIfNeeded() {
 
 // Get is the most basic accessor, for cases
 // that may not be handled by other methods
-func (o Object) Get(k string) interface{} {
+func (o *Object) Get(k string) interface{} {
 	return o.KV[k]
 }
 
 // GetWithFlag is the second most basic accessor, for cases
 // that may not be handled by other methods
-func (o Object) GetWithFlag(k string) (interface{}, bool) {
+func (o *Object) GetWithFlag(k string) (interface{}, bool) {
 	v, ok := o.KV[k]
 	return v, ok
 }
 
 // GetBool is a safe, typed bool accessor
-func (o Object) GetBool(k string) (bool, bool) {
+func (o *Object) GetBool(k string) (bool, bool) {
 	v, ok := o.KV[k].(bool)
 	return v, ok
 }
 
 // GetString is a safe, typed string accessor
-func (o Object) GetString(k string) (string, bool) {
+func (o *Object) GetString(k string) (string, bool) {
 	v, ok := o.KV[k].(string)
 	return v, ok
 }
 
 // GetInt is a safe, typed int64 accessor
-func (o Object) GetInt(k string) (int64, bool) {
+func (o *Object) GetInt(k string) (int64, bool) {
 	v, ok := o.KV[k].(int64)
 	return v, ok
 }
 
 // GetFloat is a safe, typed float64 accessor
-func (o Object) GetFloat(k string) (float64, bool) {
+func (o *Object) GetFloat(k string) (float64, bool) {
 	v, ok := o.KV[k].(float64)
 	return v, ok
 }
@@ -125,7 +125,7 @@ func (o Object) GetFloat(k string) (float64, bool) {
 // will force conversion away from float64, int64, uint64, string, and nil
 // values. Nils and unrecognized values are marked as an error (nil values will
 // return 0 and ErrValueWasNil)
-func (o Object) HiddenGetStringAlways(k string) (string, error) {
+func (o *Object) HiddenGetStringAlways(k string) (string, error) {
 	v, ok := o.HiddenKV[k]
 	if !ok {
 		return "", ErrKeyWasMissing
@@ -155,7 +155,7 @@ func (o Object) HiddenGetStringAlways(k string) (string, error) {
 // GetStringAlways is a safe, typed string accessor. It will force conversion away
 // from float64, int64, uint64, string, and nil values. Nils and unrecognized values
 // are marked as an error (nil values will return 0 and ErrValueWasNil)
-func (o Object) GetStringAlways(k string) (string, error) {
+func (o *Object) GetStringAlways(k string) (string, error) {
 	v, ok := o.KV[k]
 	if !ok {
 		return "", ErrKeyWasMissing
@@ -191,7 +191,7 @@ func (o Object) GetStringAlways(k string) (string, error) {
 // GetFloatAlways is a safe, typed float64 accessor. It will force conversion away
 // from float64, int64, uint64, string, and nil values. Nils and unrecognized values
 // are marked as an error (nil values will return 0 and ErrValueWasNil)
-func (o Object) GetFloatAlways(k string) (float64, error) {
+func (o *Object) GetFloatAlways(k string) (float64, error) {
 	v, ok := o.KV[k]
 	if !ok {
 		return 0, ErrKeyWasMissing
@@ -221,7 +221,7 @@ func (o Object) GetFloatAlways(k string) (float64, error) {
 // GetIntAlways is a safe, typed int64 accessor. It will force conversion away
 // from float64, uint64, int64 and string values. Nils and unrecognized values are
 // marked as an error (nil values will return 0 and ErrValueWasNil)
-func (o Object) GetIntAlways(k string) (int64, error) {
+func (o *Object) GetIntAlways(k string) (int64, error) {
 	v, ok := o.KV[k]
 	if !ok {
 		return 0, ErrKeyWasMissing
@@ -251,7 +251,7 @@ func (o Object) GetIntAlways(k string) (int64, error) {
 // GetUintAlways is a safe, typed uint64 accessor. It will force conversion
 // away from float64, int64, and string values. Nils and unrecognized values
 // are marked as an error (nil values will return 0 and ErrValueWasNil)
-func (o Object) GetUintAlways(k string) (uint64, error) {
+func (o *Object) GetUintAlways(k string) (uint64, error) {
 	v, ok := o.KV[k]
 	if !ok {
 		return 0, ErrKeyWasMissing
@@ -346,6 +346,6 @@ func (o *Object) MarkDirty(status bool) {
 }
 
 // IsDirty is our getter for the 'object is saved' bool field
-func (o Object) IsDirty() bool {
+func (o *Object) IsDirty() bool {
 	return o.dirty
 }

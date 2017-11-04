@@ -125,7 +125,7 @@ func TestDropTables(t *testing.T, db *sql.DB) {
 }
 
 func TestSuiteNested(t *testing.T, db *sql.DB) {
-	sch := mock.NestedSchema()  // Use mock test schema
+	sch := mock.NestedSchema()            // Use mock test schema
 	o := orm.New(getSQLGen(), sch, db)    // Setup our ORM
 	obj := makeDefaultPersonWithAddress() // Construct our default mock object
 
@@ -369,7 +369,7 @@ func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
 	if reflect.DeepEqual(car, cdr) {
 		t.Fatal("Objects matched, this was not expected")
 	}
-} 
+}
 func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 	// Configure our database query
 	queryVals := make(map[string]interface{})
@@ -439,4 +439,3 @@ func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
 		}
 	}
 }
-

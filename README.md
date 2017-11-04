@@ -87,7 +87,9 @@ schema - schema definitions and supporting types
 orm    - Bridge pattern-influenced package combining schema, sqlgen, and
 	 object.
 
-sqlgen - SQL statement generators for various database implementations
+adapters - SQL statement generators for various database implementations
+
+sqlgen - Specifies SQL Generator vtables
 
 mapper - Custom JSON mapping layers (WIP)
 ```

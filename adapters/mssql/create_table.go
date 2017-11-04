@@ -1,8 +1,8 @@
 package mssql
 
 import (
-	"github.com/rbastic/dyndao/schema"
 	"github.com/rbastic/dyndao/adapters/common"
+	"github.com/rbastic/dyndao/schema"
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
