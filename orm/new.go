@@ -15,6 +15,7 @@ type HookFunction func(*schema.Schema, *object.Object) error
 // ORM is the primary object we expect the caller to operate on.
 // Construct one with orm.New( ... ) and be on your merry way.
 type ORM struct {
+
 	sqlGen  *sg.SQLGenerator
 	s       *schema.Schema
 	RawConn *sql.DB

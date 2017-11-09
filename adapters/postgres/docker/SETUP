@@ -1,0 +1,21 @@
+rbastic@marvin:~/src/src/github.com/rbastic/dyndao/adapters/postgres/docker$ sudo su - 
+[sudo] password for rbastic: 
+root@marvin:~# su - postgres
+postgres@marvin:~$ psql
+psql (9.6.5, server 9.5.9)
+Type "help" for help.
+
+postgres=# CREATE SCHEMA test;
+CREATE SCHEMA
+postgres=# CREATE USER docker WITH SUPERUSER PASSWORD 'docker';
+CREATE ROLE
+postgres=# GRANT ALL ON SCHEMA test TO docker;
+GRANT
+postgres=# quit
+postgres-# \q
+postgres@marvin:~$ logout
+root@marvin:~# logout
+
+then
+
+GRANT ALL ON ALL TABLES IN SCHEMA test TO docker

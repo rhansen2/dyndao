@@ -11,7 +11,7 @@ import (
 )
 
 // Update function will UPDATE a record ...
-func (o ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+func (o *ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	sg := o.sqlGen
 	tracing := sg.Tracing
 

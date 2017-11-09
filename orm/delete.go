@@ -11,7 +11,7 @@ import (
 )
 
 // Delete function will DELETE a record ...
-func (o ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+func (o *ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	sg := o.sqlGen
 
 	select {

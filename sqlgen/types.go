@@ -13,9 +13,8 @@ type FnBindingRetrieve func(g *SQLGenerator, sch *schema.Schema, obj *object.Obj
 type FnBindingDelete func(g *SQLGenerator, sch *schema.Schema, obj *object.Object) (string, []interface{}, error)
 type FnCreateTable func(g *SQLGenerator, sch *schema.Schema, table string) (string, error)
 type FnDropTable func(name string) string
-type FnRenderBindingValue func(f *schema.Column) string
-type FnRenderBindingValueWithInt func(f *schema.Column, i int64) string
-type FnRenderInsertValue func(f *schema.Column, value interface{}) (interface{}, error)
+type FnRenderBindingValueWithInt func(f *schema.Column, i int) string
+type FnRenderInsertValue func(bindI * int, f *schema.Column, value interface{}) (interface{}, error)
 type FnIsStringType func(string) bool
 type FnIsNumberType func(string) bool
 type FnIsFloatingType func(string) bool
@@ -25,7 +24,7 @@ type FnDynamicObjectSetter func(g *SQLGenerator, columnNames []string, columnPoi
 type FnMakeColumnPointers func(g *SQLGenerator, sliceLen int, columnTypes []*sql.ColumnType) ([]interface{}, error)
 
 type FnRenderWhereClause func(g *SQLGenerator, schTable *schema.Table, obj *object.Object) (string, []interface{}, error)
-type FnRenderUpdateWhereClause func(g *SQLGenerator, schTable *schema.Table, fieldsMap map[string]*schema.Column, obj *object.Object) (string, []interface{}, error)
+type FnRenderUpdateWhereClause func(g *SQLGenerator, schTable *schema.Table, fieldsMap map[string]*schema.Column, obj *object.Object) (string, []interface{}, *int, error)
 
 type FnCoreBindingInsert func(g *SQLGenerator, schTable *schema.Table, data map[string]interface{}, identityCol string, fieldsMap map[string]*schema.Column) ([]string, []string, []interface{})
 
@@ -39,6 +38,13 @@ type FnBindingInsertSQL func(schTable *schema.Table, tableName string, colNames 
 type SQLGenerator struct {
 	Tracing                   bool
 	FixLastInsertIDbug        bool
+	// Necessary for ORM-level compatibility hacks
+	IsSQLITE bool
+	IsMYSQL bool
+	IsORACLE bool
+	IsMSSQL bool // MS SQL Server
+	IsPOSTGRES bool // Postgre/Postgres? 's' or not?
+
 	BindingInsert             FnBindingInsert
 	BindingUpdate             FnBindingUpdate
 	BindingRetrieve           FnBindingRetrieve
@@ -46,7 +52,6 @@ type SQLGenerator struct {
 	CreateTable               FnCreateTable
 	RenderCreateColumn        FnRenderCreateColumn
 	DropTable                 FnDropTable
-	RenderBindingValue        FnRenderBindingValue
 	RenderBindingValueWithInt FnRenderBindingValueWithInt
 	RenderInsertValue         FnRenderInsertValue
 

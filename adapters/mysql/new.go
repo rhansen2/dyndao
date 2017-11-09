@@ -9,6 +9,7 @@ import (
 // methods that it needs to. In some instances, this could be all methods,
 // or hardly any.
 func New(g *sg.SQLGenerator) *sg.SQLGenerator {
+	g.IsMYSQL = true
 	g.IsStringType = sg.FnIsStringType(IsStringType)
 	g.IsNumberType = sg.FnIsNumberType(IsNumberType)
 	g.IsFloatingType = sg.FnIsFloatingType(IsFloatingType)

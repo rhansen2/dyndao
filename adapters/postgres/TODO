@@ -1,0 +1,4 @@
+"You should set `parseTime=true` in your connection string, and then `Scan` time columns into `*time.Time`."
+from http://pliutau.com/working-with-db-nulls/
+
+
