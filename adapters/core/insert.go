@@ -14,48 +14,49 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+func bindingValueHelper(g *sg.SQLGenerator, fieldsMap map[string]*schema.Column, realName string, bindI *int, k string, schTable *schema.Table) string {
+	f, ok := fieldsMap[realName]
+	if !ok {
+		panic(fmt.Sprintf("coreBindingInsert: Unknown field for key: [%s] realName: [%s] for table %s", k, realName, schTable.Name))
+	}
+	r := g.RenderBindingValueWithInt(f, *bindI)
+	return r
+}
+
 func CoreBindingInsert(g *sg.SQLGenerator, schTable *schema.Table, data map[string]interface{}, identityCol string, fieldsMap map[string]*schema.Column) ([]string, []string, []interface{}) {
 	dataLen := len(data)
 	bindNames := make([]string, dataLen)
 	colNames := make([]string, dataLen)
 	bindArgs := make([]interface{}, dataLen)
 	i := 0
+	bindI := 1
 	for k, v := range data {
 		realName := schTable.GetColumnName(k)
-
 		colNames[i] = realName
-		var r string
 
-		if r == "" {
-			f, ok := fieldsMap[realName]
-			if !ok {
-				panic(fmt.Sprintf("coreBindingInsert: Unknown field for key: [%s] realName: [%s] for table %s", k, realName, schTable.Name))
-			}
-			r = g.RenderBindingValue(f)
-		}
-
-		if v == nil {
-			bindNames[i] = r
+		switch v.(type) {
+		case *object.SQLValue:
+			sqlv := v.(*object.SQLValue)
+			bindNames[i] = sqlv.String()
+			bindArgs[i] = nil
+			/*		// TODO: dont think this case is necessary...
+					case object.SQLValue:
+						sqlv := v.(object.SQLValue)
+						bindNames[i] = sqlv.String()
+						bindArgs[i] = nil
+			*/
+		case nil:
+			bindNames[i] = bindingValueHelper(g, fieldsMap, realName, &bindI, k, schTable)
+			bindI++
 			bindArgs[i] = v
-		} else {
-			switch v.(type) {
-			case *object.SQLValue:
-				sqlv := v.(*object.SQLValue)
-				bindNames[i] = sqlv.String()
-				bindArgs[i] = nil
-			// TODO: dont think this case is necessary...
-			case object.SQLValue:
-				sqlv := v.(object.SQLValue)
-				bindNames[i] = sqlv.String()
-				bindArgs[i] = nil
-			default:
-				bindNames[i] = r
-				barg, err := g.RenderInsertValue(fieldsMap[realName], v)
-				if err != nil {
-					panic(err)
-				}
-				bindArgs[i] = barg
+		default:
+			bindNames[i] = bindingValueHelper(g, fieldsMap, realName, &bindI, k, schTable)
+			barg, err := g.RenderInsertValue(&bindI, fieldsMap[realName], v)
+			if err != nil {
+				panic(err)
 			}
+			bindI++
+			bindArgs[i] = barg
 		}
 		i++
 	}
@@ -102,7 +103,7 @@ func BindingInsertSQL(schTable *schema.Table, tableName string, colNames []strin
 	return sqlStr
 }
 
-func RenderInsertValue(f *schema.Column, value interface{}) (interface{}, error) {
+func RenderInsertValue(bindI *int, f *schema.Column, value interface{}) (interface{}, error) {
 	switch value.(type) {
 	case string:
 		str, ok := value.(string)

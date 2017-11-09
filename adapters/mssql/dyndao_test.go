@@ -13,7 +13,6 @@ import (
 
 	_ "github.com/denisenkom/go-mssqldb"
 
-	"fmt"
 	"os"
 	"testing"
 
@@ -29,7 +28,6 @@ func GetDB() *sql.DB {
 	if dsn == "" {
 		panic("MSSQL_DSN environment variable is not set, cannot initialize database")
 	}
-	fmt.Println("Opening with dsn: ", dsn)
 	db, err := sql.Open("mssql", dsn)
 	if err != nil {
 		panic(err)

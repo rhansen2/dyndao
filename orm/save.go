@@ -233,7 +233,7 @@ func (o ORM) Save(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, e
 }
 
 // use transaction if needed, otherwise just execute a non-transactionalized operation
-func stmtFromDbOrTx(ctx context.Context, o ORM, tx *sql.Tx, sqlStr string) (*sql.Stmt, error) {
+func stmtFromDbOrTx(ctx context.Context, o *ORM, tx *sql.Tx, sqlStr string) (*sql.Stmt, error) {
 	var stmt *sql.Stmt
 	var err error
 	if tx != nil {

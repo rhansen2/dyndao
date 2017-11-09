@@ -62,10 +62,15 @@ var floatTypes = map[string]bool{
 }
 
 var timestampTypes = map[string]bool{
+	// Type affinity?
 	"timestamp": true,
 	"TIMESTAMP": true,
 
-	// date, datetime, datetime2, datetimeoffset, smalldatetime, time
+	// Actual types
+	"datetime": true,
+	"DATETIME": true,
+
+	// TODO: date, datetime, datetime2, datetimeoffset, smalldatetime, time
 }
 
 var lobTypes = map[string]bool{

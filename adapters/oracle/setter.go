@@ -3,13 +3,15 @@ package oracle
 import (
 	"database/sql"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/rbastic/dyndao/object"
-	sg "github.com/rbastic/dyndao/sqlgen"
-	"gopkg.in/goracle.v2"
 	"io/ioutil"
 	"reflect"
 	"time"
+
+	"github.com/pkg/errors"
+	"github.com/rbastic/dyndao/object"
+	"github.com/rbastic/dyndao/schema"
+	sg "github.com/rbastic/dyndao/sqlgen"
+	"gopkg.in/goracle.v2"
 )
 
 // LobDST helps us to implement custom support for goracle.Lob
@@ -37,7 +39,7 @@ func (l *LobDST) Scan(src interface{}) error {
 // DynamicObjectSetter is used to dynamically set the values of an object by
 // checking the necessary types (via sql.ColumnType, and what the driver tells
 // us we have for column types)
-func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error {
+func DynamicObjectSetter(s *sg.SQLGenerator, schTable *schema.Table, columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error {
 	// NOTE: Read this post for more info on why the code below is written this way:
 	// https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
 	for i, v := range columnPointers {
@@ -48,15 +50,8 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 			val := v.(*time.Time)
 			obj.Set(columnNames[i], *val)
 		} else if s.IsStringType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				val := v.(*string)
-				obj.Set(columnNames[i], *val)
-			} else {
-				val := v.(*string)
-				obj.Set(columnNames[i], *val)
-
-			}
+			val := v.(*string)
+			obj.Set(columnNames[i], *val)
 		} else if s.IsNumberType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
@@ -81,7 +76,7 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 			}
 		} else if s.IsLOBType(typeName) {
 			if v == nil {
-				obj.Set(columnNames[i], object.NewSQLValue("NULL"))
+				obj.Set(columnNames[i], object.NewNULLValue())
 			} else {
 				val := v.(*LobDST)
 				obj.Set(columnNames[i], string(*val))
@@ -93,20 +88,16 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 	return nil
 }
 
-func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.ColumnType) ([]interface{}, error) {
+func MakeColumnPointers(s *sg.SQLGenerator, schTable *schema.Table, columnNames []string, columnTypes []*sql.ColumnType) ([]interface{}, error) {
+	sliceLen := len(columnNames)
 	columnPointers := make([]interface{}, sliceLen)
 	for i := 0; i < sliceLen; i++ {
 		ct := columnTypes[i]
 		typeName := ct.DatabaseTypeName()
+
 		if s.IsStringType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				var s string
-				columnPointers[i] = &s
-			} else {
-				var s string
-				columnPointers[i] = &s
-			}
+			var s string
+			columnPointers[i] = &s
 		} else if s.IsNumberType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
@@ -118,24 +109,11 @@ func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.Col
 
 			}
 		} else if s.IsTimestampType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				var j time.Time
-				columnPointers[i] = &j
-			} else {
-				var j time.Time
-				columnPointers[i] = &j
-
-			}
+			var j time.Time
+			columnPointers[i] = &j
 		} else if s.IsLOBType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				s := new(LobDST)
-				columnPointers[i] = s
-			} else {
-				s := new(LobDST)
-				columnPointers[i] = s
-			}
+			s := new(LobDST)
+			columnPointers[i] = s
 		} else {
 			return nil, errors.New("makeColumnPointers: Unrecognized type: " + typeName)
 		}

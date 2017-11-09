@@ -6,10 +6,10 @@ import (
 	"github.com/rbastic/dyndao/schema"
 )
 
-func RenderBindingValue(f *schema.Column) string {
-	return ":" + f.Name
+func RenderBindingValueWithIntNoColons(f *schema.Column, i int) string {
+	return fmt.Sprintf("%s%d", f.Name, i)
 }
 
-func RenderBindingValueWithInt(f *schema.Column, i int64) string {
+func RenderBindingValueWithInt(f *schema.Column, i int) string {
 	return fmt.Sprintf(":%s%d", f.Name, i)
 }

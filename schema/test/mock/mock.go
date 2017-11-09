@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"github.com/icrowley/fake"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 )
@@ -11,7 +12,6 @@ const AddressesObjectType string = "addresses"
 // Basic test mock
 func fieldName() *schema.Column {
 	fld := schema.DefaultColumn()
-	fld.IsNumber = false
 	fld.Name = "Name"
 	fld.DBType = "text"
 	return fld
@@ -19,7 +19,6 @@ func fieldName() *schema.Column {
 
 func fieldNullText() *schema.Column {
 	fld := schema.DefaultColumn()
-	fld.IsNumber = false
 	fld.Name = "NullText"
 	fld.DBType = "text"
 	fld.AllowNull = true
@@ -39,7 +38,6 @@ func fieldNullInt() *schema.Column {
 
 func fieldNullVarchar() *schema.Column {
 	fld := schema.DefaultColumn()
-	fld.IsNumber = true
 	fld.Name = "NullVarchar"
 	fld.DBType = "varchar"
 	fld.AllowNull = true
@@ -49,16 +47,22 @@ func fieldNullVarchar() *schema.Column {
 
 func fieldNullBlob() *schema.Column {
 	fld := schema.DefaultColumn()
-	fld.IsNumber = true
 	fld.Name = "NullBlob"
 	fld.DBType = "blob"
 	fld.AllowNull = true
 	return fld
 }
 
+func fieldNullTimestamp() *schema.Column {
+	fld := schema.DefaultColumn()
+	fld.Name = "NullTimestamp"
+	fld.DBType = "timestamp"
+	fld.AllowNull = true
+	return fld
+}
+
 func fieldAddress(n string) *schema.Column {
 	fld := schema.DefaultColumn()
-	fld.IsNumber = false
 
 	// Note: Name could be 'name', 'email', etc. or 'basic.name', 'basic.email',
 	// but it could not be, say, people.basic.name where people is the root namespace
@@ -90,10 +94,11 @@ func peopleTable() *schema.Table {
 	tbl.Columns["NullInt"] = fieldNullInt()
 	tbl.Columns["NullVarchar"] = fieldNullVarchar()
 	tbl.Columns["NullBlob"] = fieldNullBlob()
+	tbl.Columns["NullTimestamp"] = fieldNullTimestamp()
 
 	// TODO: Why was NullText getting retrieved as NULL when we didn't
 	// have it in the EssentialColumns list?
-	tbl.EssentialColumns = []string{"PersonID", "Name", "NullText", "NullInt", "NullVarchar", "NullBlob"}
+	tbl.EssentialColumns = []string{"PersonID", "Name", "NullText", "NullInt", "NullVarchar", "NullBlob", "NullTimestamp"}
 
 	return tbl
 }
@@ -161,16 +166,28 @@ func SampleAddressObject() *object.Object {
 	return addr
 }
 
-func DefaultPersonWithAddress() *object.Object {
-	obj := object.New(PeopleObjectType)
-	obj.Set("Name", "Ryan")
+func setPersonNulls(obj * object.Object) {
 	obj.Set("NullText", object.NewNULLValue())
 	obj.Set("NullInt", object.NewNULLValue())
 	obj.Set("NullVarchar", object.NewNULLValue())
 	obj.Set("NullBlob", object.NewNULLValue())
+	obj.Set("NullTimestamp", object.NewNULLValue())
+}
+
+func DefaultPersonWithAddress() *object.Object {
+	obj := object.New(PeopleObjectType)
+	obj.Set("Name", "Ryan")
+	setPersonNulls(obj)
 
 	addrObj := SampleAddressObject()
 	obj.Children["addresses"] = object.NewArray(addrObj)
 	return obj
 }
 
+func RandomPerson() *object.Object {
+	obj := object.New(PeopleObjectType)
+	obj.Set("Name", fake.FirstName())
+	setPersonNulls(obj)
+
+	return obj
+}

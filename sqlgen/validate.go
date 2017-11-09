@@ -19,9 +19,6 @@ func PanicIfInvalid(g *SQLGenerator) {
 	if g.DropTable == nil {
 		panic("dyndao: vtable DropTable is nil")
 	}
-	if g.RenderBindingValue == nil {
-		panic("dyndao: vtable RenderBindingValue is nil")
-	}
 	if g.RenderBindingValueWithInt == nil {
 		panic("dyndao: vtable RenderBindingValueWithInt is nil")
 	}

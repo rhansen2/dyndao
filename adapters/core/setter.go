@@ -2,16 +2,35 @@ package core
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
+	"github.com/rbastic/dyndao/schema"
 	sg "github.com/rbastic/dyndao/sqlgen"
+	"reflect"
 	"time"
 )
+
+type NullTime time.Time
+
+func (n *NullTime) Scan(src interface{}) error {
+	if src == nil {
+		return nil
+	}
+
+	t, ok := src.(*time.Time)
+	if !ok {
+		return fmt.Errorf("NullTime can only be used with *time.Time, type was %v", reflect.TypeOf(src))
+	}
+	f := NullTime(*t)
+	n = &f
+	return nil
+}
 
 // DynamicObjectSetter is used to dynamically set the values of an object by
 // checking the necessary types (via sql.ColumnType, and what the driver tells
 // us we have for column types)
-func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error {
+func DynamicObjectSetter(s *sg.SQLGenerator, schTable *schema.Table, columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error {
 	// NOTE: Read this post for more info on why the code below is written this way:
 	// https://stackoverflow.com/questions/23507531/is-golangs-sql-package-incapable-of-ad-hoc-exploratory-queries/23507765#23507765
 	for i, v := range columnPointers {
@@ -20,8 +39,12 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 		typeName := ct.DatabaseTypeName()
 
 		if s.IsTimestampType(typeName) {
-			val := v.(*time.Time)
-			obj.Set(columnNames[i], *val)
+			if v == nil {
+				obj.Set(columnNames[i], object.NewNULLValue())
+			} else {
+				val := v.(**NullTime)
+				obj.Set(columnNames[i], *val)
+			}
 			continue
 		} else if s.IsStringType(typeName) {
 			nullable, _ := ct.Nullable()
@@ -75,11 +98,16 @@ func DynamicObjectSetter(s *sg.SQLGenerator, columnNames []string, columnPointer
 	return nil
 }
 
-func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.ColumnType) ([]interface{}, error) {
+func MakeColumnPointers(s *sg.SQLGenerator, schTable *schema.Table, columnNames []string, columnTypes []*sql.ColumnType) ([]interface{}, error) {
+	sliceLen := len(columnNames)
 	columnPointers := make([]interface{}, sliceLen)
 	for i := 0; i < sliceLen; i++ {
 		ct := columnTypes[i]
 		typeName := ct.DatabaseTypeName()
+
+		if typeName == "" {
+			panic("dyndao MakeColumnPointers: ct.DatabaseTypeName() does not appear to be implemented - typeName was an empty string")
+		}
 
 		if s.IsNumberType(typeName) {
 			nullable, _ := ct.Nullable()
@@ -92,15 +120,8 @@ func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.Col
 
 			}
 		} else if s.IsTimestampType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				var j time.Time
-				columnPointers[i] = &j
-			} else {
-				var j time.Time
-				columnPointers[i] = &j
-
-			}
+			s := new(NullTime)
+			columnPointers[i] = &s
 		} else if s.IsLOBType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {

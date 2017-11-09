@@ -24,6 +24,7 @@ import (
 	"time"
 	//"fmt"
 
+	"sync"
 	"testing"
 
 	"github.com/rbastic/dyndao/object"
@@ -34,17 +35,34 @@ import (
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
-type FnGetDB func() *sql.DB // function type for GetDB
+type FnGetDB func() *sql.DB          // function type for GetDB
 type FnGetSG func() *sg.SQLGenerator // function type for GetSQLGenerator
 
 var (
 	GetDB     FnGetDB
 	getSQLGen FnGetSG
+
+	// Because CreateTables now has the potential to side-effect the
+	// schema, modifying database types based on dyndao's perceived type
+	// affinity, we want to keep a stable copy of that laying around.
+	// -TODO- Implement / support per-adapter type mappers?
+	cachedSchema *schema.Schema
 )
 
-// getDefaultContext returns the standard context used by the test package.
+func getSchema() *schema.Schema {
+	if cachedSchema == nil {
+		cachedSchema = mock.NestedSchema()
+	}
+	return cachedSchema
+}
+
 func getDefaultContext() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), 2*time.Second)
+}
+
+// Longer context for race condition testing
+func getRaceContext() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), 5*time.Second)
 }
 
 func fatalIf(err error) {
@@ -60,9 +78,9 @@ func PingCheck(t *testing.T, db *sql.DB) {
 	fatalIf(err)
 }
 
-func dirtyTest(obj * object.Object) {
+func dirtyTest(obj *object.Object) {
 	if obj.IsDirty() {
-		panic("system claims object is not saved")
+		panic("system claims object was not saved")
 	}
 }
 
@@ -80,11 +98,17 @@ func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
 		fatalIf(err)
 	}()
 
+	// TODO: for testing
+	db.SetMaxOpenConns(200)
+	db.SetMaxIdleConns(9) // -HACK- ???
+
 	// Bootstrap the db, run the test suite, drop tables
 	t.Run("TestPingCheck", func(t *testing.T) {
 		PingCheck(t, db)
 	})
 
+	// If the test suite fails before it gets to drop all tables, you'll
+	// want to pass DROP_TABLES=1 before rerunning so that they're wiped.
 	if os.Getenv("DROP_TABLES") != "" {
 		t.Run("TestDropTables", func(t *testing.T) {
 			TestDropTables(t, db)
@@ -103,7 +127,7 @@ func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
 }
 
 func TestCreateTables(t *testing.T, db *sql.DB) {
-	sch := mock.NestedSchema()
+	sch := getSchema()
 	o := orm.New(getSQLGen(), sch, db)
 
 	ctx, cancel := getDefaultContext()
@@ -115,7 +139,7 @@ func TestCreateTables(t *testing.T, db *sql.DB) {
 }
 
 func TestDropTables(t *testing.T, db *sql.DB) {
-	sch := mock.NestedSchema()
+	sch := getSchema()
 	o := orm.New(getSQLGen(), sch, db)
 
 	ctx, cancel := getDefaultContext()
@@ -124,7 +148,7 @@ func TestDropTables(t *testing.T, db *sql.DB) {
 	fatalIf(err)
 }
 
-func validateMock(t * testing.T, obj * object.Object) {
+func validateMock(t *testing.T, obj *object.Object) {
 	// Validate that we correctly fleshened the primary key
 	t.Run("ValidatePerson/ID", func(t *testing.T) {
 		validatePersonID(t, obj)
@@ -144,6 +168,9 @@ func validateMock(t * testing.T, obj * object.Object) {
 	t.Run("ValidatePerson/NullBlob", func(t *testing.T) {
 		validateNullBlob(t, obj)
 	})
+	t.Run("ValidatePerson/NullTimestamp", func(t *testing.T) {
+		validateNullBlob(t, obj)
+	})
 
 	// Validate that we correctly saved the children
 	t.Run("ValidateChildrenSaved", func(t *testing.T) {
@@ -152,8 +179,8 @@ func validateMock(t * testing.T, obj * object.Object) {
 }
 
 func TestSuiteNested(t *testing.T, db *sql.DB) {
-	sch := mock.NestedSchema()            // Use mock test schema
-	o := orm.New(getSQLGen(), sch, db)    // Setup our ORM
+	sch := getSchema()
+	o := orm.New(getSQLGen(), sch, db)     // Setup our ORM
 	obj := mock.DefaultPersonWithAddress() // Construct our default mock object
 
 	// Save our default object
@@ -162,6 +189,13 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 	})
 
 	validateMock(t, obj)
+
+	// Once we get basic saving working, do some race condition testing
+	if os.Getenv("TEST_RACE") != "" {
+		t.Run("RaceConditionSave", func(t *testing.T) {
+			testRaceConditionSave(&o, t, mock.PeopleObjectType)
+		})
+	}
 
 	// Test second additional Save to ensure that we don't save
 	// the object twice needlessly... This caught a silly bug early on.
@@ -180,8 +214,11 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 		// Changing the name should become an
 		// update when we save
 		obj.Set("Name", "Joe")
+
 		// Test saving the object
-		testSave(&o, t, obj)
+		ctx, cancel := getDefaultContext()
+		testSave(ctx, &o, t, obj)
+		cancel()
 	})
 
 	t.Run("Retrieve", func(t *testing.T) {
@@ -255,6 +292,12 @@ func validateNullBlob(t *testing.T, obj *object.Object) {
 	}
 }
 
+func validateNullTimestamp(t *testing.T, obj *object.Object) {
+	if !obj.ValueIsNULL(obj.Get("NullTimestamp")) {
+		t.Fatal("validateNullTimestamp: expected NULL value")
+	}
+}
+
 func validateChildrenSaved(t *testing.T, obj *object.Object) {
 	for _, childs := range obj.Children {
 		for _, v := range childs {
@@ -268,10 +311,22 @@ func validateChildrenSaved(t *testing.T, obj *object.Object) {
 	}
 }
 
-func testSave(o *orm.ORM, t *testing.T, obj *object.Object) {
-	ctx, cancel := getDefaultContext()
+func testDelete(ctx context.Context, o *orm.ORM, t *testing.T, obj *object.Object) {
+	rowsAff, err := o.Delete(ctx, nil, obj)
+
+	fatalIf(err)
+	if rowsAff == 0 {
+		t.Fatal("rowsAff should not be zero")
+	}
+	if rowsAff != 1 {
+		t.Fatalf("rowsAff should not be %d, expected 1", rowsAff)
+	}
+
+	dirtyTest(obj)
+}
+
+func testSave(ctx context.Context, o *orm.ORM, t *testing.T, obj *object.Object) {
 	rowsAff, err := o.Save(ctx, nil, obj)
-	cancel()
 
 	fatalIf(err)
 	if rowsAff == 0 {
@@ -417,4 +472,29 @@ func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
 			t.Fatalf("expected %s for 'Address1', address1 was %s", expectedStr, address1)
 		}
 	}
+}
+
+func testRaceConditionSave(o *orm.ORM, t *testing.T, rootTable string) {
+	numGoroutines := 100
+	var wg sync.WaitGroup
+
+	for i := 0; i < numGoroutines; i++ {
+		go func() {
+			obj := mock.RandomPerson()
+
+			ctx, cancel := getRaceContext()
+
+			// will fail if rowsAff==0
+			testSave(ctx, o, t, obj)
+
+			// will fail if rowsAff != 1
+			testDelete(ctx, o, t, obj)
+			cancel()
+
+			wg.Done()
+		}()
+
+		wg.Add(1)
+	}
+	wg.Wait()
 }

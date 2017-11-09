@@ -25,7 +25,7 @@ import (
 // GetParentsViaChild retrieves all direct (one-level 'up') parents for a given child object.
 // If a child contains multiple parent tables (possibility?) then this would return an Array
 // of objects with multiple potential values for their obj.Type fields.
-func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (object.Array, error) {
+func (o *ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (object.Array, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -65,7 +65,7 @@ func (o ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (o
 // By entire, we mean that we also retrieve any relevant children objects. However, we do not call RetrieveWithChildren
 // when fleshening the children structures -- when retrieving the children, we do a single-level retrieve, ignoring
 // any child structures that may be configured at two levels of depth.
-func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues map[string]interface{}) (*object.Object, error) {
+func (o *ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues map[string]interface{}) (*object.Object, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -139,7 +139,7 @@ func (o ORM) RetrieveWithChildren(ctx context.Context, table string, pkValues ma
 // for both the object and the error if a row is unable to be matched by the underlying
 // datastore.
 // TODO: Implement LIMIT so that we can improve this.
-func (o ORM) retrieveCore(ctx context.Context, tx *sql.Tx, table string, queryVals map[string]interface{}) (*object.Object, error) {
+func (o *ORM) retrieveCore(ctx context.Context, tx *sql.Tx, table string, queryVals map[string]interface{}) (*object.Object, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -162,7 +162,7 @@ func (o ORM) retrieveCore(ctx context.Context, tx *sql.Tx, table string, queryVa
 // for both the object and the error if a row is unable to be matched by the underlying
 // datastore.
 // TODO: Implement LIMIT so that we can improve this.
-func (o ORM) RetrieveTx(ctx context.Context, tx *sql.Tx, table string, queryVals map[string]interface{}) (*object.Object, error) {
+func (o *ORM) RetrieveTx(ctx context.Context, tx *sql.Tx, table string, queryVals map[string]interface{}) (*object.Object, error) {
 	return o.retrieveCore(ctx, tx, table, queryVals)
 }
 
@@ -172,12 +172,12 @@ func (o ORM) RetrieveTx(ctx context.Context, tx *sql.Tx, table string, queryVals
 // for both the object and the error if a row is unable to be matched by the underlying
 // datastore.
 // TODO: Implement LIMIT so that we can improve this.
-func (o ORM) Retrieve(ctx context.Context, table string, queryVals map[string]interface{}) (*object.Object, error) {
+func (o *ORM) Retrieve(ctx context.Context, table string, queryVals map[string]interface{}) (*object.Object, error) {
 	return o.retrieveCore(ctx, nil, table, queryVals)
 }
 
 // FleshenChildren function accepts an object and resets it's children.
-func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.Object, error) {
+func (o *ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.Object, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -212,7 +212,7 @@ func (o ORM) FleshenChildren(ctx context.Context, obj *object.Object) (*object.O
 // RetrieveManyFromCustomSQL will fleshen an object structure, given a custom SQL string. It must still be told
 // the column names and the binding arguments in addition to the SQL string, so that it can dynamically map
 // the column types accordingly to the destination object. (Mainly, so we know the array length..)
-func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr string, columnNames []string, bindArgs []interface{}) (object.Array, error) {
+func (o *ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr string, columnNames []string, bindArgs []interface{}) (object.Array, error) {
 	sg := o.sqlGen
 
 	select {
@@ -253,7 +253,13 @@ func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr
 		return nil, err
 	}
 
-	columnPointers, err := sg.MakeColumnPointers(sg, len(columnNames), columnTypes)
+	// Retrieve schema table object
+	objTable := o.s.GetTable(table)
+	if objTable == nil {
+		return nil, errors.New("GetParentsViaChild: unknown object table " + table)
+	}
+
+	columnPointers, err := sg.MakeColumnPointers(sg, objTable, columnNames, columnTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -264,7 +270,7 @@ func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr
 		}
 
 		obj := object.New(table)
-		err = sg.DynamicObjectSetter(sg, columnNames, columnPointers, columnTypes, obj)
+		err = sg.DynamicObjectSetter(sg, objTable, columnNames, columnPointers, columnTypes, obj)
 		if err != nil {
 			return nil, err
 		}
@@ -282,7 +288,7 @@ func (o ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlStr
 	return objectArray, nil
 }
 
-func (o ORM) makeQueryObj(objTable *schema.Table, queryVals map[string]interface{}) *object.Object {
+func (o *ORM) makeQueryObj(objTable *schema.Table, queryVals map[string]interface{}) *object.Object {
 	queryObj := object.New(objTable.Name)
 
 	if objTable.ColumnAliases == nil {
@@ -296,7 +302,7 @@ func (o ORM) makeQueryObj(objTable *schema.Table, queryVals map[string]interface
 	return queryObj
 }
 
-func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, queryVals map[string]interface{}) (object.Array, error) {
+func (o *ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, queryVals map[string]interface{}) (object.Array, error) {
 	// Check for timeout
 	select {
 	case <-ctx.Done():
@@ -366,7 +372,7 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 		return nil, err
 	}
 
-	columnPointers, err := sg.MakeColumnPointers(sg, len(columnNames), columnTypes)
+	columnPointers, err := sg.MakeColumnPointers(sg, objTable, columnNames, columnTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -377,7 +383,7 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 			return nil, err
 		}
 
-		err = sg.DynamicObjectSetter(sg, columnNames, columnPointers, columnTypes, obj)
+		err = sg.DynamicObjectSetter(sg, objTable, columnNames, columnPointers, columnTypes, obj)
 		if err != nil {
 			return nil, err
 		}
@@ -397,11 +403,11 @@ func (o ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, que
 
 // RetrieveManyTx function will fleshen a top-level object structure, given some primary keys. And
 // it's transactional!
-func (o ORM) RetrieveManyTx(ctx context.Context, tx *sql.Tx, table string, queryVals map[string]interface{}) (object.Array, error) {
+func (o *ORM) RetrieveManyTx(ctx context.Context, tx *sql.Tx, table string, queryVals map[string]interface{}) (object.Array, error) {
 	return o.retrieveManyCore(ctx, tx, table, queryVals)
 }
 
 // RetrieveMany function will fleshen a top-level object structure, given some primary keys
-func (o ORM) RetrieveMany(ctx context.Context, table string, queryVals map[string]interface{}) (object.Array, error) {
+func (o *ORM) RetrieveMany(ctx context.Context, table string, queryVals map[string]interface{}) (object.Array, error) {
 	return o.retrieveManyCore(ctx, nil, table, queryVals)
 }

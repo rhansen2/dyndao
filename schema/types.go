@@ -10,11 +10,11 @@ type Schema struct {
 
 // Table is the metadata container for a SQL table definition
 type Table struct {
-	CallerSuppliesPK bool   // Do we use a LastInsertID mechanism or does the caller supply a PK
+	CallerSuppliesPK bool   // Do we use a LastInsertID mechanism or will the calling code supply a PK
 	MultiKey         bool   `json:"MultiKey"` // Use Primary or Primary + ForeignKeys
 	Primary          string `json:"Primary"`
 	Name             string `json:"Name"`
-	AliasName        string `json:"AliasName"` // Combined with AliasName - for set op	s
+	AliasName        string `json:"AliasName"` // Combined with AliasName - for set ops
 
 	// MultiKey must be set to true if a table has
 	// foreign keys.
@@ -61,6 +61,7 @@ type Column struct {
 type ChildTable struct {
 	ParentTable string `json:"ParentTable"`
 
+	// TODO: Can I just delete MultiKey and have only LocalColumns/ForeignColumns?
 	MultiKey      bool   `json:"MultiKey"`
 	LocalColumn   string `json:"LocalColumn"`
 	ForeignColumn string `json:"ForeignColumn"`

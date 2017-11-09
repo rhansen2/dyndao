@@ -12,5 +12,14 @@ import (
 // See http://www.sqlitetutorial.net/sqlite-autoincrement/
 
 func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
-	return common.RenderCreateColumn(sg, f, "PRIMARY KEY", nil)
+	return common.RenderCreateColumn(sg, f, "PRIMARY KEY", mapType)
+}
+
+func mapType(s string) string {
+	switch s {
+	case "TIMESTAMP":
+		return "DATETIME"
+	default:
+		return s
+	}
 }
