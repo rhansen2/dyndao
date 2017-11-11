@@ -19,6 +19,8 @@ func New(g *sg.SQLGenerator) *sg.SQLGenerator {
 	g.IsLOBType = sg.FnIsLOBType(IsLOBType)
 	g.RenderCreateColumn = sg.FnRenderCreateColumn(RenderCreateColumn)
 	g.BindingInsertSQL = sg.FnBindingInsertSQL(BindingInsertSQL)
+	g.DynamicObjectSetter = sg.FnDynamicObjectSetter(DynamicObjectSetter)
+	g.MakeColumnPointers = sg.FnMakeColumnPointers(MakeColumnPointers)
 //	g.RenderBindingValueWithInt = sg.FnRenderBindingValueWithInt(RenderBindingValueWithInt)
 	return g
 }

@@ -1,11 +1,18 @@
 package db2
 
 var stringTypes = map[string]bool{
+	"VARCHAR": true,
+	"varchar": true,
 	"VARCHAR2": true,
 	"varchar2": true,
+	"TEXT": true,
+	"text": true,
 }
 
 var numTypes = map[string]bool{
+	"INTEGER": true,
+	"integer": true,
+
 	"NUMBER": true,
 	"number": true,
 }
@@ -22,6 +29,7 @@ var timestampTypes = map[string]bool{
 }
 
 var lobTypes = map[string]bool{
+
 	"CLOB": true,
 	"clob": true,
 	"BLOB": true,

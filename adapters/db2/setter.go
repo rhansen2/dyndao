@@ -1,4 +1,4 @@
-package core
+package db2
 
 import (
 	"database/sql"
@@ -18,7 +18,7 @@ func DynamicObjectSetter(s *sg.SQLGenerator, schTable * schema.Table, columnName
 	for i, v := range columnPointers {
 		ct := columnTypes[i]
 
-		typeName := ct.DatabaseTypeName()
+		typeName := schTable.GetColumn(columnNames[i]).DBType
 
 		if s.IsTimestampType(typeName) {
 			val := v.(*time.Time)
@@ -81,7 +81,7 @@ func MakeColumnPointers(s *sg.SQLGenerator, schTable * schema.Table, columnNames
 	columnPointers := make([]interface{}, sliceLen)
 	for i := 0; i < sliceLen; i++ {
 		ct := columnTypes[i]
-		typeName := ct.DatabaseTypeName()
+		typeName := schTable.GetColumn(columnNames[i]).DBType
 
 		if typeName == "" {
 			panic("dyndao MakeColumnPointers: ct.DatabaseTypeName() does not appear to be implemented - typeName was an empty string")

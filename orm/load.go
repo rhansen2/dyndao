@@ -253,7 +253,13 @@ func (o *ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlSt
 		return nil, err
 	}
 
-	columnPointers, err := sg.MakeColumnPointers(sg, len(columnNames), columnTypes)
+	// Retrieve schema table object
+	objTable := o.s.GetTable(table)
+	if objTable == nil {
+		return nil, errors.New("GetParentsViaChild: unknown object table " + table)
+	}
+
+	columnPointers, err := sg.MakeColumnPointers(sg, objTable, columnNames, columnTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -264,7 +270,7 @@ func (o *ORM) RetrieveManyFromCustomSQL(ctx context.Context, table string, sqlSt
 		}
 
 		obj := object.New(table)
-		err = sg.DynamicObjectSetter(sg, columnNames, columnPointers, columnTypes, obj)
+		err = sg.DynamicObjectSetter(sg, objTable, columnNames, columnPointers, columnTypes, obj)
 		if err != nil {
 			return nil, err
 		}
@@ -366,7 +372,7 @@ func (o *ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, qu
 		return nil, err
 	}
 
-	columnPointers, err := sg.MakeColumnPointers(sg, len(columnNames), columnTypes)
+	columnPointers, err := sg.MakeColumnPointers(sg, objTable, columnNames, columnTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -377,7 +383,7 @@ func (o *ORM) retrieveManyCore(ctx context.Context, tx *sql.Tx, table string, qu
 			return nil, err
 		}
 
-		err = sg.DynamicObjectSetter(sg, columnNames, columnPointers, columnTypes, obj)
+		err = sg.DynamicObjectSetter(sg, objTable, columnNames, columnPointers, columnTypes, obj)
 		if err != nil {
 			return nil, err
 		}
