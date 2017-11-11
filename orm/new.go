@@ -56,13 +56,13 @@ func New(gen *sg.SQLGenerator, s *schema.Schema, db *sql.DB) ORM {
 	o.BeforeUpdateHooks = makeEmptyHookMap()
 	o.AfterUpdateHooks = makeEmptyHookMap()
 
+	o.BeforeDeleteHooks = makeEmptyHookMap()
+	o.AfterDeleteHooks = makeEmptyHookMap()
+
 	return o
 }
 
 // Software trigger functions
-
-// CallBeforeCreateHookIfNeeded will call the necessary BeforeCreate triggers for a given
-// object if they are set.
 func (o *ORM) CallBeforeCreateHookIfNeeded(obj *object.Object) error {
 	hookFunc, ok := o.BeforeCreateHooks[o.s.GetTableName(obj.Type)]
 	if ok {
@@ -71,8 +71,6 @@ func (o *ORM) CallBeforeCreateHookIfNeeded(obj *object.Object) error {
 	return nil
 }
 
-// CallAfterCreateHookIfNeeded will call the necessary AfterCreate triggers for a given
-// object if they are set.
 func (o *ORM) CallAfterCreateHookIfNeeded(obj *object.Object) error {
 	hookFunc, ok := o.AfterCreateHooks[o.s.GetTableName(obj.Type)]
 	if ok {
@@ -82,8 +80,6 @@ func (o *ORM) CallAfterCreateHookIfNeeded(obj *object.Object) error {
 
 }
 
-// CallBeforeUpdateHookIfNeeded will call the necessary BeforeUpdate triggers for a given
-// object if they are set.
 func (o *ORM) CallBeforeUpdateHookIfNeeded(obj *object.Object) error {
 	hookFunc, ok := o.BeforeUpdateHooks[o.s.GetTableName(obj.Type)]
 	if ok {
@@ -92,10 +88,24 @@ func (o *ORM) CallBeforeUpdateHookIfNeeded(obj *object.Object) error {
 	return nil
 }
 
-// CallAfterUpdateHookIfNeeded will call the necessary AfterUpdate triggers for
-// a given object if they are set.
 func (o *ORM) CallAfterUpdateHookIfNeeded(obj *object.Object) error {
 	hookFunc, ok := o.AfterUpdateHooks[o.s.GetTableName(obj.Type)]
+	if ok {
+		return hookFunc(o.s, obj)
+	}
+	return nil
+}
+
+func (o *ORM) CallBeforeDeleteHookIfNeeded(obj *object.Object) error {
+	hookFunc, ok := o.BeforeDeleteHooks[o.s.GetTableName(obj.Type)]
+	if ok {
+		return hookFunc(o.s, obj)
+	}
+	return nil
+}
+
+func (o *ORM) CallAfterDeleteHookIfNeeded(obj *object.Object) error {
+	hookFunc, ok := o.AfterDeleteHooks[o.s.GetTableName(obj.Type)]
 	if ok {
 		return hookFunc(o.s, obj)
 	}

@@ -24,10 +24,20 @@ func (o *ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64
 	if objTable == nil {
 		return 0, errors.New("Delete: unknown object table " + obj.Type)
 	}
+
+	err := o.CallBeforeDeleteHookIfNeeded(obj)
+	if err != nil {
+		if tracing {
+			log15.Error(errorString, "BeforeUpdateHookError", err)
+		}
+		return 0, err
+	}
+
 	sqlStr, bindWhere, err := sg.BindingDelete(o.sqlGen, o.s, obj)
 	if err != nil {
 		return 0, err
 	}
+
 	if sg.Tracing {
 		fmt.Printf("Delete: sqlStr->%s, bindWhere->%v\n", sqlStr, bindWhere)
 	}
@@ -51,6 +61,14 @@ func (o *ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64
 
 	rowsAff, err := res.RowsAffected()
 	if err != nil {
+		return 0, err
+	}
+
+	err = o.CallAfterDeleteHookIfNeeded(obj)
+	if err != nil {
+		if tracing {
+			log15.Error(errorString, "BeforeAfterUpdateHookError", err)
+		}
 		return 0, err
 	}
 
