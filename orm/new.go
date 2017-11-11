@@ -26,6 +26,9 @@ type ORM struct {
 
 	BeforeUpdateHooks map[string]HookFunction
 	AfterUpdateHooks  map[string]HookFunction
+
+	BeforeDeleteHooks map[string]HookFunction
+	AfterDeleteHooks  map[string]HookFunction
 }
 
 // GetSchema returns the ORM's active schema

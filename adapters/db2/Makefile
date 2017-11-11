@@ -3,7 +3,7 @@
 # Just a test rule for now.
 test:
 	# This DSN broke things.
-	DB2_DSN='DATABASE=SAMPLE; HOSTNAME=$(DB2_HOST); PORT=$(DB2_PORT); PROTOCOL=TCPIP; UID=$(DB2_USER); PWD=$(DB2_PASS);' go test -v 
+	DB2_DSN='DRIVER=DB2; DATABASE=SAMPLE;HOSTNAME=$(DB2_HOST);PORT=$(DB2_PORT);PROTOCOL=TCPIP;UID=$(DB2_USER);PWD=$(DB2_PASS);' go test -v 
 
 cover:
 	

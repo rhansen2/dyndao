@@ -7,17 +7,23 @@ https://globalengineer.wordpress.com/2017/02/27/installing-db2-on-debianubuntu/
 and downloading DB2 directly from IBM.
 
 You'll end up with the sqllib folder installed in /home/db2inst1 by default, so you can reference that
-when installing bitbucket.org/phiggins/db2cli
-
-Here's an example of the file that I used to get db2cli to build.
+when installing github.com/alexbrainman/odbc
 
 ```code
 #!/bin/bash
 
-DB2HOME=/home/db2inst1/sqllib
+export DB2HOME=/home/db2inst1/sqllib
 export CGO_LDFLAGS=-L$DB2HOME/lib
 export CGO_CFLAGS=-I$DB2HOME/include
 
-# now run go build . in your src/bitbucket.org/phiggins/db2cli
+# now run go build . and go install . in your src/github.com/alexbrainman/odbc
 
 ```
+
+Then to actually get the driver working:
+
+1) Install unixODBC.
+2) Run the script in odbc_ini to configure unixODBC for DB2
+
+Now 'dyndao make test' if you have a dyndao alias setup with appropriate configuration.
+

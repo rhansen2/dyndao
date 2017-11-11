@@ -6,12 +6,8 @@
 package db2
 
 import (
-	// Load preferred Oracle driver. Mattn's oci8 had race conditions
-	// during testing. rana/ora.v4 has crashes when used for extended
-	// testing in server workloads.
 	"database/sql"
-
-	_ "bitbucket.org/phiggins/db2cli"
+	_ "github.com/alexbrainman/odbc"
 
 	"fmt"
 	"os"
@@ -30,7 +26,7 @@ func GetDB() *sql.DB {
 		panic("DB2_DSN environment variable is not set, cannot initialize database")
 	}
 	fmt.Println("Opening with dsn: ", dsn)
-	db, err := sql.Open("db2-cli", dsn)
+	db, err := sql.Open("odbc", dsn)
 	if err != nil {
 		panic(err)
 	}

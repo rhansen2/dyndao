@@ -8,11 +8,14 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/rbastic/dyndao/object"
+	"github.com/inconshreveable/log15"
 )
 
 // Delete function will DELETE a record ...
 func (o *ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	sg := o.sqlGen
+	tracing := sg.Tracing
+	errorString := "Delete error"
 
 	select {
 	case <-ctx.Done():
