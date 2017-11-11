@@ -81,6 +81,10 @@ func MakeColumnPointers(s *sg.SQLGenerator, sliceLen int, columnTypes []*sql.Col
 		ct := columnTypes[i]
 		typeName := ct.DatabaseTypeName()
 
+		if typeName == "" {
+			panic("dyndao MakeColumnPointers: ct.DatabaseTypeName() does not appear to be implemented - typeName was an empty string")
+		}
+
 		if s.IsNumberType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
