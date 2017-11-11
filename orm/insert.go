@@ -188,6 +188,10 @@ func (o *ORM) insertHelper(ctx context.Context, stmt *sql.Stmt, bindArgs []inter
 		return 0, err
 	}
 
+	if rowsAff == 0 {
+		return 0, ErrNoResult
+	}
+
 	// Call after create hook
 	err = o.CallAfterCreateHookIfNeeded(obj)
 	if err != nil {

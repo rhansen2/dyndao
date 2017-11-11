@@ -72,6 +72,10 @@ func (o *ORM) Update(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64
 		return 0, err
 	}
 
+	if rowsAff == 0 {
+		return 0, ErrNoResult
+	}
+
 	err = o.CallAfterUpdateHookIfNeeded(obj)
 	if err != nil {
 		if tracing {

@@ -64,6 +64,10 @@ func (o *ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64
 		return 0, err
 	}
 
+	if rowsAff == 0 {
+		return 0, ErrNoResult
+	}
+
 	err = o.CallAfterDeleteHookIfNeeded(obj)
 	if err != nil {
 		if tracing {
