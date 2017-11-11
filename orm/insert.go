@@ -81,7 +81,7 @@ func (o *ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64
 		newBindArgs[i] = maybeDereferenceArgs(arg)
 	}
 
-	if sg.IsPOSTGRES {
+	if sg.IsPOSTGRES || sg.IsDB2 {
 		return o.postgresInsertHelper(ctx, stmt, bindArgs, obj, callerSuppliesPK, tracing, objTable)
 	}
 	return o.insertHelper(ctx, stmt, bindArgs, obj, callerSuppliesPK, tracing, objTable, &lastID)

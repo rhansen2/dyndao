@@ -1,0 +1,10 @@
+# dyndao makefile, just for testing for now
+
+# Just a test rule for now.
+test:
+	# This DSN broke things.
+	DB2_DSN='DATABASE=SAMPLE; HOSTNAME=$(DB2_HOST); PORT=$(DB2_PORT); PROTOCOL=TCPIP; UID=$(DB2_USER); PWD=$(DB2_PASS);' go test -v 
+
+cover:
+	
+	DB2_DSN='DATABASE=SAMPLE; HOSTNAME=$(DB2_HOST); PORT=$(DB2_PORT); PROTOCOL=TCPIP; UID=$(DB2_USER); PWD=$(DB2_PASS);' go test -cover

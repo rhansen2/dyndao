@@ -70,6 +70,7 @@ var lobTypes = map[string]bool{
 
 // IsStringType can be used to help determine whether a certain data type is a string type.
 func IsStringType(k string) bool {
+	// -HACK- SQLite adapter returns VARCHAR(30)
 	if strings.HasPrefix(k, "VARCHAR") {
 		return true
 	}

@@ -44,6 +44,7 @@ type SQLGenerator struct {
 	IsORACLE bool
 	IsMSSQL bool // MS SQL Server
 	IsPOSTGRES bool // Postgre/Postgres? 's' or not?
+	IsDB2 bool
 
 	BindingInsert             FnBindingInsert
 	BindingUpdate             FnBindingUpdate
