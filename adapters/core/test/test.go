@@ -40,9 +40,21 @@ type FnGetSG func() *sg.SQLGenerator // function type for GetSQLGenerator
 var (
 	GetDB     FnGetDB
 	getSQLGen FnGetSG
+
+	// Because CreateTables now has the potential to side-effect the
+	// schema, modifying database types based on dyndao's perceived type
+	// affinity, we want to keep a stable copy of that laying around.
+	// -TODO- Implement / support per-adapter type mappers?
+	cachedSchema *schema.Schema
 )
 
-// getDefaultContext returns the standard context used by the test package.
+func getSchema() *schema.Schema {
+	if cachedSchema == nil {
+		cachedSchema = mock.NestedSchema()
+	}
+	return cachedSchema
+}
+
 func getDefaultContext() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), 2*time.Second)
 }
@@ -103,7 +115,7 @@ func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
 }
 
 func TestCreateTables(t *testing.T, db *sql.DB) {
-	sch := mock.NestedSchema()
+	sch := getSchema()
 	o := orm.New(getSQLGen(), sch, db)
 
 	ctx, cancel := getDefaultContext()
@@ -115,7 +127,7 @@ func TestCreateTables(t *testing.T, db *sql.DB) {
 }
 
 func TestDropTables(t *testing.T, db *sql.DB) {
-	sch := mock.NestedSchema()
+	sch := getSchema()
 	o := orm.New(getSQLGen(), sch, db)
 
 	ctx, cancel := getDefaultContext()
@@ -152,7 +164,7 @@ func validateMock(t * testing.T, obj * object.Object) {
 }
 
 func TestSuiteNested(t *testing.T, db *sql.DB) {
-	sch := mock.NestedSchema()            // Use mock test schema
+	sch := getSchema()
 	o := orm.New(getSQLGen(), sch, db)    // Setup our ORM
 	obj := mock.DefaultPersonWithAddress() // Construct our default mock object
 
