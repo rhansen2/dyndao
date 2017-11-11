@@ -8,6 +8,8 @@ import (
 )
 
 func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
+	// TODO: Code a real TypeMapper
+	f.DBType = mapType(f.DBType)
 	dataType := f.DBType
 	notNull := ""
 	identity := ""
@@ -21,7 +23,6 @@ func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
 		notNull = "NOT NULL"
 	}
 
-	dataType = mapType(dataType)
 	if f.Length > 0 {
 		dataType = fmt.Sprintf("%s(%d)", dataType, f.Length)
 	}
@@ -43,11 +44,13 @@ func mapType(s string) string {
 	case "INTEGER":
 		return "INT"
 	case "text":
-		fallthrough
+		return "CLOB"
 	case "TEXT":
-		return "LONG VARCHAR"
+		return "CLOB"
+	case "blob":
+		return "CLOB"
 	case "BLOB":
-		return "IMAGE"
+		return "CLOB"
 	default:
 		return s
 	}

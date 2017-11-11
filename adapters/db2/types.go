@@ -3,13 +3,25 @@ package db2
 var stringTypes = map[string]bool{
 	"VARCHAR": true,
 	"varchar": true,
-	"VARCHAR2": true,
-	"varchar2": true,
+
+	// Deprecated, and don't seem to be working anyway
+	// TODO: Flag them somehow to the user?
+	// IDEA: Conditional run-time warnings, maybe expand idea of Logger
+	// to support them.
+	"LONG VARCHAR": true,
+	"long varchar": true,
+
+	// Type affinity?
 	"TEXT": true,
 	"text": true,
+
+	// HACK
+	"BLOB": true,
+	"blob": true,
 }
 
 var numTypes = map[string]bool{
+	// TODO: DB2 data types list
 	"INTEGER": true,
 	"integer": true,
 
@@ -18,22 +30,26 @@ var numTypes = map[string]bool{
 }
 
 var floatTypes = map[string]bool{
-	// Haha, of course, Oracle...
+	// TODO: DB2 data types list
 	"float": true,
 	"FLOAT": true,
 }
 
 var timestampTypes = map[string]bool{
+	// TODO: DB2 data types list
 	"timestamp": true,
 	"TIMESTAMP": true,
 }
 
 var lobTypes = map[string]bool{
-
+	// FIXME: Mixing of CLOB and (VAR)BINARY types, ergh
 	"CLOB": true,
 	"clob": true,
-	"BLOB": true,
-	"blob": true,
+	"BINARY": true,
+	"binary": true,
+
+	"VARBINARY": true,
+	"varbinary": true,
 }
 
 // IsStringType can be used to help determine whether a certain data type is a string type.
