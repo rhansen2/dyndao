@@ -14,8 +14,8 @@ test:
 	cd adapters/postgres; make test
 
 race:
-	cd adapters/sqlite; make race
-	cd adapters/mysql; make race
-	cd adapters/oracle; make race
-	cd adapters/mssql; make race
-	cd adapters/postgres; make race
+	cd adapters/sqlite; TEST_RACE=1 make race
+	cd adapters/mysql; TEST_RACE=1 make race
+	cd adapters/oracle; TEST_RACE=1 make race
+	cd adapters/mssql; TEST_RACE=1 make race
+	cd adapters/postgres; TEST_RACE=1 make race

@@ -25,6 +25,7 @@ import (
 	//"fmt"
 
 	"testing"
+	"sync"
 
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/orm"
@@ -57,6 +58,11 @@ func getSchema() *schema.Schema {
 
 func getDefaultContext() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), 2*time.Second)
+}
+
+// Longer context for race condition testing
+func getRaceContext() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), 5*time.Second)
 }
 
 func fatalIf(err error) {
@@ -92,11 +98,17 @@ func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
 		fatalIf(err)
 	}()
 
+	// TODO: for testing
+	db.SetMaxOpenConns(200)
+	db.SetMaxIdleConns(9) // -HACK- ???
+
 	// Bootstrap the db, run the test suite, drop tables
 	t.Run("TestPingCheck", func(t *testing.T) {
 		PingCheck(t, db)
 	})
 
+	// If the test suite fails before it gets to drop all tables, you'll
+	// want to pass DROP_TABLES=1 before rerunning so that they're wiped.
 	if os.Getenv("DROP_TABLES") != "" {
 		t.Run("TestDropTables", func(t *testing.T) {
 			TestDropTables(t, db)
@@ -175,6 +187,13 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 
 	validateMock(t, obj)
 
+	// Once we get basic saving working, do some race condition testing
+	if os.Getenv("TEST_RACE") != "" {
+		t.Run("RaceConditionSave", func(t *testing.T) {
+			testRaceConditionSave(&o, t, mock.PeopleObjectType)
+		})
+	}
+
 	// Test second additional Save to ensure that we don't save
 	// the object twice needlessly... This caught a silly bug early on.
 	t.Run("TestAdditionalSave", func(t *testing.T) {
@@ -192,8 +211,11 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 		// Changing the name should become an
 		// update when we save
 		obj.Set("Name", "Joe")
+
 		// Test saving the object
-		testSave(&o, t, obj)
+		ctx, cancel := getDefaultContext()
+		testSave(ctx, &o, t, obj)
+		cancel()
 	})
 
 	t.Run("Retrieve", func(t *testing.T) {
@@ -215,7 +237,6 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 		// test retrieving multiple parents, given a single child object
 		testGetParentsViaChild(&o, t)
 	})
-
 }
 
 func saveMockObject(t *testing.T, o *orm.ORM, obj *object.Object) {
@@ -281,10 +302,22 @@ func validateChildrenSaved(t *testing.T, obj *object.Object) {
 	}
 }
 
-func testSave(o *orm.ORM, t *testing.T, obj *object.Object) {
-	ctx, cancel := getDefaultContext()
+func testDelete(ctx context.Context, o *orm.ORM, t *testing.T, obj *object.Object) {
+	rowsAff, err := o.Delete(ctx, nil, obj)
+
+	fatalIf(err)
+	if rowsAff == 0 {
+		t.Fatal("rowsAff should not be zero")
+	}
+	if rowsAff != 1 {
+		t.Fatalf("rowsAff should not be %d, expected 1", rowsAff)
+	}
+
+	dirtyTest(obj)
+}
+
+func testSave(ctx context.Context, o *orm.ORM, t *testing.T, obj *object.Object) {
 	rowsAff, err := o.Save(ctx, nil, obj)
-	cancel()
 
 	fatalIf(err)
 	if rowsAff == 0 {
@@ -430,4 +463,29 @@ func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
 			t.Fatalf("expected %s for 'Address1', address1 was %s", expectedStr, address1)
 		}
 	}
+}
+
+func testRaceConditionSave(o * orm.ORM, t * testing.T, rootTable string) {
+	numGoroutines := 100
+	var wg sync.WaitGroup
+
+	for i := 0 ; i < numGoroutines; i++ {
+		go func() {
+			obj := mock.RandomPerson()
+
+			ctx, cancel := getRaceContext()
+
+			// will fail if rowsAff==0
+			testSave(ctx, o, t, obj)
+
+			// will fail if rowsAff != 1
+			testDelete(ctx, o, t, obj)
+			cancel()
+
+			wg.Done()
+		}()
+
+		wg.Add(1)
+	}
+	wg.Wait()
 }

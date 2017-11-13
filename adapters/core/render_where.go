@@ -20,6 +20,7 @@ func RenderUpdateWhereClause(g *sg.SQLGenerator, schTable *schema.Table, fieldsM
 		return "", nil, &emptyInt, nil
 	}
 
+	// TODO: This can likely be refactored a bit.
 	bindI := 1
 	if !schTable.MultiKey {
 		f := fieldsMap[schTable.Primary]
@@ -95,6 +96,7 @@ func RenderWhereClause(g *sg.SQLGenerator, schTable *schema.Table, obj *object.O
 		}
 		sqlName := f.Name
 		whereKeys[i] = fmt.Sprintf("%s = %s", sqlName, g.RenderBindingValueWithInt(f, bindI))
+		// TODO: support object.SQLValue here
 		bindArgs[i] = v
 
 		i++

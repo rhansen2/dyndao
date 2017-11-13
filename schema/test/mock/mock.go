@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"github.com/icrowley/fake"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 )
@@ -171,5 +172,16 @@ func DefaultPersonWithAddress() *object.Object {
 
 	addrObj := SampleAddressObject()
 	obj.Children["addresses"] = object.NewArray(addrObj)
+	return obj
+}
+
+func RandomPerson() *object.Object {
+	obj := object.New(PeopleObjectType)
+	obj.Set("Name", fake.FirstName())
+	obj.Set("NullText", object.NewNULLValue())
+	obj.Set("NullInt", object.NewNULLValue())
+	obj.Set("NullVarchar", object.NewNULLValue())
+	obj.Set("NullBlob", object.NewNULLValue())
+
 	return obj
 }

@@ -13,7 +13,6 @@ import (
 
 	_ "github.com/denisenkom/go-mssqldb"
 
-	"fmt"
 	"os"
 	"testing"
 
