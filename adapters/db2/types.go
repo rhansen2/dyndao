@@ -43,8 +43,8 @@ var timestampTypes = map[string]bool{
 
 var lobTypes = map[string]bool{
 	// FIXME: Mixing of CLOB and (VAR)BINARY types, ergh
-	"CLOB": true,
-	"clob": true,
+	"CLOB":   true,
+	"clob":   true,
 	"BINARY": true,
 	"binary": true,
 

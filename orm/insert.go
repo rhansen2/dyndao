@@ -87,7 +87,7 @@ func (o *ORM) Insert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64
 	return o.insertHelper(ctx, stmt, bindArgs, obj, callerSuppliesPK, tracing, objTable, &lastID)
 }
 
-func (o *ORM) insertHelper(ctx context.Context, stmt *sql.Stmt, bindArgs []interface{}, obj * object.Object, callerSuppliesPK bool, tracing bool, objTable *schema.Table, lastID *int64) (int64, error) {
+func (o *ORM) insertHelper(ctx context.Context, stmt *sql.Stmt, bindArgs []interface{}, obj *object.Object, callerSuppliesPK bool, tracing bool, objTable *schema.Table, lastID *int64) (int64, error) {
 	errorString := "Insert error"
 	var err error
 	defer func() {
@@ -158,4 +158,3 @@ func (o *ORM) insertHelper(ctx context.Context, stmt *sql.Stmt, bindArgs []inter
 	obj.ResetChangedColumns() // Reset the 'changed fields', if any
 	return rowsAff, nil
 }
-

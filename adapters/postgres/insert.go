@@ -23,4 +23,3 @@ func BindingInsertSQL(schTable *schema.Table, tableName string, colNames []strin
 	}
 	return sqlStr
 }
-

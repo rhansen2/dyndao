@@ -34,7 +34,7 @@ import (
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
-type FnGetDB func() *sql.DB // function type for GetDB
+type FnGetDB func() *sql.DB          // function type for GetDB
 type FnGetSG func() *sg.SQLGenerator // function type for GetSQLGenerator
 
 var (
@@ -72,9 +72,9 @@ func PingCheck(t *testing.T, db *sql.DB) {
 	fatalIf(err)
 }
 
-func dirtyTest(obj * object.Object) {
+func dirtyTest(obj *object.Object) {
 	if obj.IsDirty() {
-		panic("system claims object is not saved")
+		panic("system claims object was not saved")
 	}
 }
 
@@ -136,7 +136,7 @@ func TestDropTables(t *testing.T, db *sql.DB) {
 	fatalIf(err)
 }
 
-func validateMock(t * testing.T, obj * object.Object) {
+func validateMock(t *testing.T, obj *object.Object) {
 	// Validate that we correctly fleshened the primary key
 	t.Run("ValidatePerson/ID", func(t *testing.T) {
 		validatePersonID(t, obj)
@@ -165,7 +165,7 @@ func validateMock(t * testing.T, obj * object.Object) {
 
 func TestSuiteNested(t *testing.T, db *sql.DB) {
 	sch := getSchema()
-	o := orm.New(getSQLGen(), sch, db)    // Setup our ORM
+	o := orm.New(getSQLGen(), sch, db)     // Setup our ORM
 	obj := mock.DefaultPersonWithAddress() // Construct our default mock object
 
 	// Save our default object
@@ -215,6 +215,7 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 		// test retrieving multiple parents, given a single child object
 		testGetParentsViaChild(&o, t)
 	})
+
 }
 
 func saveMockObject(t *testing.T, o *orm.ORM, obj *object.Object) {

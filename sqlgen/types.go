@@ -14,14 +14,14 @@ type FnBindingDelete func(g *SQLGenerator, sch *schema.Schema, obj *object.Objec
 type FnCreateTable func(g *SQLGenerator, sch *schema.Schema, table string) (string, error)
 type FnDropTable func(name string) string
 type FnRenderBindingValueWithInt func(f *schema.Column, i int) string
-type FnRenderInsertValue func(bindI * int, f *schema.Column, value interface{}) (interface{}, error)
+type FnRenderInsertValue func(bindI *int, f *schema.Column, value interface{}) (interface{}, error)
 type FnIsStringType func(string) bool
 type FnIsNumberType func(string) bool
 type FnIsFloatingType func(string) bool
 type FnIsTimestampType func(string) bool
 type FnIsLOBType func(string) bool
-type FnDynamicObjectSetter func(g *SQLGenerator, schTable * schema.Table, columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error
-type FnMakeColumnPointers func(g *SQLGenerator, schTable * schema.Table, columnNames []string, columnTypes []*sql.ColumnType) ([]interface{}, error)
+type FnDynamicObjectSetter func(g *SQLGenerator, schTable *schema.Table, columnNames []string, columnPointers []interface{}, columnTypes []*sql.ColumnType, obj *object.Object) error
+type FnMakeColumnPointers func(g *SQLGenerator, schTable *schema.Table, columnNames []string, columnTypes []*sql.ColumnType) ([]interface{}, error)
 
 type FnRenderWhereClause func(g *SQLGenerator, schTable *schema.Table, obj *object.Object) (string, []interface{}, error)
 type FnRenderUpdateWhereClause func(g *SQLGenerator, schTable *schema.Table, fieldsMap map[string]*schema.Column, obj *object.Object) (string, []interface{}, *int, error)
@@ -36,15 +36,15 @@ type FnBindingInsertSQL func(schTable *schema.Table, tableName string, colNames 
 // runtime, it allows us to share common SQL idioms between implementations
 // much more easily.
 type SQLGenerator struct {
-	Tracing                   bool
-	FixLastInsertIDbug        bool
+	Tracing            bool
+	FixLastInsertIDbug bool
 	// Necessary for ORM-level compatibility hacks
-	IsSQLITE bool
-	IsMYSQL bool
-	IsORACLE bool
-	IsMSSQL bool // MS SQL Server
+	IsSQLITE   bool
+	IsMYSQL    bool
+	IsORACLE   bool
+	IsMSSQL    bool // MS SQL Server
 	IsPOSTGRES bool // Postgre/Postgres? 's' or not?
-	IsDB2 bool
+	IsDB2      bool
 
 	BindingInsert             FnBindingInsert
 	BindingUpdate             FnBindingUpdate

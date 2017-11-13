@@ -173,4 +173,3 @@ func DefaultPersonWithAddress() *object.Object {
 	obj.Children["addresses"] = object.NewArray(addrObj)
 	return obj
 }
-

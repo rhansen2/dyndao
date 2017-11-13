@@ -30,7 +30,7 @@ func BindingInsertSQL(schTable *schema.Table, tableName string, colNames []strin
 	return sqlStr
 }
 
-func RenderInsertValue(bindI * int, f *schema.Column, value interface{}) (interface{}, error) {
+func RenderInsertValue(bindI *int, f *schema.Column, value interface{}) (interface{}, error) {
 	// TODO do we need the schema.Column for more than debugging information?
 
 	// no need for 'sg', just call the local version

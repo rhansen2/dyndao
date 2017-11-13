@@ -3,8 +3,8 @@ package postgres
 import (
 	"fmt"
 	"github.com/rbastic/dyndao/schema"
-	"strings"
 	sg "github.com/rbastic/dyndao/sqlgen"
+	"strings"
 )
 
 var (

@@ -1,8 +1,8 @@
 package postgres
 
 import (
-	"github.com/rbastic/dyndao/schema"
 	"fmt"
+	"github.com/rbastic/dyndao/schema"
 )
 
 func RenderBindingValueWithInt(f *schema.Column, i int) string {

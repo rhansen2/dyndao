@@ -7,8 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/rbastic/dyndao/object"
 	"github.com/inconshreveable/log15"
+	"github.com/rbastic/dyndao/object"
 )
 
 // Delete function will DELETE a record ...

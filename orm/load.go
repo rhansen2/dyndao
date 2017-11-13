@@ -25,7 +25,7 @@ import (
 // GetParentsViaChild retrieves all direct (one-level 'up') parents for a given child object.
 // If a child contains multiple parent tables (possibility?) then this would return an Array
 // of objects with multiple potential values for their obj.Type fields.
-func (o * ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (object.Array, error) {
+func (o *ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (object.Array, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()

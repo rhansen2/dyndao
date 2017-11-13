@@ -14,7 +14,7 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func bindingValueHelper( g *sg.SQLGenerator, fieldsMap map[string]*schema.Column, realName string, bindI *int, k string, schTable * schema.Table) string {
+func bindingValueHelper(g *sg.SQLGenerator, fieldsMap map[string]*schema.Column, realName string, bindI *int, k string, schTable *schema.Table) string {
 	f, ok := fieldsMap[realName]
 	if !ok {
 		panic(fmt.Sprintf("coreBindingInsert: Unknown field for key: [%s] realName: [%s] for table %s", k, realName, schTable.Name))
@@ -39,12 +39,12 @@ func CoreBindingInsert(g *sg.SQLGenerator, schTable *schema.Table, data map[stri
 			sqlv := v.(*object.SQLValue)
 			bindNames[i] = sqlv.String()
 			bindArgs[i] = nil
-/*		// TODO: dont think this case is necessary...
-		case object.SQLValue:
-			sqlv := v.(object.SQLValue)
-			bindNames[i] = sqlv.String()
-			bindArgs[i] = nil
-*/
+			/*		// TODO: dont think this case is necessary...
+					case object.SQLValue:
+						sqlv := v.(object.SQLValue)
+						bindNames[i] = sqlv.String()
+						bindArgs[i] = nil
+			*/
 		case nil:
 			bindNames[i] = bindingValueHelper(g, fieldsMap, realName, &bindI, k, schTable)
 			bindI++
@@ -103,7 +103,7 @@ func BindingInsertSQL(schTable *schema.Table, tableName string, colNames []strin
 	return sqlStr
 }
 
-func RenderInsertValue(bindI * int, f *schema.Column, value interface{}) (interface{}, error) {
+func RenderInsertValue(bindI *int, f *schema.Column, value interface{}) (interface{}, error) {
 	switch value.(type) {
 	case string:
 		str, ok := value.(string)

@@ -21,6 +21,6 @@ func New(g *sg.SQLGenerator) *sg.SQLGenerator {
 	g.BindingInsertSQL = sg.FnBindingInsertSQL(BindingInsertSQL)
 	g.DynamicObjectSetter = sg.FnDynamicObjectSetter(DynamicObjectSetter)
 	g.MakeColumnPointers = sg.FnMakeColumnPointers(MakeColumnPointers)
-//	g.RenderBindingValueWithInt = sg.FnRenderBindingValueWithInt(RenderBindingValueWithInt)
+	//	g.RenderBindingValueWithInt = sg.FnRenderBindingValueWithInt(RenderBindingValueWithInt)
 	return g
 }

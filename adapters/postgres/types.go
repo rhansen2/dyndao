@@ -26,8 +26,8 @@ var numTypes = map[string]bool{
 
 	"INT":      true,
 	"int":      true,
-	"INT4":      true,
-	"int4":      true,
+	"INT4":     true,
+	"int4":     true,
 	"SMALLINT": true,
 	"smallint": true,
 

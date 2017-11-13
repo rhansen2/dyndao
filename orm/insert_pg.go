@@ -10,7 +10,7 @@ import (
 	"github.com/rbastic/dyndao/schema"
 )
 
-func (o *ORM) postgreInsertHelper(ctx context.Context, stmt *sql.Stmt, bindArgs []interface{}, obj * object.Object, callerSuppliesPK bool, tracing bool, objTable *schema.Table) (int64, error) {
+func (o *ORM) postgreInsertHelper(ctx context.Context, stmt *sql.Stmt, bindArgs []interface{}, obj *object.Object, callerSuppliesPK bool, tracing bool, objTable *schema.Table) (int64, error) {
 	errorString := "Insert error"
 	var err error
 	var lastID int64
@@ -18,7 +18,7 @@ func (o *ORM) postgreInsertHelper(ctx context.Context, stmt *sql.Stmt, bindArgs 
 	if callerSuppliesPK {
 		_ = stmt.QueryRowContext(ctx, bindArgs...)
 	} else {
-		fmt.Println("BINDARGS->",bindArgs)
+		fmt.Println("BINDARGS->", bindArgs)
 		err = stmt.QueryRowContext(ctx, bindArgs...).Scan(&lastID)
 	}
 	if err != nil {
@@ -57,4 +57,3 @@ func (o *ORM) postgreInsertHelper(ctx context.Context, stmt *sql.Stmt, bindArgs 
 	return 1, nil
 
 }
-
