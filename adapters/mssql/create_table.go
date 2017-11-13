@@ -12,6 +12,8 @@ func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
 
 func mapType(s string) string {
 	switch s {
+	case "TIMESTAMP":
+		return "DATETIME"
 	case "INTEGER":
 		return "INT"
 	case "BLOB":
