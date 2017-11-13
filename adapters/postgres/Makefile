@@ -6,3 +6,9 @@ test:
 
 cover:
 	POSTGRES_DSN='user=$(POSTGRES_USER) password=$(POSTGRES_PASS) dbname=$(POSTGRES_DB) sslmode=disable' go test -cover
+
+bench:
+	POSTGRES_DSN='user=$(POSTGRES_USER) password=$(POSTGRES_PASS) dbname=$(POSTGRES_DB) sslmode=disable' go test -bench=.
+
+race:
+	POSTGRES_DSN='user=$(POSTGRES_USER) password=$(POSTGRES_PASS) dbname=$(POSTGRES_DB) sslmode=disable' go test -race

@@ -9,3 +9,6 @@ cover:
 
 bench:
 	go test -bench=.
+
+race:
+	go test -race

@@ -6,3 +6,9 @@ test:
 
 cover:
 	ORACLE_SID=GDL_CURRENT4 ORACLE_DSN=SYSTEM/oracle@//localhost:1521/XE go test -cover
+
+bench:
+	ORACLE_SID=GDL_CURRENT4 ORACLE_DSN=SYSTEM/oracle@//localhost:1521/XE go test -bench=.
+
+race:
+	ORACLE_SID=GDL_CURRENT4 ORACLE_DSN=SYSTEM/oracle@//localhost:1521/XE go test -race
