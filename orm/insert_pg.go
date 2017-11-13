@@ -16,9 +16,9 @@ func (o *ORM) postgreInsertHelper(ctx context.Context, stmt *sql.Stmt, bindArgs 
 	var lastID int64
 	// TODO: CallerSuppliesPrimaryPK implementation
 	if callerSuppliesPK {
+		// TODO: Is this correct?
 		_ = stmt.QueryRowContext(ctx, bindArgs...)
 	} else {
-		fmt.Println("BINDARGS->", bindArgs)
 		err = stmt.QueryRowContext(ctx, bindArgs...).Scan(&lastID)
 	}
 	if err != nil {

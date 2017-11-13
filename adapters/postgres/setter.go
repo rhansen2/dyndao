@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"reflect"
 	"time"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
@@ -17,14 +18,43 @@ import (
 // NullInt64 is an alias for sql.NullInt64 data type
 type NullInt64 sql.NullInt64
 
+// Scan implements the Scanner interface for NullInt64
+func (ni *NullInt64) Scan(value interface{}) error {
+	var i sql.NullInt64
+	if err := i.Scan(value); err != nil {
+		return err
+	}
+	// if nil the make Valid false
+	if reflect.TypeOf(value) == nil {
+		*ni = NullInt64{i.Int64, false}
+	} else {
+		*ni = NullInt64{i.Int64, true}
+	}
+	return nil
+}
+
 // NullBool is an alias for sql.NullBool data type
 type NullBool sql.NullBool
 
 // NullFloat64 is an alias for sql.NullFloat64 data type
 type NullFloat64 sql.NullFloat64
 
-// NullTime is an alias for mysql.NullTime data type
-//type NullTime mysql.NullTime
+// NullTime is an alias for the time.Time data type, with NULL-scanning support.
+type NullTime time.Time
+
+func (n *NullTime) Scan(src interface{}) error {
+	if src == nil {
+		return nil
+	}
+
+	t, ok := src.(*time.Time)
+	if !ok {
+		return fmt.Errorf("NullTime can only be used with *time.Time, type was %v", reflect.TypeOf(src))
+	}
+	f := NullTime(*t)
+	n = &f
+	return nil
+}
 
 // NullString is an alias for sql.NullString data type
 type NullString sql.NullString
@@ -44,21 +74,6 @@ func (ni *NullString) Scan(value interface{}) error {
 	return nil
 }
 
-// Scan implements the Scanner interface for NullInt64
-func (ni *NullInt64) Scan(value interface{}) error {
-	var i sql.NullInt64
-	if err := i.Scan(value); err != nil {
-		return err
-	}
-	// if nil the make Valid false
-	if reflect.TypeOf(value) == nil {
-		*ni = NullInt64{i.Int64, false}
-	} else {
-		*ni = NullInt64{i.Int64, true}
-	}
-	return nil
-}
-
 // DynamicObjectSetter is used to dynamically set the values of an object by
 // checking the necessary types (via sql.ColumnType, and what the driver tells
 // us we have for column types)
@@ -71,8 +86,12 @@ func DynamicObjectSetter(s *sg.SQLGenerator, schTable *schema.Table, columnNames
 		typeName := ct.DatabaseTypeName()
 
 		if s.IsTimestampType(typeName) {
-			val := v.(*time.Time)
-			obj.Set(columnNames[i], *val)
+			if v == nil {
+				obj.Set(columnNames[i], object.NewNULLValue())
+			} else {
+				val := v.(**NullTime)
+				obj.Set(columnNames[i], *val)
+			}
 			continue
 		} else if s.IsStringType(typeName) {
 			val := v.(*NullString)
@@ -142,16 +161,8 @@ func MakeColumnPointers(s *sg.SQLGenerator, schTable *schema.Table, columnNames 
 
 			}
 		} else if s.IsTimestampType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				// TODO: almost certainly wrong.
-				var j time.Time
-				columnPointers[i] = &j
-			} else {
-				var j time.Time
-				columnPointers[i] = &j
-
-			}
+			s := new(NullTime)
+			columnPointers[i] = &s
 		} else if s.IsLOBType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
