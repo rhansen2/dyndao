@@ -27,3 +27,6 @@ Then to actually get the driver working:
 
 Now 'dyndao make test' if you have a dyndao alias setup with appropriate configuration.
 
+--
+
+To start db2 again after you've restarted your machine, sudo su - db2inst1, and run db2start.
