@@ -166,13 +166,18 @@ func SampleAddressObject() *object.Object {
 	return addr
 }
 
-func DefaultPersonWithAddress() *object.Object {
-	obj := object.New(PeopleObjectType)
-	obj.Set("Name", "Ryan")
+func setPersonNulls(obj * object.Object) {
 	obj.Set("NullText", object.NewNULLValue())
 	obj.Set("NullInt", object.NewNULLValue())
 	obj.Set("NullVarchar", object.NewNULLValue())
 	obj.Set("NullBlob", object.NewNULLValue())
+	obj.Set("NullTimestamp", object.NewNULLValue())
+}
+
+func DefaultPersonWithAddress() *object.Object {
+	obj := object.New(PeopleObjectType)
+	obj.Set("Name", "Ryan")
+	setPersonNulls(obj)
 
 	addrObj := SampleAddressObject()
 	obj.Children["addresses"] = object.NewArray(addrObj)
@@ -182,10 +187,7 @@ func DefaultPersonWithAddress() *object.Object {
 func RandomPerson() *object.Object {
 	obj := object.New(PeopleObjectType)
 	obj.Set("Name", fake.FirstName())
-	obj.Set("NullText", object.NewNULLValue())
-	obj.Set("NullInt", object.NewNULLValue())
-	obj.Set("NullVarchar", object.NewNULLValue())
-	obj.Set("NullBlob", object.NewNULLValue())
+	setPersonNulls(obj)
 
 	return obj
 }
