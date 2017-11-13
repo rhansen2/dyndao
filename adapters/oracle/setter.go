@@ -3,14 +3,15 @@ package oracle
 import (
 	"database/sql"
 	"fmt"
+	"io/ioutil"
+	"reflect"
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 	sg "github.com/rbastic/dyndao/sqlgen"
 	"gopkg.in/goracle.v2"
-	"io/ioutil"
-	"reflect"
-	"time"
 )
 
 // LobDST helps us to implement custom support for goracle.Lob
@@ -49,15 +50,8 @@ func DynamicObjectSetter(s *sg.SQLGenerator, schTable *schema.Table, columnNames
 			val := v.(*time.Time)
 			obj.Set(columnNames[i], *val)
 		} else if s.IsStringType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				val := v.(*string)
-				obj.Set(columnNames[i], *val)
-			} else {
-				val := v.(*string)
-				obj.Set(columnNames[i], *val)
-
-			}
+			val := v.(*string)
+			obj.Set(columnNames[i], *val)
 		} else if s.IsNumberType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
@@ -82,7 +76,7 @@ func DynamicObjectSetter(s *sg.SQLGenerator, schTable *schema.Table, columnNames
 			}
 		} else if s.IsLOBType(typeName) {
 			if v == nil {
-				obj.Set(columnNames[i], object.NewSQLValue("NULL"))
+				obj.Set(columnNames[i], object.NewNULLValue())
 			} else {
 				val := v.(*LobDST)
 				obj.Set(columnNames[i], string(*val))
@@ -102,14 +96,8 @@ func MakeColumnPointers(s *sg.SQLGenerator, schTable *schema.Table, columnNames 
 		typeName := ct.DatabaseTypeName()
 
 		if s.IsStringType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				var s string
-				columnPointers[i] = &s
-			} else {
-				var s string
-				columnPointers[i] = &s
-			}
+			var s string
+			columnPointers[i] = &s
 		} else if s.IsNumberType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
@@ -121,24 +109,11 @@ func MakeColumnPointers(s *sg.SQLGenerator, schTable *schema.Table, columnNames 
 
 			}
 		} else if s.IsTimestampType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				var j time.Time
-				columnPointers[i] = &j
-			} else {
-				var j time.Time
-				columnPointers[i] = &j
-
-			}
+			var j time.Time
+			columnPointers[i] = &j
 		} else if s.IsLOBType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				s := new(LobDST)
-				columnPointers[i] = s
-			} else {
-				s := new(LobDST)
-				columnPointers[i] = s
-			}
+			s := new(LobDST)
+			columnPointers[i] = s
 		} else {
 			return nil, errors.New("makeColumnPointers: Unrecognized type: " + typeName)
 		}

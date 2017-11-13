@@ -24,8 +24,8 @@ import (
 	"time"
 	//"fmt"
 
-	"testing"
 	"sync"
+	"testing"
 
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/orm"
@@ -474,11 +474,11 @@ func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
 	}
 }
 
-func testRaceConditionSave(o * orm.ORM, t * testing.T, rootTable string) {
+func testRaceConditionSave(o *orm.ORM, t *testing.T, rootTable string) {
 	numGoroutines := 100
 	var wg sync.WaitGroup
 
-	for i := 0 ; i < numGoroutines; i++ {
+	for i := 0; i < numGoroutines; i++ {
 		go func() {
 			obj := mock.RandomPerson()
 

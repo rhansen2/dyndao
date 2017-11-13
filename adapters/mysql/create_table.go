@@ -17,10 +17,11 @@ func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
 }
 
 func mapType(s string) string {
+	switch s {
 	// Map 'integer' to 'int(11)' for now for MySQL
-	if s == "INTEGER" {
+	case "INTEGER":
 		return "INT(11)"
+	default:
+		return s
 	}
-	// no need to map text type
-	return s
 }

@@ -11,15 +11,12 @@ func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
 }
 
 func mapType(s string) string {
-	// Map 'integer' to 'number' for now for Oracle
-	if s == "INTEGER" {
+	switch s {
+	case "INTEGER":
 		return "INT"
-	}
-	if s == "TEXT" {
-		return "TEXT"
-	}
-	if s == "BLOB" {
+	case "BLOB":
 		return "IMAGE"
+	default:
+		return s
 	}
-	return s
 }

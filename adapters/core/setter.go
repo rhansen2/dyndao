@@ -2,12 +2,30 @@ package core
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 	sg "github.com/rbastic/dyndao/sqlgen"
+	"reflect"
 	"time"
 )
+
+type NullTime time.Time
+
+func (n *NullTime) Scan(src interface{}) error {
+	if src == nil {
+		return nil
+	}
+
+	t, ok := src.(*time.Time)
+	if !ok {
+		return fmt.Errorf("NullTime can only be used with *time.Time, type was %v", reflect.TypeOf(src))
+	}
+	f := NullTime(*t)
+	n = &f
+	return nil
+}
 
 // DynamicObjectSetter is used to dynamically set the values of an object by
 // checking the necessary types (via sql.ColumnType, and what the driver tells
@@ -21,8 +39,12 @@ func DynamicObjectSetter(s *sg.SQLGenerator, schTable *schema.Table, columnNames
 		typeName := ct.DatabaseTypeName()
 
 		if s.IsTimestampType(typeName) {
-			val := v.(*time.Time)
-			obj.Set(columnNames[i], *val)
+			if v == nil {
+				obj.Set(columnNames[i], object.NewNULLValue())
+			} else {
+				val := v.(**NullTime)
+				obj.Set(columnNames[i], *val)
+			}
 			continue
 		} else if s.IsStringType(typeName) {
 			nullable, _ := ct.Nullable()
@@ -98,15 +120,8 @@ func MakeColumnPointers(s *sg.SQLGenerator, schTable *schema.Table, columnNames 
 
 			}
 		} else if s.IsTimestampType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				var j time.Time
-				columnPointers[i] = &j
-			} else {
-				var j time.Time
-				columnPointers[i] = &j
-
-			}
+			s := new(NullTime)
+			columnPointers[i] = &s
 		} else if s.IsLOBType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {

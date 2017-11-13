@@ -44,16 +44,14 @@ func RenderCreateColumn(sg *sg.SQLGenerator, f *schema.Column) string {
 }
 
 func mapType(s string) string {
-	// Map 'integer' to 'number' for now for Oracle
-	if s == "INTEGER" {
+	switch s {
+	case "INTEGER":
 		return "INT"
-	}
-	if s == "TEXT" {
+	case "BLOB":
+		fallthrough
+	case "CLOB":
 		return "TEXT"
+	default:
+		return s
 	}
-	// HRM
-	if s == "BLOB" || s == "CLOB" {
-		return "TEXT"
-	}
-	return s
 }
