@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
+	"github.com/rbastic/dyndao/schema"
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
 
@@ -123,7 +124,6 @@ func DynamicObjectSetter(s *sg.SQLGenerator, schTable * schema.Table, columnName
 func MakeColumnPointers(s *sg.SQLGenerator, schTable * schema.Table, columnNames []string, columnTypes []*sql.ColumnType) ([]interface{}, error) {
 	sliceLen := len(columnNames)
 	columnPointers := make([]interface{}, sliceLen)
-
 	for i := 0; i < sliceLen; i++ {
 		ct := columnTypes[i]
 		typeName := ct.DatabaseTypeName()
