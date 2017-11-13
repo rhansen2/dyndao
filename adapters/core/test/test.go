@@ -168,6 +168,9 @@ func validateMock(t *testing.T, obj *object.Object) {
 	t.Run("ValidatePerson/NullBlob", func(t *testing.T) {
 		validateNullBlob(t, obj)
 	})
+	t.Run("ValidatePerson/NullTimestamp", func(t *testing.T) {
+		validateNullBlob(t, obj)
+	})
 
 	// Validate that we correctly saved the children
 	t.Run("ValidateChildrenSaved", func(t *testing.T) {
@@ -286,6 +289,12 @@ func validateNullVarchar(t *testing.T, obj *object.Object) {
 func validateNullBlob(t *testing.T, obj *object.Object) {
 	if !obj.ValueIsNULL(obj.Get("NullBlob")) {
 		t.Fatal("validateNullBlob: expected NULL value")
+	}
+}
+
+func validateNullTimestamp(t *testing.T, obj *object.Object) {
+	if !obj.ValueIsNULL(obj.Get("NullTimestamp")) {
+		t.Fatal("validateNullTimestamp: expected NULL value")
 	}
 }
 
