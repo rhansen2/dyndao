@@ -33,9 +33,9 @@ type Array []*Object
 // Object struct encapsulates our key-value pairs (KV) and a single-item
 // per-key history of the previous value stored for a given key
 // (ChangedColumns).  We also store any instances of 'child records' which may
-// be relevant (for instance, when saving with nested transactions).  'saved'
+// be relevant (for instance, when saving with nested transactions).  'dirty'
 // is used to track the internal state of whether an object was recently
-// retrieved or remapped from internal database state.
+// modified since being retrieved from the underlying database.
 type Object struct {
 	Type           string
 	KV             map[string]interface{}
@@ -136,6 +136,9 @@ func (o *Object) HiddenGetStringAlways(k string) (string, error) {
 	case float64:
 		fl := v.(float64)
 		return fmt.Sprintf("%f", fl), nil
+	case int:
+		fl := v.(int)
+		return fmt.Sprintf("%d", fl), nil
 	case int64:
 		fl := v.(int64)
 		return fmt.Sprintf("%d", fl), nil
@@ -165,6 +168,9 @@ func (o *Object) GetStringAlways(k string) (string, error) {
 	switch v.(type) {
 	case float64:
 		fl := v.(float64)
+		return fmt.Sprintf("%f", fl), nil
+	case int:
+		fl := v.(int)
 		return fmt.Sprintf("%f", fl), nil
 	case int64:
 		fl := v.(int64)
@@ -202,9 +208,12 @@ func (o *Object) GetFloatAlways(k string) (float64, error) {
 	case float64:
 		fl := v.(float64)
 		return fl, nil
+	case int:
+		fl := v.(int)
+		return float64(fl), nil
 	case int64:
-		fl := v.(float64)
-		return fl, nil
+		fl := v.(int64)
+		return float64(fl), nil
 	case uint64:
 		fl := v.(uint64)
 		return float64(fl), nil
@@ -231,6 +240,9 @@ func (o *Object) GetIntAlways(k string) (int64, error) {
 	switch v.(type) {
 	case float64:
 		fl := v.(float64)
+		return int64(fl), nil
+	case int:
+		fl := v.(int)
 		return int64(fl), nil
 	case int64:
 		fl := v.(int64)
@@ -261,6 +273,9 @@ func (o *Object) GetUintAlways(k string) (uint64, error) {
 	switch v.(type) {
 	case float64:
 		fl := v.(float64)
+		return uint64(fl), nil
+	case int:
+		fl := v.(int)
 		return uint64(fl), nil
 	case int64:
 		fl := v.(int64)
