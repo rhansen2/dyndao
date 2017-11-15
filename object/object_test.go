@@ -5,6 +5,34 @@ import (
 	"testing"
 )
 
+func floatTests(t * testing.T, obj * Object) {
+	{
+		obj.Set("floatTest", 3.141529)
+		floatPi, err := obj.GetFloatAlways("floatTest")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(floatPi)
+	}
+
+	{
+		obj.Set("intTest", 3141529)
+		intPi, err := obj.GetFloatAlways("intTest")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(intPi)
+	}
+
+	{
+		intPi, err := obj.GetIntAlways("intTest")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(intPi)
+	}
+}
+
 func TestObject(t *testing.T) {
 	obj := New("person")
 
@@ -22,4 +50,6 @@ func TestObject(t *testing.T) {
 
 	fmt.Println(obj.ChangedColumns)
 	fmt.Println(obj.KV)
+
+	floatTests(t, obj)
 }
