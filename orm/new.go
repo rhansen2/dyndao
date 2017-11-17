@@ -3,14 +3,9 @@ package orm
 import (
 	"database/sql"
 
-	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 	sg "github.com/rbastic/dyndao/sqlgen"
 )
-
-// HookFunction is the function type for declaring a software-based trigger, which we
-// refer to as a 'hook function'.
-type HookFunction func(*schema.Schema, *object.Object) error
 
 // ORM is the primary object we expect the caller to operate on.
 // Construct one with orm.New( ... ) and be on your merry way.
@@ -44,10 +39,6 @@ func (o ORM) GetSQLGenerator() *sg.SQLGenerator {
 	return o.sqlGen
 }
 
-func makeEmptyHookMap() map[string]HookFunction {
-	return make(map[string]HookFunction)
-}
-
 // New is the ORM constructor. It expects a SQL generator, JSON/SQL Schema object, and database connection.
 func New(gen *sg.SQLGenerator, s *schema.Schema, db *sql.DB) ORM {
 	o := ORM{sqlGen: gen, s: s, RawConn: db}
@@ -64,52 +55,3 @@ func New(gen *sg.SQLGenerator, s *schema.Schema, db *sql.DB) ORM {
 	return o
 }
 
-// Software trigger functions
-func (o *ORM) CallBeforeCreateHookIfNeeded(obj *object.Object) error {
-	hookFunc, ok := o.BeforeCreateHooks[o.s.GetTableName(obj.Type)]
-	if ok {
-		return hookFunc(o.s, obj)
-	}
-	return nil
-}
-
-func (o *ORM) CallAfterCreateHookIfNeeded(obj *object.Object) error {
-	hookFunc, ok := o.AfterCreateHooks[o.s.GetTableName(obj.Type)]
-	if ok {
-		return hookFunc(o.s, obj)
-	}
-	return nil
-
-}
-
-func (o *ORM) CallBeforeUpdateHookIfNeeded(obj *object.Object) error {
-	hookFunc, ok := o.BeforeUpdateHooks[o.s.GetTableName(obj.Type)]
-	if ok {
-		return hookFunc(o.s, obj)
-	}
-	return nil
-}
-
-func (o *ORM) CallAfterUpdateHookIfNeeded(obj *object.Object) error {
-	hookFunc, ok := o.AfterUpdateHooks[o.s.GetTableName(obj.Type)]
-	if ok {
-		return hookFunc(o.s, obj)
-	}
-	return nil
-}
-
-func (o *ORM) CallBeforeDeleteHookIfNeeded(obj *object.Object) error {
-	hookFunc, ok := o.BeforeDeleteHooks[o.s.GetTableName(obj.Type)]
-	if ok {
-		return hookFunc(o.s, obj)
-	}
-	return nil
-}
-
-func (o *ORM) CallAfterDeleteHookIfNeeded(obj *object.Object) error {
-	hookFunc, ok := o.AfterDeleteHooks[o.s.GetTableName(obj.Type)]
-	if ok {
-		return hookFunc(o.s, obj)
-	}
-	return nil
-}
