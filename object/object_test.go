@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func floatTests(t * testing.T, obj * Object) {
+func floatTests(t *testing.T, obj *Object) {
 	{
 		obj.Set("floatTest", 3.141529)
 		floatPi, err := obj.GetFloatAlways("floatTest")
@@ -15,6 +15,7 @@ func floatTests(t * testing.T, obj * Object) {
 		fmt.Println(floatPi)
 	}
 
+	// had a bug in GetFloatAlways due to a bad type cast in switch
 	{
 		obj.Set("intTest", 3141529)
 		intPi, err := obj.GetFloatAlways("intTest")

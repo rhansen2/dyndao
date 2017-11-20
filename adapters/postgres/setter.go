@@ -2,9 +2,9 @@ package postgres
 
 import (
 	"database/sql"
+	"fmt"
 	"reflect"
 	"time"
-	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"

@@ -166,7 +166,7 @@ func SampleAddressObject() *object.Object {
 	return addr
 }
 
-func setPersonNulls(obj * object.Object) {
+func setPersonNulls(obj *object.Object) {
 	obj.Set("NullText", object.NewNULLValue())
 	obj.Set("NullInt", object.NewNULLValue())
 	obj.Set("NullVarchar", object.NewNULLValue())
