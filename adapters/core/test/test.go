@@ -388,6 +388,8 @@ func testRetrieve(o *orm.ORM, t *testing.T, sch *schema.Schema) {
 }
 
 func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
+	// TODO: Refactor this?
+
 	// insert another object
 	nobj := object.New(rootTable)
 	nobj.Set("Name", "Joe")
@@ -436,6 +438,7 @@ func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 	// Configure our database query
 	queryVals := make(map[string]interface{})
 	queryVals["PersonID"] = 1
+
 	// Retrieve a single child object
 	ctx, cancel := getDefaultContext()
 	childObj, err := o.Retrieve(ctx, "addresses", queryVals)
@@ -513,7 +516,7 @@ func testRaceConditionSave(o *orm.ORM, t *testing.T, rootTable string) {
 
 			ctx, cancel := getRaceContext()
 
-			// will fail if rowsAff==0
+			// will fail if rowsAff == 0
 			testSave(ctx, o, t, obj)
 
 			// will fail if rowsAff != 1
