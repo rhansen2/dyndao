@@ -51,6 +51,8 @@ func mapType(s string) string {
 		fallthrough
 	case "CLOB":
 		return "TEXT"
+	case "FLOAT":
+		return "FLOAT"
 	default:
 		return s
 	}

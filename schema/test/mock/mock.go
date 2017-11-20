@@ -34,7 +34,14 @@ func fieldNullInt() *schema.Column {
 	return fld
 }
 
-// TODO: Int field
+func fieldNullFloat() *schema.Column {
+	fld := schema.DefaultColumn()
+	fld.IsNumber = true
+	fld.Name = "NullFloat"
+	fld.DBType = "float"
+	fld.AllowNull = true
+	return fld
+}
 
 func fieldNullVarchar() *schema.Column {
 	fld := schema.DefaultColumn()
@@ -90,6 +97,7 @@ func peopleTable() *schema.Table {
 	tbl.Primary = "PersonID"
 	tbl.Columns["PersonID"] = primaryColumn("PersonID")
 	tbl.Columns["Name"] = fieldName()
+	tbl.Columns["NullFloat"] = fieldNullFloat()
 	tbl.Columns["NullText"] = fieldNullText()
 	tbl.Columns["NullInt"] = fieldNullInt()
 	tbl.Columns["NullVarchar"] = fieldNullVarchar()
@@ -98,7 +106,7 @@ func peopleTable() *schema.Table {
 
 	// TODO: Why was NullText getting retrieved as NULL when we didn't
 	// have it in the EssentialColumns list?
-	tbl.EssentialColumns = []string{"PersonID", "Name", "NullText", "NullInt", "NullVarchar", "NullBlob", "NullTimestamp"}
+	tbl.EssentialColumns = []string{"PersonID", "Name", "NullFloat", "NullText", "NullInt", "NullVarchar", "NullBlob", "NullTimestamp"}
 
 	return tbl
 }
@@ -120,12 +128,13 @@ func addressTable() *schema.Table {
 	tbl.MultiKey = true
 	tbl.ForeignKeys = []string{"PersonID"}
 
+	tbl.Columns["PersonID"] = fkColumn("PersonID")
+
 	tbl.Columns["AddressID"] = primaryColumn("AddressID")
 	tbl.Columns["Address1"] = fieldAddress("Address1")
 	tbl.Columns["Address2"] = fieldAddress("Address2")
 	tbl.Columns["City"] = fieldAddress("City")
 	tbl.Columns["State"] = fieldAddress("State")
-	tbl.Columns["PersonID"] = fkColumn("PersonID")
 	tbl.Columns["Zip"] = fieldAddress("Zip")
 
 	tbl.EssentialColumns = []string{"AddressID", "PersonID", "Address1", "Address2", "City", "State", "Zip"}
@@ -169,6 +178,7 @@ func SampleAddressObject() *object.Object {
 func setPersonNulls(obj *object.Object) {
 	obj.Set("NullText", object.NewNULLValue())
 	obj.Set("NullInt", object.NewNULLValue())
+	obj.Set("NullFloat", object.NewNULLValue())
 	obj.Set("NullVarchar", object.NewNULLValue())
 	obj.Set("NullBlob", object.NewNULLValue())
 	obj.Set("NullTimestamp", object.NewNULLValue())
