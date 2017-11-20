@@ -1,8 +1,8 @@
 package orm
 
 import (
-	"github.com/rbastic/dyndao/schema"
 	"github.com/rbastic/dyndao/object"
+	"github.com/rbastic/dyndao/schema"
 )
 
 // HookFunction is the function type for declaring a software-based trigger, which we

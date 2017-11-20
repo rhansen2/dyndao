@@ -54,4 +54,3 @@ func New(gen *sg.SQLGenerator, s *schema.Schema, db *sql.DB) ORM {
 
 	return o
 }
-
