@@ -7,6 +7,9 @@ test:
 cover:
 	MYSQL_DSN=root:$(MYSQL_PASS)@/test?charset=utf8 go test -cover
 
+htmlcover:
+	MYSQL_DSN=root:$(MYSQL_PASS)@/test?charset=utf8 go test -coverprofile=coverage.out ; go tool cover -html=coverage.out
+
 bench:
 	MYSQL_DSN=root:$(MYSQL_PASS)@/test?charset=utf8 go test -bench=.
 
