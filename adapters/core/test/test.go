@@ -185,7 +185,7 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 
 	// Save our default object
 	t.Run("SaveMockObject", func(t *testing.T) {
-		saveMockObject(t, &o, obj)
+		saveMockObject(&o, t, obj)
 	})
 
 	validateMock(t, obj)
@@ -240,9 +240,27 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 		// test retrieving multiple parents, given a single child object
 		testGetParentsViaChild(&o, t)
 	})
+
+	t.Run("Delete", func(t * testing.T) {
+		// test mock object delete
+		testDeleteMockObject(&o, t, obj)
+	})
 }
 
-func saveMockObject(t *testing.T, o *orm.ORM, obj *object.Object) {
+func testDeleteMockObject(o *orm.ORM, t *testing.T, obj *object.Object) {
+	ctx, cancel := getDefaultContext()
+	rowsAff, err := o.Delete(ctx, nil, obj)
+	cancel()
+	fatalIf(err)
+
+	dirtyTest(obj)
+
+	if rowsAff == 0 {
+		t.Fatal("Rows affected shouldn't be zero")
+	}
+}
+
+func saveMockObject(o *orm.ORM, t *testing.T, obj *object.Object) {
 	ctx, cancel := getDefaultContext()
 	rowsAff, err := o.SaveAll(ctx, obj)
 	cancel()
