@@ -30,7 +30,7 @@ func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName s
 	return qv, nil
 }
 
-func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+func (o *ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	rowsAff, err := o.Save(ctx, tx, obj)
 	if err != nil {
 		return 0, err
@@ -69,7 +69,7 @@ func (o ORM) recurseAndSave(ctx context.Context, tx *sql.Tx, obj *object.Object)
 }
 
 // SaveAllInsideTx will attempt to save an entire nested object structure inside of a single transaction.
-func (o ORM) SaveAllInsideTx(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+func (o *ORM) SaveAllInsideTx(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	select {
 	case <-ctx.Done():
 		return 0, ctx.Err()
@@ -89,7 +89,7 @@ func (o ORM) SaveAllInsideTx(ctx context.Context, tx *sql.Tx, obj *object.Object
 // SaveAll will attempt to save an entire nested object structure inside of a single transaction.
 // It begins the transaction, attempts to recursively save the object and all of it's children,
 // and any of the children's children, and then will finally rollback/commit as necessary.
-func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
+func (o *ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 	select {
 	case <-ctx.Done():
 		return 0, ctx.Err()
@@ -123,7 +123,7 @@ func (o ORM) SaveAll(ctx context.Context, obj *object.Object) (int64, error) {
 // SaveButErrorIfUpdate function will INSERT or UPDATE a record. It does not attempt to
 // save any of the children. If given a transaction, it will use that to
 // attempt to insert the data.
-func (o ORM) SaveButErrorIfUpdate(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+func (o *ORM) SaveButErrorIfUpdate(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	select {
 	case <-ctx.Done():
 		return 0, ctx.Err()
@@ -161,7 +161,7 @@ func (o ORM) SaveButErrorIfUpdate(ctx context.Context, tx *sql.Tx, obj *object.O
 // appears that an INSERT should have been performed. This could be necessary in
 // situations where an INSERT would compromise the integrity of the data.  If
 // given a transaction, it will use that to attempt to insert the data.
-func (o ORM) SaveButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+func (o *ORM) SaveButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	select {
 	case <-ctx.Done():
 		return 0, ctx.Err()
@@ -198,7 +198,7 @@ func (o ORM) SaveButErrorIfInsert(ctx context.Context, tx *sql.Tx, obj *object.O
 // Save function will INSERT or UPDATE a record. It does not attempt to
 // save any of the children. If given a transaction, it will use that to
 // attempt to insert the data.
-func (o ORM) Save(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
+func (o *ORM) Save(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, error) {
 	select {
 	case <-ctx.Done():
 		return 0, ctx.Err()
