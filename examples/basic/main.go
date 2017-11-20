@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -58,27 +59,41 @@ func main() {
 	db, err := dorm.GetDB(driver, dsn)
 	fatalIf(err)
 
-	if db == nil {
-		panic("empty database connection received")
-	}
-
 	defer func() {
 		err = db.Close()
 		fatalIf(err)
 	}()
 
+	// Load the sample included schema
+	// (which is used by the internal dyndao test suite)
 	sch := mock.NestedSchema()
+
+	// Instantiate the ORM instance
 	orm := dorm.New(getSQLGen(), sch, db)
 
 	// CreateTables will create all tables within a given schema
 	{
+		// Instantiate our default context
 		ctx, cancel := getDefaultContext()
 		err = orm.CreateTables(ctx)
 		cancel()
 		fatalIf(err)
 	}
 
-	// TODO: put code to work with the database here
+	{
+		// Instantiate our default context
+		ctx, cancel := getDefaultContext()
+
+		// Attempt to insert a record
+		numRows, err := orm.Insert(ctx, nil, mock.RandomPerson())
+		fatalIf(err)
+		if numRows == 0 {
+			panic("Insert returned zero rows affected -- something is clearly wrong")
+		} else {
+			fmt.Println("Looks like we inserted something")
+		}
+		cancel()
+	}
 
 	// DropTables will create all tables within a given schema
 	{
