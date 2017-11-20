@@ -100,7 +100,7 @@ func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
 
 	// TODO: for testing
 	db.SetMaxOpenConns(200)
-	db.SetMaxIdleConns(9) // -HACK- ???
+	db.SetMaxIdleConns(9) // ???
 
 	// Bootstrap the db, run the test suite, drop tables
 	t.Run("TestPingCheck", func(t *testing.T) {
@@ -159,11 +159,16 @@ func validateMock(t *testing.T, obj *object.Object) {
 		validateNullText(t, obj)
 	})
 
+	t.Run("ValidatePerson/NullVarchar", func(t *testing.T) {
+		validateNullVarchar(t, obj)
+	})
+
 	t.Run("ValidatePerson/NullInt", func(t *testing.T) {
 		validateNullInt(t, obj)
 	})
-	t.Run("ValidatePerson/NullVarchar", func(t *testing.T) {
-		validateNullVarchar(t, obj)
+
+	t.Run("ValidatePerson/NullFloat", func(t *testing.T) {
+		validateNullFloat(t, obj)
 	})
 	t.Run("ValidatePerson/NullBlob", func(t *testing.T) {
 		validateNullBlob(t, obj)
@@ -295,6 +300,12 @@ func validateNullText(t *testing.T, obj *object.Object) {
 func validateNullInt(t *testing.T, obj *object.Object) {
 	if !obj.ValueIsNULL(obj.Get("NullInt")) {
 		t.Fatal("validateNullInt: expected NULL value")
+	}
+}
+
+func validateNullFloat(t *testing.T, obj *object.Object) {
+	if !obj.ValueIsNULL(obj.Get("NullFloat")) {
+		t.Fatal("validateNullFloat: expected NULL value")
 	}
 }
 

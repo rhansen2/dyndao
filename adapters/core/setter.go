@@ -131,6 +131,15 @@ func MakeColumnPointers(s *sg.SQLGenerator, schTable *schema.Table, columnNames 
 				var s string
 				columnPointers[i] = &s
 			}
+		} else if s.IsFloatingType(typeName) {
+			nullable, _ := ct.Nullable()
+			if nullable {
+				var s sql.NullFloat64
+				columnPointers[i] = &s
+			} else {
+				var s float64
+				columnPointers[i] = &s
+			}
 		} else if s.IsStringType(typeName) {
 			nullable, _ := ct.Nullable()
 			if nullable {
