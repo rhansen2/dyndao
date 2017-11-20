@@ -53,3 +53,14 @@ func TestObject(t *testing.T) {
 
 	floatTests(t, obj)
 }
+
+func TestObjectMissingKey(t *testing.T) {
+	obj := New("person")
+	obj.Set("name", "Ryan")
+
+	_, v := obj.GetIntAlways("age")
+
+	if v != ErrKeyWasMissing {
+		panic("age should be missing")
+	}
+}

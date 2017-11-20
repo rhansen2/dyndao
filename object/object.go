@@ -1,8 +1,9 @@
-// Package object is an abstract data record which tracks state changes.  It's
-// meant to make it easier to map key-value records into ORM / RDBMS systems.
-// The state change tracking can be useful when the values of primary keys need
-// to be updated. (Changing a foreign key on a table with a composite key, for
-// example)
+// Package object is an abstract data record which tracks
+// state changes.  It's meant to make it easier to map
+// key-value records into ORM / RDBMS systems.  The state
+// change tracking can be useful when the values of primary
+// keys need to be updated. (Changing a foreign key on a table
+// with a composite key, for example)
 package object
 
 import (
