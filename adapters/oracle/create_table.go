@@ -47,6 +47,8 @@ func mapType(s string) string {
 		return "NUMBER"
 	case "text":
 		return "CLOB"
+	case "VARCHAR":
+		fallthrough
 	case "varchar":
 		return "VARCHAR2"
 	default:

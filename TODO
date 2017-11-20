@@ -9,8 +9,6 @@ mapper:
 	- not completely confident that mapper is in sufficient end-state
 
 others:
-	- add tests for Delete
-
 	- sqlite support for cascading key constraints on table schema?
 
 	- TODO: oracle, add tests for varchar2 database type?

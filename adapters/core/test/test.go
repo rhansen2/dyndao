@@ -246,7 +246,7 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 		testGetParentsViaChild(&o, t)
 	})
 
-	t.Run("Delete", func(t * testing.T) {
+	t.Run("Delete", func(t *testing.T) {
 		// test mock object delete
 		testDeleteMockObject(&o, t, obj)
 	})
