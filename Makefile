@@ -19,3 +19,10 @@ race:
 	cd adapters/oracle; TEST_RACE=1 make race
 	cd adapters/mssql; TEST_RACE=1 make race
 	cd adapters/postgres; TEST_RACE=1 make race
+
+cover:
+	cd adapters/sqlite;  make cover
+	cd adapters/mysql;  make cover
+	cd adapters/oracle;  make cover
+	cd adapters/mssql;  make cover
+	cd adapters/postgres;  make cover
