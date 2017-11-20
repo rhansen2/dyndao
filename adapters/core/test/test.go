@@ -190,7 +190,7 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 
 	// Save our default object
 	t.Run("SaveMockObject", func(t *testing.T) {
-		saveMockObject(&o, t, obj)
+		saveMockObject(o, t, obj)
 	})
 
 	validateMock(t, obj)
@@ -198,7 +198,7 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 	// Once we get basic saving working, do some race condition testing
 	if os.Getenv("TEST_RACE") != "" {
 		t.Run("RaceConditionSave", func(t *testing.T) {
-			testRaceConditionSave(&o, t, mock.PeopleObjectType)
+			testRaceConditionSave(o, t, mock.PeopleObjectType)
 		})
 	}
 
@@ -222,33 +222,33 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 
 		// Test saving the object
 		ctx, cancel := getDefaultContext()
-		testSave(ctx, &o, t, obj)
+		testSave(ctx, o, t, obj)
 		cancel()
 	})
 
 	t.Run("Retrieve", func(t *testing.T) {
 		// test retrieving the parent, given a child object
-		testRetrieve(&o, t, sch)
+		testRetrieve(o, t, sch)
 	})
 
 	t.Run("RetrieveMany", func(t *testing.T) {
 		// test multiple retrieve
-		testRetrieveMany(&o, t, mock.PeopleObjectType)
+		testRetrieveMany(o, t, mock.PeopleObjectType)
 	})
 
 	t.Run("FleshenChildren", func(t *testing.T) {
 		// try fleshen children on person id 1
-		testFleshenChildren(&o, t, mock.PeopleObjectType)
+		testFleshenChildren(o, t, mock.PeopleObjectType)
 	})
 
 	t.Run("GetParentsViaChild", func(t *testing.T) {
 		// test retrieving multiple parents, given a single child object
-		testGetParentsViaChild(&o, t)
+		testGetParentsViaChild(o, t)
 	})
 
 	t.Run("Delete", func(t *testing.T) {
 		// test mock object delete
-		testDeleteMockObject(&o, t, obj)
+		testDeleteMockObject(o, t, obj)
 	})
 }
 

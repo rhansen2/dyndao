@@ -55,5 +55,4 @@ func (o *ORM) postgreInsertHelper(ctx context.Context, stmt *sql.Stmt, bindArgs 
 	obj.MarkDirty(false)      // Note that the object has been recently saved
 	obj.ResetChangedColumns() // Reset the 'changed fields', if any
 	return 1, nil
-
 }

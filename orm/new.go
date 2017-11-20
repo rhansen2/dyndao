@@ -26,21 +26,21 @@ type ORM struct {
 }
 
 // GetSchema returns the ORM's active schema
-func (o ORM) GetSchema() *schema.Schema {
+func (o *ORM) GetSchema() *schema.Schema {
 	return o.s
 }
 
-func (o ORM) UseTracing() bool {
+func (o *ORM) UseTracing() bool {
 	return o.sqlGen.Tracing
 }
 
 // GetSQLGenerator returns the active SQLGenerator adapter
-func (o ORM) GetSQLGenerator() *sg.SQLGenerator {
+func (o *ORM) GetSQLGenerator() *sg.SQLGenerator {
 	return o.sqlGen
 }
 
 // New is the ORM constructor. It expects a SQL generator, JSON/SQL Schema object, and database connection.
-func New(gen *sg.SQLGenerator, s *schema.Schema, db *sql.DB) ORM {
+func New(gen *sg.SQLGenerator, s *schema.Schema, db *sql.DB) *ORM {
 	o := ORM{sqlGen: gen, s: s, RawConn: db}
 
 	o.BeforeCreateHooks = makeEmptyHookMap()
@@ -52,5 +52,5 @@ func New(gen *sg.SQLGenerator, s *schema.Schema, db *sql.DB) ORM {
 	o.BeforeDeleteHooks = makeEmptyHookMap()
 	o.AfterDeleteHooks = makeEmptyHookMap()
 
-	return o
+	return &o
 }

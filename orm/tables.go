@@ -13,7 +13,7 @@ import (
 
 // CreateTables executes a CreateTable operation for every table specified in
 // the schema.
-func (o ORM) CreateTables(ctx context.Context) error {
+func (o *ORM) CreateTables(ctx context.Context) error {
 	for tName := range o.s.Tables {
 		err := o.CreateTable(ctx, o.s, tName)
 		if err != nil {
@@ -26,7 +26,7 @@ func (o ORM) CreateTables(ctx context.Context) error {
 
 // DropTables executes a DropTable operation for every table specified in the
 // schema.
-func (o ORM) DropTables(ctx context.Context) error {
+func (o *ORM) DropTables(ctx context.Context) error {
 	for tName := range o.s.Tables {
 		err := o.DropTable(ctx, tName)
 		if err != nil {
@@ -39,7 +39,7 @@ func (o ORM) DropTables(ctx context.Context) error {
 
 // CreateTable will execute a CreateTable operation for the specified table in
 // a given schema.
-func (o ORM) CreateTable(ctx context.Context, sch *schema.Schema, tableName string) error {
+func (o *ORM) CreateTable(ctx context.Context, sch *schema.Schema, tableName string) error {
 	sqlStr, err := o.sqlGen.CreateTable(o.sqlGen, sch, tableName)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (o ORM) CreateTable(ctx context.Context, sch *schema.Schema, tableName stri
 
 // DropTable will execute a DropTable operation for the specified table in
 // a given schema.
-func (o ORM) DropTable(ctx context.Context, tableName string) error {
+func (o *ORM) DropTable(ctx context.Context, tableName string) error {
 	sqlStr := o.sqlGen.DropTable(tableName)
 	_, err := prepareAndExecSQL(ctx, o.RawConn, sqlStr)
 	if err != nil {

@@ -11,7 +11,7 @@ import (
 // Feed it a context, the current transaction, and the dyndao object you are
 // trying to save. It will return rows affected, the resulting object, or an
 // error.
-func (o ORM) CreateOrUpdateTx(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, *object.Object, error) {
+func (o *ORM) CreateOrUpdateTx(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64, *object.Object, error) {
 	var err error
 	var retObj *object.Object
 
@@ -41,11 +41,11 @@ func (o ORM) CreateOrUpdateTx(ctx context.Context, tx *sql.Tx, obj *object.Objec
 	return numRows, obj, nil
 }
 
-func (o ORM) CreateOrUpdate(ctx context.Context, obj *object.Object) (int64, *object.Object, error) {
+func (o *ORM) CreateOrUpdate(ctx context.Context, obj *object.Object) (int64, *object.Object, error) {
 	return o.CreateOrUpdateTx(ctx, nil, obj)
 }
 
-func (o ORM) CreateOrUpdateKVTx(ctx context.Context, tx *sql.Tx, typ string, queryKV map[string]interface{}, createKV map[string]interface{}) (int64, *object.Object, error) {
+func (o *ORM) CreateOrUpdateKVTx(ctx context.Context, tx *sql.Tx, typ string, queryKV map[string]interface{}, createKV map[string]interface{}) (int64, *object.Object, error) {
 	var err error
 	var retObj *object.Object
 
@@ -80,11 +80,11 @@ func (o ORM) CreateOrUpdateKVTx(ctx context.Context, tx *sql.Tx, typ string, que
 	return numRows, obj, nil
 }
 
-func (o ORM) CreateOrUpdateKV(ctx context.Context, typ string, queryKV map[string]interface{}, createKV map[string]interface{}) (int64, *object.Object, error) {
+func (o *ORM) CreateOrUpdateKV(ctx context.Context, typ string, queryKV map[string]interface{}, createKV map[string]interface{}) (int64, *object.Object, error) {
 	return o.CreateOrUpdateKVTx(ctx, nil, typ, queryKV, createKV)
 }
 
-func (o ORM) CreateOrUpdateKVHookUpdate(ctx context.Context, tx *sql.Tx, typ string, queryKV, createKV map[string]interface{}, beforeUpdateCopyColumns []string) (int64, *object.Object, error) {
+func (o *ORM) CreateOrUpdateKVHookUpdate(ctx context.Context, tx *sql.Tx, typ string, queryKV, createKV map[string]interface{}, beforeUpdateCopyColumns []string) (int64, *object.Object, error) {
 
 	var err error
 	var retObj *object.Object
