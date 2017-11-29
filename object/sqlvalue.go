@@ -33,7 +33,7 @@ func NewNULLValue() *SQLValue {
 	return &SQLValue{Value: "NULL"}
 }
 
-func (o Object) ValueIsNULL(v interface{}) bool {
+func (o * Object) ValueIsNULL(v interface{}) bool {
 	switch v.(type) {
 	case *SQLValue:
 		sv := v.(*SQLValue)
