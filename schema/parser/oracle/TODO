@@ -1,0 +1,3 @@
+Have a way of quickly bumping the session cursors.
+
+Is this a commonly available thing that we should support across databases? Or an Oracle specific problem?

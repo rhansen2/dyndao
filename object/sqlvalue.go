@@ -1,10 +1,10 @@
 package object
 
-// SQLValue struct is for encapsulating raw SQL Function calls.
-// For example, if we want to use SYS_GUID() as a value for an
-// INSERT with Oracle, or LAST_INSERT_ID() as a value for an INSERT with MySQL.
-// It's meant to be stored in an object's KV, so that it's type
-// can be detected and it can be rendered appropriately into a string value.
+// SQLValue struct is for encapsulating raw SQL Function calls.  For example,
+// if we want to use SYS_GUID() as a value for an INSERT with Oracle, or
+// LAST_INSERT_ID() as a value for an INSERT with MySQL.  It's meant to be
+// stored in an object's KV, so that it's type can be detected and it can be
+// rendered appropriately into a string value.
 type SQLValue struct {
 	Value string
 }
@@ -33,6 +33,8 @@ func NewNULLValue() *SQLValue {
 	return &SQLValue{Value: "NULL"}
 }
 
+// ValueIsNULL is a helper for determining whether a given value is the
+// equivalent of a SQLValue with content "NULL". The return value is a boolean.
 func (o * Object) ValueIsNULL(v interface{}) bool {
 	switch v.(type) {
 	case *SQLValue:

@@ -17,7 +17,7 @@ func fatalEnv() {
 
 func fatalIf(t *testing.T, err error) {
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
 }
 
@@ -31,7 +31,11 @@ func TestBasicIS(t *testing.T) {
 	db, err := dyndaoORM.GetDB(driver, dsn)
 	fatalIf(t, err)
 
-	sch, err := LoadSchema(context.TODO(), db, "USERS")
+	dbname := os.Getenv("OWNER")
+	if dbname == "" {
+		panic("please supply OWNER as an environment parameter.")
+	}
+	sch, err := LoadSchema(context.TODO(), db, dbname)
 	fatalIf(t, err)
 
 	err = db.Close()
