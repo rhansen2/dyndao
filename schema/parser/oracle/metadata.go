@@ -20,11 +20,11 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"strings"
 	"strconv"
+	"strings"
 
-	"github.com/rbastic/dyndao/schema"
 	"github.com/pkg/errors"
+	"github.com/rbastic/dyndao/schema"
 )
 
 // LoadSchema loads the entire schema and configures the essential
@@ -74,7 +74,7 @@ func ParseSchema(ctx context.Context, db *sql.DB, dbName string) (*schema.Schema
 			return nil, errors.Wrap(err, wrapMsg)
 		}
 
-		if shouldSkipParsingTable( tblName ) {
+		if shouldSkipParsingTable(tblName) {
 			continue
 		}
 
@@ -171,10 +171,10 @@ func setTableCol(sch *schema.Schema, tblName string, colName sql.NullString, dat
 		isNullBool = true
 	}
 
-//	In case you get curious.
-//	fmt.Println("setTableCol: dataType:[", dataType, "]")
-//	fmt.Println("setTableCol: isNullable:[", isNullable, "] identityCol:[", identityCol, "]")
-//	fmt.Println("setTableCol: dataLength:[", dataLength, "]")
+	//	In case you get curious.
+	//	fmt.Println("setTableCol: dataType:[", dataType, "]")
+	//	fmt.Println("setTableCol: isNullable:[", isNullable, "] identityCol:[", identityCol, "]")
+	//	fmt.Println("setTableCol: dataLength:[", dataLength, "]")
 
 	df.AllowNull = isNullBool
 

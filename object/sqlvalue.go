@@ -35,7 +35,7 @@ func NewNULLValue() *SQLValue {
 
 // ValueIsNULL is a helper for determining whether a given value is the
 // equivalent of a SQLValue with content "NULL". The return value is a boolean.
-func (o * Object) ValueIsNULL(v interface{}) bool {
+func (o *Object) ValueIsNULL(v interface{}) bool {
 	switch v.(type) {
 	case *SQLValue:
 		sv := v.(*SQLValue)

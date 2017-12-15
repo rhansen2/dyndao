@@ -54,8 +54,10 @@ type Column struct {
 	IsUnique     bool   `json:"IsUnique"`
 	Length       int    `json:"Length"`
 	Name         string `json:"Name"`
+	// TODO: DefaultValue isn't really implemented anywhere yet.
 	DefaultValue string `json:"DefaultValue"` // Converts to integer if IsNumber is set
 	DBType       string `json:"DBType"`
+	MapToString  bool   `json:"MapToString"` // type-mapping hack for specifying string as destination data type when reading
 }
 
 // ChildTable represents a relationship between a parent table

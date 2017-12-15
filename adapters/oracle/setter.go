@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"reflect"
+	"strconv"
 	"time"
 
 	"github.com/pkg/errors"
@@ -46,6 +47,14 @@ func DynamicObjectSetter(s *sg.SQLGenerator, schTable *schema.Table, columnNames
 		ct := columnTypes[i]
 
 		typeName := ct.DatabaseTypeName()
+
+		shouldMapToString := false
+		colDef := schTable.GetColumn(columnNames[i])
+		if colDef == nil {
+			return fmt.Errorf("DynamicObjectSetter: undefined column definition for column named '%s' - if you are JOINing against columns which do not exist in the schemaTable, please create special definitions for them", columnNames[i])
+		}
+		shouldMapToString = colDef.MapToString
+
 		if s.IsTimestampType(typeName) {
 			val := v.(*time.Time)
 			obj.Set(columnNames[i], *val)
@@ -54,14 +63,26 @@ func DynamicObjectSetter(s *sg.SQLGenerator, schTable *schema.Table, columnNames
 			obj.Set(columnNames[i], *val)
 		} else if s.IsNumberType(typeName) {
 			nullable, _ := ct.Nullable()
-			if nullable {
-				val := v.(*sql.NullInt64)
-				if val.Valid {
-					obj.Set(columnNames[i], val.Int64)
+			if shouldMapToString {
+				if nullable {
+					val := v.(*sql.NullInt64)
+					if val.Valid {
+						obj.Set(columnNames[i], strconv.FormatInt(val.Int64, 10))
+					}
+				} else {
+					val := v.(*int64)
+					obj.Set(columnNames[i], strconv.FormatInt(*val, 10))
 				}
 			} else {
-				val := v.(*int64)
-				obj.Set(columnNames[i], *val)
+				if nullable {
+					val := v.(*sql.NullInt64)
+					if val.Valid {
+						obj.Set(columnNames[i], val.Int64)
+					}
+				} else {
+					val := v.(*int64)
+					obj.Set(columnNames[i], *val)
+				}
 			}
 		} else if s.IsFloatingType(typeName) {
 			nullable, _ := ct.Nullable()

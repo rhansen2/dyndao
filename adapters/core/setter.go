@@ -3,12 +3,14 @@ package core
 import (
 	"database/sql"
 	"fmt"
+	"reflect"
+	"strconv"
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/rbastic/dyndao/object"
 	"github.com/rbastic/dyndao/schema"
 	sg "github.com/rbastic/dyndao/sqlgen"
-	"reflect"
-	"time"
 )
 
 type NullTime time.Time
@@ -27,6 +29,10 @@ func (n *NullTime) Scan(src interface{}) error {
 	return nil
 }
 
+var (
+	dosErr = `DynamicObjectSetter: undefined column definition for column named '%s' - if you are JOINing against columns which do not exist in the schemaTable, please create special definitions for them`
+)
+
 // DynamicObjectSetter is used to dynamically set the values of an object by
 // checking the necessary types (via sql.ColumnType, and what the driver tells
 // us we have for column types)
@@ -37,6 +43,13 @@ func DynamicObjectSetter(s *sg.SQLGenerator, schTable *schema.Table, columnNames
 		ct := columnTypes[i]
 
 		typeName := ct.DatabaseTypeName()
+
+		shouldMapToString := false
+		colDef := schTable.GetColumn(columnNames[i])
+		if colDef == nil {
+			return fmt.Errorf(dosErr, columnNames[i])
+		}
+		shouldMapToString = colDef.MapToString
 
 		if s.IsTimestampType(typeName) {
 			if v == nil {
@@ -59,14 +72,26 @@ func DynamicObjectSetter(s *sg.SQLGenerator, schTable *schema.Table, columnNames
 			continue
 		} else if s.IsNumberType(typeName) {
 			nullable, _ := ct.Nullable()
-			if nullable {
-				val := v.(*sql.NullInt64)
-				if val.Valid {
-					obj.Set(columnNames[i], val.Int64)
+			if shouldMapToString {
+				if nullable {
+					val := v.(*sql.NullInt64)
+					if val.Valid {
+						obj.Set(columnNames[i], strconv.FormatInt(val.Int64, 10))
+					}
+				} else {
+					val := v.(*int64)
+					obj.Set(columnNames[i], strconv.FormatInt(*val, 10))
 				}
 			} else {
-				val := v.(*int64)
-				obj.Set(columnNames[i], *val)
+				if nullable {
+					val := v.(*sql.NullInt64)
+					if val.Valid {
+						obj.Set(columnNames[i], val.Int64)
+					}
+				} else {
+					val := v.(*int64)
+					obj.Set(columnNames[i], *val)
+				}
 			}
 			continue
 		} else if s.IsFloatingType(typeName) {

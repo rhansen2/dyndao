@@ -140,7 +140,7 @@ func setTableCol(sch *schema.Schema, tblName string, colName sql.NullString, dat
 	df.AllowNull = isNullBool
 
 	// TODO: is this a standard or just MySQL that supports
-	// this?
+	// this? (probably just MySQL)
 	isIdentity := false
 	if extra == "auto_increment" && columnKey == "PRI" {
 		isIdentity = true

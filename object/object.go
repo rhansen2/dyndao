@@ -134,6 +134,9 @@ func (o *Object) HiddenGetStringAlways(k string) (string, error) {
 	}
 
 	switch v.(type) {
+	case float32:
+		fl := v.(float32)
+		return fmt.Sprintf("%f", fl), nil
 	case float64:
 		fl := v.(float64)
 		return fmt.Sprintf("%f", fl), nil
@@ -167,6 +170,9 @@ func (o *Object) GetStringAlways(k string) (string, error) {
 	}
 
 	switch v.(type) {
+	case float32:
+		fl := v.(float32)
+		return fmt.Sprintf("%f", fl), nil
 	case float64:
 		fl := v.(float64)
 		return fmt.Sprintf("%f", fl), nil
@@ -206,6 +212,9 @@ func (o *Object) GetFloatAlways(k string) (float64, error) {
 	}
 
 	switch v.(type) {
+	case float32:
+		fl := v.(float32)
+		return float64(fl), nil
 	case float64:
 		fl := v.(float64)
 		return fl, nil
@@ -239,6 +248,9 @@ func (o *Object) GetIntAlways(k string) (int64, error) {
 	}
 
 	switch v.(type) {
+	case float32:
+		fl := v.(float32)
+		return int64(fl), nil
 	case float64:
 		fl := v.(float64)
 		return int64(fl), nil
@@ -272,6 +284,9 @@ func (o *Object) GetUintAlways(k string) (uint64, error) {
 	}
 
 	switch v.(type) {
+	case float32:
+		fl := v.(float32)
+		return uint64(fl), nil
 	case float64:
 		fl := v.(float64)
 		return uint64(fl), nil
@@ -348,7 +363,6 @@ func (o *Object) SetWhereNeeded(k string, v interface{}) {
 		// Dyndao)
 		o.SetCore(k, v)
 	}
-
 }
 
 // ResetChangedColumns can be used in conjunction with an ORM... For instance,
