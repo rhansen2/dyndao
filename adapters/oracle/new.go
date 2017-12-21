@@ -25,5 +25,8 @@ func New(g *sg.SQLGenerator) *sg.SQLGenerator {
 	g.RenderInsertValue = sg.FnRenderInsertValue(RenderInsertValue)
 	g.BindingInsertSQL = sg.FnBindingInsertSQL(BindingInsertSQL)
 	g.RenderBindingValueWithInt = sg.FnRenderBindingValueWithInt(RenderBindingValueWithInt)
+
+	g.GetLock = sg.FnGetLock(GetLock)
+	g.ReleaseLock = sg.FnReleaseLock(ReleaseLock)
 	return g
 }

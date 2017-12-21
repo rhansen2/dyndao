@@ -42,5 +42,6 @@ func GetSQLGen() *sg.SQLGenerator {
 }
 
 func TestMain(t *testing.T) {
+	test.SetTestGetLock(true)
 	test.Test(t, GetDB, GetSQLGen)
 }

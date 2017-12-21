@@ -59,7 +59,6 @@ func (o *ORM) GetLock(ctx context.Context, tx *sql.Tx, lockStr string) (bool, er
 
 func (o *ORM) ReleaseLock(ctx context.Context, tx *sql.Tx, lockStr string) (bool, error) {
 	sg := o.sqlGen
-	//tracing := sg.Tracing
 
 	select {
 	case <-ctx.Done():
@@ -69,7 +68,7 @@ func (o *ORM) ReleaseLock(ctx context.Context, tx *sql.Tx, lockStr string) (bool
 
 	sqlStr, bindWhere, err := sg.ReleaseLock(o.sqlGen, o.s, lockStr)
 	if err != nil {
-		return false, err
+		return false, errors.Wrap(err, "ReleaseLock/sg")
 	}
 
 	if sg.Tracing {
@@ -78,7 +77,7 @@ func (o *ORM) ReleaseLock(ctx context.Context, tx *sql.Tx, lockStr string) (bool
 
 	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)
 	if err != nil {
-		return false, err
+		return false, errors.Wrap(err, "ReleaseLock/stmtFromDbOrTx")
 	}
 
 	defer func() {
@@ -90,12 +89,12 @@ func (o *ORM) ReleaseLock(ctx context.Context, tx *sql.Tx, lockStr string) (bool
 
 	res, err := stmt.ExecContext(ctx, bindWhere...)
 	if err != nil {
-		return false, errors.Wrap(err, "GetLock")
+		return false, errors.Wrap(err, "ReleaseLock/ExecContext")
 	}
 
 	rowsAff, err := res.RowsAffected()
 	if err != nil {
-		return false, err
+		return false, errors.Wrap(err, "ReleaseLock/RowsAffected")
 	}
 
 	if rowsAff == 0 {

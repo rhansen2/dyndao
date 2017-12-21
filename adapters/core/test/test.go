@@ -21,6 +21,7 @@ import (
 	"database/sql"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 	//"fmt"
 
@@ -39,6 +40,10 @@ type FnGetDB func() *sql.DB          // function type for GetDB
 type FnGetSG func() *sg.SQLGenerator // function type for GetSQLGenerator
 
 var (
+	// GetLock isn't available anywhere yet, so we allow
+	// conditional enabling of it
+	TestGetLock bool
+
 	GetDB     FnGetDB
 	getSQLGen FnGetSG
 
@@ -58,6 +63,11 @@ func getSchema() *schema.Schema {
 
 func getDefaultContext() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), 2*time.Second)
+}
+
+// Longer context for race condition testing
+func getLongContext() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), 5*time.Second)
 }
 
 // Longer context for race condition testing
@@ -82,6 +92,10 @@ func dirtyTest(obj *object.Object) {
 	if obj.IsDirty() {
 		panic("system claims object was not saved")
 	}
+}
+
+func SetTestGetLock(getLockTest bool) {
+	TestGetLock = getLockTest
 }
 
 func Test(t *testing.T, getDBFn FnGetDB, getSGFN FnGetSG) {
@@ -250,6 +264,66 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 		// test mock object delete
 		testDeleteMockObject(o, t, obj)
 	})
+
+	if TestGetLock {
+		t.Run("GetLockAndRelease", func(t *testing.T) {
+			testGetLock(o, t)
+		})
+		t.Run("GetLockForceDeadlock", func(t *testing.T) {
+			testForceDeadlock(o, t)
+		})
+	}
+}
+
+func testForceDeadlock(o *orm.ORM, t *testing.T) {
+	lockStr := "ForceDeadlockTest1"
+	ctx, cancel := getLongContext()
+	locked, err := o.GetLock(ctx, nil, lockStr)
+	if err != nil {
+		t.Fatalf("Expected to acquire initial lock during deadlock test, error=%s", err.Error())
+	}
+	if !locked {
+		t.Fatal("Could not acquire lock during deadlock test, error unknown")
+	}
+	cancel()
+	fatalIf(err)
+
+	ctx, cancel = getLongContext()
+	locked2, err := o.GetLock(ctx, nil, lockStr)
+	if err != nil && (strings.Contains(err.Error(), "ORA-20000") || strings.Contains(err.Error(), "lock already obtained")) {
+		// woot, all good
+	} else {
+		t.Fatal("Expected deadlock from second attempt at locking, did not receive one")
+	}
+	if locked2 {
+		t.Fatal("Acquired lock when we expected none")
+	}
+	cancel()
+}
+
+func testGetLock(o *orm.ORM, t *testing.T) {
+	lockStr := "LockStringTest1"
+	ctx, cancel := getLongContext()
+	locked, err := o.GetLock(ctx, nil, lockStr)
+	if err != nil {
+		t.Fatalf("Unable to GetLock, err = %s", err.Error())
+	}
+	if !locked {
+		t.Fatal("Unable to lock, unknown error")
+	}
+	cancel()
+	fatalIf(err)
+
+	ctx, cancel = getLongContext()
+	unlocked, err := o.ReleaseLock(ctx, nil, lockStr)
+	if err != nil {
+		t.Fatalf("Unable to ReleaseLock, err = %s", err.Error())
+	}
+	if !unlocked {
+		t.Fatal("Unable to unlock, unknown error")
+	}
+	cancel()
+	fatalIf(err)
 }
 
 func testDeleteMockObject(o *orm.ORM, t *testing.T, obj *object.Object) {
