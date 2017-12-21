@@ -13,6 +13,8 @@ type FnBindingRetrieve func(g *SQLGenerator, sch *schema.Schema, obj *object.Obj
 type FnBindingDelete func(g *SQLGenerator, sch *schema.Schema, obj *object.Object) (string, []interface{}, error)
 type FnCreateTable func(g *SQLGenerator, sch *schema.Schema, table string) (string, error)
 type FnDropTable func(name string) string
+type FnGetLock func(g *SQLGenerator, sch *schema.Schema, lockStr string) (string, []interface{}, error)
+type FnReleaseLock func(g *SQLGenerator, sch *schema.Schema, lockStr string) (string, []interface{}, error)
 type FnRenderBindingValueWithInt func(f *schema.Column, i int) string
 type FnRenderInsertValue func(bindI *int, f *schema.Column, value interface{}) (interface{}, error)
 type FnIsStringType func(string) bool
@@ -50,6 +52,8 @@ type SQLGenerator struct {
 	BindingUpdate             FnBindingUpdate
 	BindingRetrieve           FnBindingRetrieve
 	BindingDelete             FnBindingDelete
+	GetLock                   FnGetLock
+	ReleaseLock               FnReleaseLock
 	CreateTable               FnCreateTable
 	RenderCreateColumn        FnRenderCreateColumn
 	DropTable                 FnDropTable

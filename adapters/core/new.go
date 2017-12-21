@@ -20,6 +20,8 @@ func New() *sg.SQLGenerator {
 	g.BindingRetrieve = sg.FnBindingRetrieve(BindingRetrieve)
 	g.BindingUpdate = sg.FnBindingUpdate(BindingUpdate)
 	g.BindingDelete = sg.FnBindingDelete(BindingDelete)
+	g.GetLock = sg.FnGetLock(GetLock)
+	g.ReleaseLock = sg.FnReleaseLock(ReleaseLock)
 	g.RenderBindingValueWithInt = sg.FnRenderBindingValueWithInt(RenderBindingValueWithInt)
 	g.RenderWhereClause = sg.FnRenderWhereClause(RenderWhereClause)
 	g.RenderInsertValue = sg.FnRenderInsertValue(RenderInsertValue)
