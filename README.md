@@ -77,13 +77,10 @@ etc., work. Those types are still utilized underneath the hood where necessary,
 but to provide a common abstraction, the type object.SQLValue is used, with the
 internal SQLValue string being set with a value of "NULL".
 
-While the above may seem like unnecessary mapping, and perhaps it is, it has
-enabled some simplicity throughout dyndao's internal implementation when it
-otherwise might not have been the case. ORMs are not simple by any means!
-
 I specifically mention this as an example because I have not yet seen
 an ORM support this particular feature in Go, and dyndao's design
-lends itself to implementation being simple. Here is an example:
+lends itself to using the object.SQLValue for other things, which are not yet
+covered here.  Here is an example of the initial use case:
 
 ```code
 UPDATE fooTable SET ..., UPDATE_TIMESTAMP=NOW() WHERE fooTable_ID = 1;
