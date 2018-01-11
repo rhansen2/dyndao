@@ -19,18 +19,19 @@ func BindingDelete(g *sg.SQLGenerator, sch *schema.Schema, queryVals *object.Obj
 	}
 	tableName := schema.GetTableName(schTable.Name, table)
 
-	whereClause, bindWhere, _, err := g.RenderUpdateWhereClause(g, schTable, schTable.Columns, queryVals)
+	whereClause, bindArgs, err := g.RenderWhereClause(g, schTable, queryVals)
 	if err != nil {
 		return "", nil, err
 	}
 
 	whereString := "WHERE"
-	if len(bindWhere) == 0 {
+	if len(bindArgs) == 0 {
 		whereString = ""
 	}
 	sqlStr := fmt.Sprintf("DELETE FROM %s %s %s", tableName, whereString, whereClause)
 	if g.Tracing {
-		fmt.Println(sqlStr)
+		// TODO: logger interface
+		fmt.Println("BindingDelete sqlStr->", sqlStr, "bindArgs->", bindArgs)
 	}
-	return sqlStr, bindWhere, nil
+	return sqlStr, bindArgs, nil
 }

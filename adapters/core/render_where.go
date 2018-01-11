@@ -96,8 +96,14 @@ func RenderWhereClause(g *sg.SQLGenerator, schTable *schema.Table, obj *object.O
 		}
 		sqlName := f.Name
 		whereKeys[i] = fmt.Sprintf("%s = %s", sqlName, g.RenderBindingValueWithInt(f, bindI))
-		// TODO: support object.SQLValue here
-		bindArgs[i] = v
+		switch v.(type) {
+		case *object.SQLValue:
+			sqlv := v.(*object.SQLValue)
+			strV := sqlv.String()
+			bindArgs[i] = strV
+		default:
+			bindArgs[i] = v
+		}
 
 		i++
 		bindI++

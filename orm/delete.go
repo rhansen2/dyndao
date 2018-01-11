@@ -41,8 +41,9 @@ func (o *ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64
 		return 0, err
 	}
 
+	tracingString := fmt.Sprintf("Delete: sqlStr->%s, bindWhere->%v", sqlStr, bindWhere)
 	if sg.Tracing {
-		fmt.Printf("Delete: sqlStr->%s, bindWhere->%v\n", sqlStr, bindWhere)
+		fmt.Println(tracingString)
 	}
 
 	stmt, err := stmtFromDbOrTx(ctx, o, tx, sqlStr)
@@ -59,7 +60,7 @@ func (o *ORM) Delete(ctx context.Context, tx *sql.Tx, obj *object.Object) (int64
 
 	res, err := stmt.ExecContext(ctx, bindWhere...)
 	if err != nil {
-		return 0, errors.Wrap(err, "Delete")
+		return 0, errors.Wrap(err, "Delete/ExecContext")
 	}
 
 	rowsAff, err := res.RowsAffected()

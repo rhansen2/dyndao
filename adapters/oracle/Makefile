@@ -5,8 +5,8 @@
 #USER=SYSTEM
 #PASS=oracle
 
-#USER=curschema
-#PASS=curschema
+USER=gdl_join_w2
+PASS=gdl_join_w2
 
 test:
 	ORACLE_SID=GDL_CURRENT4 ORACLE_DSN=$(USER)/$(PASS)@//localhost:1521/XE go test -v 

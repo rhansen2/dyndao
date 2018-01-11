@@ -328,7 +328,10 @@ func testGetLock(o *orm.ORM, t *testing.T) {
 
 func testDeleteMockObject(o *orm.ORM, t *testing.T, obj *object.Object) {
 	ctx, cancel := getDefaultContext()
-	rowsAff, err := o.Delete(ctx, nil, obj)
+
+	query := object.New(obj.Type)
+	query.KV["PersonID"] = obj.KV["PersonID"]
+	rowsAff, err := o.Delete(ctx, nil, query)
 	cancel()
 	fatalIf(err)
 
