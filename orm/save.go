@@ -22,8 +22,19 @@ func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName s
 	}
 	schemaPrimary := schemaTable.Primary
 
+	/* compute essential fields map quickly */
+	// TODO: we should compute this ahead of time if this turns out to be
+	// repeatedly useful that we have this sort of thing laying around...
+	essentialMap := make(map[string]bool)
+	for _, k := range schemaTable.EssentialColumns {
+		essentialMap[k] = true
+	}
+
 	for fName, field := range schemaTable.Columns {
-		if field.IsIdentity || field.IsForeignKey || field.Name == schemaPrimary {
+		_, hasKey := essentialMap[field.Name]
+
+		if hasKey && (field.IsIdentity || field.IsForeignKey || field.Name == schemaPrimary) {
+			fmt.Println("RYAN DEBUG pkQueryValsFromKV SETTING fName=", fName, "value = ", obj.Get(fName))
 			qv[fName] = obj.Get(fName)
 		}
 	}

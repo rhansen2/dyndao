@@ -51,6 +51,9 @@ func (o *ORM) GetParentsViaChild(ctx context.Context, childObj *object.Object) (
 			return nil, err
 		}
 		// Retrieve + append the relevant parent objs
+		if o.sqlGen.Tracing {
+			fmt.Println("GetParentsViaChild executing RetrieveMany with parentType=", pt, ", pkQueryVals=", pkQueryVals)
+		}
 		objs, err := o.RetrieveMany(ctx, pt, pkQueryVals)
 		if err != nil {
 			return nil, err

@@ -109,6 +109,7 @@ func (t *Table) GetColumn(n string) *Column {
 func DefaultTable() *Table {
 	fieldsMap := make(map[string]*Column)
 	childrenMap := make(map[string]*ChildTable)
+	emptyAliasesMap := make(map[string]string)
 
 	tbl := &Table{
 		MultiKey:         false,
@@ -116,6 +117,7 @@ func DefaultTable() *Table {
 		Columns:          fieldsMap,
 		EssentialColumns: nil,
 		Children:         childrenMap,
+		ColumnAliases:    emptyAliasesMap,
 	}
 	return tbl
 }

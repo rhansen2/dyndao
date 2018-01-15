@@ -365,6 +365,13 @@ func (o *Object) SetWhereNeeded(k string, v interface{}) {
 	}
 }
 
+/*
+func (o *Object) Delete(k string) {
+	// TODO: How do deletes of a key/value work with regards to updates?
+	// .... sql.Null* etc.
+}
+*/
+
 // ResetChangedColumns can be used in conjunction with an ORM... For instance,
 // once a Save() method is invoked
 func (o *Object) ResetChangedColumns() {
