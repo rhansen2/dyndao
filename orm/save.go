@@ -34,7 +34,6 @@ func pkQueryValsFromKV(obj *object.Object, sch *schema.Schema, parentTableName s
 		_, hasKey := essentialMap[field.Name]
 
 		if hasKey && (field.IsIdentity || field.IsForeignKey || field.Name == schemaPrimary) {
-			fmt.Println("RYAN DEBUG pkQueryValsFromKV SETTING fName=", fName, "value = ", obj.Get(fName))
 			qv[fName] = obj.Get(fName)
 		}
 	}
