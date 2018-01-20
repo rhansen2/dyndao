@@ -37,12 +37,21 @@ var numTypes = map[string]bool{
 	"BIT": true,
 	"bit": true,
 
+	// NOTE: This is for CockroachDB. This was one of the only
+	// changes necessary to get it working. Not sure if this
+	// originates from an implementation difference or something
+	// in the underlying driver.
+	"INT8": true,
+	"int8": true,
+
 	// numeric, decimal, money, smallmoney, float, real
 }
 
 var floatTypes = map[string]bool{
-	"float": true,
-	"FLOAT": true,
+	"float":  true,
+	"FLOAT":  true,
+	"float8": true,
+	"FLOAT8": true,
 }
 
 var timestampTypes = map[string]bool{

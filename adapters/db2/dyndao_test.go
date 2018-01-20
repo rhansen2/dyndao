@@ -19,7 +19,7 @@ import (
 )
 
 // GetDB is a simple wrapper over sql.Open(), the main purpose being
-// to abstract the DSN
+// to provide a constructor for a database object
 func GetDB() *sql.DB {
 	dsn := os.Getenv("DB2_DSN")
 	if dsn == "" {

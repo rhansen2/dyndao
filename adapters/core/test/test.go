@@ -39,6 +39,14 @@ import (
 type FnGetDB func() *sql.DB          // function type for GetDB
 type FnGetSG func() *sg.SQLGenerator // function type for GetSQLGenerator
 
+const (
+	ColPersonID = "PersonID"
+)
+
+var (
+	globalPersonID int64
+)
+
 var (
 	// GetLock isn't available anywhere yet, so we allow
 	// conditional enabling of it
@@ -205,6 +213,11 @@ func TestSuiteNested(t *testing.T, db *sql.DB) {
 	// Save our default object
 	t.Run("SaveMockObject", func(t *testing.T) {
 		saveMockObject(o, t, obj)
+		var err error
+		globalPersonID, err = obj.GetIntAlways(ColPersonID)
+		if err != nil {
+			t.Fatal("Encountered err when attempting to read PersonID:", err)
+		}
 	})
 
 	validateMock(t, obj)
@@ -356,15 +369,9 @@ func saveMockObject(o *orm.ORM, t *testing.T, obj *object.Object) {
 }
 
 func validatePersonID(t *testing.T, obj *object.Object) {
-	personID, err := obj.GetIntAlways("PersonID")
+	_, err := obj.GetIntAlways(ColPersonID)
 	if err != nil {
 		t.Fatalf("Had problems retrieving PersonID as int: %s", err.Error())
-	}
-	if personID != 1 {
-		if personID >= 2 {
-			t.Fatal("Tests are not in a ready state. Pre-existing data is present.")
-		}
-		t.Fatalf("PersonID has the wrong value, has value %d", personID)
 	}
 }
 
@@ -444,7 +451,7 @@ func testSave(ctx context.Context, o *orm.ORM, t *testing.T, obj *object.Object)
 
 func testRetrieve(o *orm.ORM, t *testing.T, sch *schema.Schema) {
 	queryVals := map[string]interface{}{
-		"PersonID": 1,
+		ColPersonID: globalPersonID,
 	}
 	// refleshen our object
 	ctx, cancel := getDefaultContext()
@@ -459,7 +466,7 @@ func testRetrieve(o *orm.ORM, t *testing.T, sch *schema.Schema) {
 	// TODO: Do a common refactor on this sort of code
 	nameStr, err := latestJoe.GetStringAlways("Name")
 	fatalIf(err)
-	if latestJoe.Get("PersonID").(int64) != 1 || nameStr != "Joe" {
+	if latestJoe.Get(ColPersonID).(int64) != globalPersonID || nameStr != "Joe" {
 		t.Fatal("latestJoe does not match expectations")
 	}
 }
@@ -499,7 +506,7 @@ func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
 	cdr := all[1]
 
 	{
-		if car.Get("Name") == cdr.Get("Name") && car.Get("PersonID") != cdr.Get("PersonID") {
+		if car.Get("Name") == cdr.Get("Name") && car.Get(ColPersonID) != cdr.Get(ColPersonID) {
 			// pass
 		} else {
 			t.Fatal("objects weren't what we expected? they appear to be the same?")
@@ -514,7 +521,7 @@ func testRetrieveMany(o *orm.ORM, t *testing.T, rootTable string) {
 func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 	// Configure our database query
 	queryVals := make(map[string]interface{})
-	queryVals["PersonID"] = 1
+	queryVals[ColPersonID] = globalPersonID
 
 	// Retrieve a single child object
 	ctx, cancel := getDefaultContext()
@@ -543,7 +550,7 @@ func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 
 	nameStr, err := obj.GetStringAlways("Name")
 	fatalIf(err)
-	if obj.Get("PersonID").(int64) != 1 || nameStr != "Joe" {
+	if obj.Get(ColPersonID).(int64) != globalPersonID || nameStr != "Joe" {
 		t.Fatal("Object values differed from expectations", obj)
 	}
 }
@@ -551,7 +558,7 @@ func testGetParentsViaChild(o *orm.ORM, t *testing.T) {
 func testFleshenChildren(o *orm.ORM, t *testing.T, rootTable string) {
 	ctx, cancel := getDefaultContext()
 	obj, err := o.Retrieve(ctx, rootTable, map[string]interface{}{
-		"PersonID": 1,
+		ColPersonID: globalPersonID,
 	})
 	cancel()
 	fatalIf(err)

@@ -15,6 +15,7 @@ import (
 // TODO: Why was all this necessary for Postgre?
 
 // ripped from https://medium.com/aubergine-solutions/how-i-handled-null-possible-values-from-database-rows-in-golang-521fb0ee267
+
 // NullInt64 is an alias for sql.NullInt64 data type
 type NullInt64 sql.NullInt64
 
@@ -38,6 +39,21 @@ type NullBool sql.NullBool
 
 // NullFloat64 is an alias for sql.NullFloat64 data type
 type NullFloat64 sql.NullFloat64
+
+// Scan implements the Scanner interface for NullFloat64
+func (ni *NullFloat64) Scan(value interface{}) error {
+	var i sql.NullFloat64
+	if err := i.Scan(value); err != nil {
+		return err
+	}
+	// if nil the make Valid false
+	if reflect.TypeOf(value) == nil {
+		*ni = NullFloat64{i.Float64, false}
+	} else {
+		*ni = NullFloat64{i.Float64, true}
+	}
+	return nil
+}
 
 // NullTime is an alias for the time.Time data type, with NULL-scanning support.
 type NullTime time.Time
@@ -111,16 +127,8 @@ func DynamicObjectSetter(s *sg.SQLGenerator, schTable *schema.Table, columnNames
 			}
 			continue
 		} else if s.IsFloatingType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				val := v.(*sql.NullFloat64)
-				if val.Valid {
-					obj.Set(columnNames[i], val.Float64)
-				}
-			} else {
-				val := v.(*float64)
-				obj.Set(columnNames[i], *val)
-			}
+			val := v.(*NullFloat64)
+			obj.Set(columnNames[i], val.Float64)
 			continue
 		} else if s.IsLOBType(typeName) {
 			nullable, _ := ct.Nullable()
@@ -151,36 +159,20 @@ func MakeColumnPointers(s *sg.SQLGenerator, schTable *schema.Table, columnNames 
 		typeName := ct.DatabaseTypeName()
 
 		if s.IsNumberType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				var j NullInt64
-				columnPointers[i] = &j
-			} else {
-				var j NullInt64
-				columnPointers[i] = &j
-
-			}
+			var j NullInt64
+			columnPointers[i] = &j
 		} else if s.IsTimestampType(typeName) {
 			s := new(NullTime)
 			columnPointers[i] = &s
 		} else if s.IsLOBType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				var s NullString
-				columnPointers[i] = &s
-			} else {
-				var s NullString
-				columnPointers[i] = &s
-			}
+			var s NullString
+			columnPointers[i] = &s
 		} else if s.IsStringType(typeName) {
-			nullable, _ := ct.Nullable()
-			if nullable {
-				var s NullString
-				columnPointers[i] = &s
-			} else {
-				var s NullString
-				columnPointers[i] = &s
-			}
+			var s NullString
+			columnPointers[i] = &s
+		} else if s.IsFloatingType(typeName) {
+			var j NullFloat64
+			columnPointers[i] = &j
 		} else {
 			return nil, errors.New("MakeColumnPointers: Unrecognized type: " + typeName)
 		}

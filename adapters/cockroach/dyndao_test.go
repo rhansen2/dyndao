@@ -25,9 +25,9 @@ import (
 // GetDB is a simple wrapper over sql.Open(), the main purpose being
 // to provide a constructor for a database object
 func GetDB() *sql.DB {
-	dsn := os.Getenv("POSTGRES_DSN")
+	dsn := os.Getenv("ROACH_DSN")
 	if dsn == "" {
-		panic("POSTGRES_DSN environment variable is not set, cannot initialize database")
+		panic("ROACH_DSN environment variable is not set, cannot initialize database")
 	}
 	fmt.Println("Opening with dsn: ", dsn)
 	db, err := sql.Open("postgres", dsn)
