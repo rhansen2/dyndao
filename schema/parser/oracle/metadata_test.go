@@ -48,4 +48,21 @@ func TestBasicIS(t *testing.T) {
 
 	err = schema.Validate(sch)
 	fatalIf(t, err)
+
+	/*
+		// TODO: This is some additional schema 'validation' logic. We'd like to manually inspect
+		// the metadata that we loaded.
+	*/
+
+	for _, tbl := range sch.Tables {
+		fmt.Printf("Table %s has %d columns\n", tbl.Name, len(tbl.EssentialColumns))
+		for colName, col := range tbl.Columns {
+			isIdentityStr := ""
+			if col.IsIdentity {
+				isIdentityStr = "(IDENTITY)"
+			}
+			fmt.Printf("   %s%s: %v\n", colName, isIdentityStr, col)
+		}
+		fmt.Println()
+	}
 }
