@@ -26,7 +26,7 @@ func Validate(sch *Schema) error {
 		}
 
 		if len(tbl.EssentialColumns) == 0 {
-			return errorHelper(tbl, "EssentialColumns is of length zero")
+			return errorHelper(tbl, "EssentialColumns is empty")
 		}
 
 		// TODO: What other requirements do we have for defining a valid

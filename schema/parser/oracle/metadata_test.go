@@ -33,7 +33,7 @@ func TestBasicIS(t *testing.T) {
 
 	dbname := os.Getenv("OWNER")
 	if dbname == "" {
-		panic("please supply OWNER as an environment parameter.")
+		panic("please supply OWNER as an environment parameter. (typically, it's the database username)")
 	}
 	sch, err := LoadSchema(context.TODO(), db, dbname)
 	fatalIf(t, err)

@@ -88,7 +88,7 @@ func ParseSchema(ctx context.Context, db *sql.DB, dbName string) (*schema.Schema
 		return nil, errors.Wrap(err, "rows.Err()")
 	}
 
-	return sch, err
+	return sch, nil
 }
 
 func shouldSkipParsingTable(tblName string) bool {
@@ -110,12 +110,18 @@ func getColumnMetaSQL(db string, tblName string) string {
 	}
 	// RPAD(COLUMN_NAME,30)||' '||DATA_TYPE||'('||DATA_LENGTH||')' as descr
 
-	// TODO: desc all_tab_cols from within system cli -- implement more
 	return fmt.Sprintf(`
  select COLUMN_NAME, DATA_TYPE, DATA_LENGTH, NULLABLE, IDENTITY_COLUMN
  FROM all_tab_cols
- WHERE TABLE_NAME ='%s'  and owner= '%s'
-`, tblName, db)
+ WHERE TABLE_NAME ='%s'
+`, tblName)
+
+	// TODO: desc all_tab_cols from within system cli -- implement more
+	//	return fmt.Sprintf(`
+	// select COLUMN_NAME, DATA_TYPE, DATA_LENGTH, NULLABLE, IDENTITY_COLUMN
+	// FROM all_tab_cols
+	// WHERE TABLE_NAME ='%s'  and owner= '%s'
+	//`, tblName, db)
 }
 
 // ParseTables loads all potential column information from a given schema into the relevant tables.
@@ -134,10 +140,10 @@ func ParseTables(ctx context.Context, db *sql.DB, dbName string, sch *schema.Sch
 			err = rows.Close()
 		}()
 
+		hasColumns := false
 		for rows.Next() {
 			var colName sql.NullString
-			var dataType string
-			var dataLength string
+			var dataType, dataLength string
 			var isNullable string
 			var identityCol string
 
@@ -148,6 +154,10 @@ func ParseTables(ctx context.Context, db *sql.DB, dbName string, sch *schema.Sch
 
 			// Mutates the schema.Table for the given tblName and colName
 			setTableCol(sch, tbl.Name, colName, dataType, dataLength, isNullable, identityCol)
+			hasColumns = true
+		}
+		if !hasColumns {
+			return errors.New("ParseTables: table " + tbl.Name + " is empty")
 		}
 
 		err = rows.Err()
