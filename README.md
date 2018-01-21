@@ -54,7 +54,10 @@ with NoSQL solutions, this idea is believed to be sound.
 Additionally, many relational databases support data types which offer
 inconsistent functionality despite having similar names. The possible length of
 one column data type for a given database may be completely different from
-another (TODO: provide examples).
+another (TODO: provide examples). One of dyndao's design goals is to help steer
+developers towards multiple-database compatibility where possible. As such,
+some of the abstractions implemented and available do not match what is commonly
+expected for Go data types and access patterns.
 
 *DYNAMIC SCHEMAS*
 
@@ -67,16 +70,22 @@ sub-packages can be utilized to dynamically load a schema at run-time.
 
 *MISC*
 
-An additional thing that dyndao supports is a type named object.SQLValue,
-which lets you explicitly store values that can be rendered as
-SQL function calls (and other unquoted necessities), without making the
+An additional feature that dyndao supports is a type named object.SQLValue,
+which lets you explicitly store values that will be rendered as
+SQL function calls (and other unquoted values), without making the
 mistake of constructing them as binding parameters.
 
 NULL values mapped from the database will also be internally mapped using the
-object.NewNULLValue() method. This is in contrast to how Go's sql.NullString,
-etc., work. Those types are still utilized underneath the hood where necessary,
-but to provide a common abstraction, the type object.SQLValue is used, with the
-internal SQLValue string being set with a value of "NULL".
+object.NewNULLValue() method. This is in contrast to how Go's sql.NullString
+data types, etc., work. Those types are still utilized underneath the hood
+where necessary for mapping purposes, but to provide a common abstraction, the
+type object.SQLValue is used, with the internal SQLValue string being set with
+a value of "NULL". 
+
+This is to help with supporting scanning of NULL values across the myriad of
+databases supported -- a feature that seems otherwise contentious to implement
+within dyndao's design, due to some database drivers offering their own NULL
+types.
 
 I specifically mention this as an example because I have not yet seen
 an ORM support this particular feature in Go, and dyndao's design
@@ -95,20 +104,21 @@ Presently, the way dyndao is written, you could do something like:
 myORM = getORM() // see tests for example
 obj, err := myORM.Retrieve(ctx, tableString, pkValues)
 if err != nil {
-	panic(err)
+	return errors.Wrap(err, "Retrieve")
 }
+
 // Lack of result is not considered an error in dyndao - "nil, nil" would be
 // returned
 if obj == nil {
-	panic("no object available to update")
+	return errors.New("no object available to update")
 } else {
 	// obj is a dyndao/object, see github.com/rbastic/dyndao/object
 	obj.Set("UPDATE_TIMESTAMP", object.NewSQLValue("NOW()"))
-	// nil means 'transactionless save', otherwise you can pass
-	// a *sql.Tx
+	// nil below means 'transactionless save', otherwise you can pass your own
+	// *sql.Tx
 	r, err := myORM.Save(ctx, nil, obj)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	// ...
 }

@@ -3,9 +3,8 @@ package orm
 import (
 	"context"
 	"database/sql"
-	"github.com/pkg/errors"
 	"fmt"
-
+	"github.com/pkg/errors"
 )
 
 func (o *ORM) GetLock(ctx context.Context, tx *sql.Tx, lockStr string) (bool, error) {
