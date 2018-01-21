@@ -10,7 +10,11 @@ type Schema struct {
 
 // Table is the metadata container for a SQL table definition
 type Table struct {
-	CallerSuppliesPK bool // Should we use a LastInsertID mechanism when INSERTing or will the calling code supply a PK
+	// Should dyndao use a LastInsertID() mechanism after INSERTing (or
+	// whatever the equivalent is, like with Oracle or PostgreSQL) or will
+	// the calling code supply a primary key.
+	CallerSuppliesPK bool
+
 	// TODO: Rethink some of this 'MultiKey' stuff.
 	MultiKey  bool   `json:"MultiKey"` // Use Primary or Primary + ForeignKeys
 	Primary   string `json:"Primary"`
@@ -54,10 +58,15 @@ type Column struct {
 	IsUnique     bool   `json:"IsUnique"`
 	Length       int    `json:"Length"`
 	Name         string `json:"Name"`
+
 	// TODO: DefaultValue isn't really implemented anywhere yet.
 	DefaultValue string `json:"DefaultValue"` // Converts to integer if IsNumber is set
 	DBType       string `json:"DBType"`
-	MapToString  bool   `json:"MapToString"` // type-mapping hack for specifying string as destination data type when reading
+
+	// type-mapping hack for specifying string as destination data type when reading
+	// this helps with situations where you might otherwise end up transmitting integers as floats
+
+	MapToString bool `json:"MapToString"`
 }
 
 // ChildTable represents a relationship between a parent table
