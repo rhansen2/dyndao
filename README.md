@@ -11,8 +11,9 @@ Currently, basic support for the following databases is included:
 * SQLite
 * MySQL
 * Microsoft SQL Server
-* Postgres
 * Oracle
+* Postgres
+* CockroachDB
 
 If you intend on working with MySQL, please be sure to check out
 (as in, `git checkout`) the 'columntype' branch for
