@@ -42,22 +42,27 @@ The reasoning here is that dyndao is geared towards systems which utilize a
 exist on a table, typically primary keys and timestamps, and then adding a JSON
 document to support an arbitrary number of additional data attributes.
 
+Additionally, systems utilizing JSON for RPC can trivially support additional
+nested complex structures, which may be mapped using arbritrarily and
+dynamically configured data mapping rules. Dyndao's object package can help
+serve as a Data Transfer Object, implicitly supporting serialization and
+enabling data transfer across services.
+
 Thus, not all additions or removal of data attributes will require schema
 changes, because the JSON document column can be leveraged to store them. This
 provides some of the benefits of NoSQL in conjunction with the relational and
 ACID benefits of SQL. 
 
 Since many relational databases are adding support for indexing JSON documents
-and directly querying them in a WHERE clause, likely as a response to competing
-with NoSQL solutions, this idea is believed to be sound.
+and directly querying them within a WHERE clause, this idea is believed to be sound.
 
 Additionally, many relational databases support data types which offer
 inconsistent functionality despite having similar names. The possible length of
 one column data type for a given database may be completely different from
 another (TODO: provide examples). One of dyndao's design goals is to help steer
-developers towards multiple-database compatibility where possible. As such,
-some of the abstractions implemented and available do not match what is commonly
-expected for Go data types and access patterns.
+developers towards multiple-database compatibility where possible. As such, few
+of the abstractions dyndao offers will match what is commonly expected for Go
+data types and access patterns.
 
 *DYNAMIC SCHEMAS*
 
