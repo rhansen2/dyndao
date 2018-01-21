@@ -17,6 +17,8 @@ import (
 	sqliteAdapter "github.com/rbastic/dyndao/adapters/sqlite"
 )
 
+// Look at the adapter Makefiles for other examples of drivers and supported DSNs.
+// TODO: Perhaps I should offer these as standard config opts.
 var (
 	defaultDriver = "sqlite3"
 	defaultDSN    = "file::memory:?mode=memory&cache=shared"
@@ -65,7 +67,7 @@ func main() {
 	}()
 
 	// Load the sample included schema
-	// (which is used by the internal dyndao test suite)
+	// (which is also used by the internal dyndao test suite)
 	sch := mock.NestedSchema()
 
 	// Instantiate the ORM instance
@@ -75,15 +77,15 @@ func main() {
 	{
 		// Instantiate our default context
 		ctx, cancel := getDefaultContext()
+		defer cancel()
 		err = orm.CreateTables(ctx)
-		cancel()
 		fatalIf(err)
 	}
 
 	{
 		// Instantiate our default context
 		ctx, cancel := getDefaultContext()
-
+		defer cancel()
 		// Attempt to insert a record
 		numRows, err := orm.Insert(ctx, nil, mock.RandomPerson())
 		fatalIf(err)
@@ -92,14 +94,13 @@ func main() {
 		} else {
 			fmt.Println("Looks like we inserted something")
 		}
-		cancel()
 	}
 
 	// DropTables will create all tables within a given schema
 	{
 		ctx, cancel := getDefaultContext()
+		defer cancel()
 		err = orm.DropTables(ctx)
-		cancel()
 		fatalIf(err)
 	}
 }
