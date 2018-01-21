@@ -15,11 +15,8 @@ Currently, basic support for the following databases is included:
 * Postgres
 * CockroachDB
 
-If you intend on working with MySQL, please be sure to check out
-(as in, `git checkout`) the 'columntype' branch for
-github.com/go-sql-driver/mysql.  Support for additional database drivers is
-planned. If you encounter problems using dyndao with any of the currently
-supported databases, please feel free to file a detailed issue.
+If you encounter problems using dyndao with any of the currently supported
+databases, please feel free to file a detailed issue.
 
 dyndao started out due to the fact that Go lacks a 'very dynamic' ORM, and the
 author had some requirements for dynamic schemas and a vision for multiple
