@@ -122,6 +122,19 @@ func DefaultTable() *Table {
 	return tbl
 }
 
+// DefaultTableWithName returns an empty table with a name set
+func DefaultTableWithName(name string) *Table {
+	tbl := DefaultTable()
+	tbl.Name = name
+	return tbl
+}
+
+// SetNewTableWithName
+func (s *Schema) SetNewTableWithName(name string) {
+	tbl := DefaultTableWithName(name)
+	s.Tables[name] = tbl
+}
+
 // DefaultColumn returns an empty field struct ready to be populated
 func DefaultColumn() *Column {
 	fld := &Column{
