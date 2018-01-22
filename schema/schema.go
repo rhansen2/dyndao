@@ -112,7 +112,6 @@ func DefaultTable() *Table {
 	emptyAliasesMap := make(map[string]string)
 
 	tbl := &Table{
-		MultiKey:         false,
 		Primary:          "",
 		Columns:          fieldsMap,
 		EssentialColumns: nil,
@@ -152,7 +151,6 @@ func DefaultColumn() *Column {
 func DefaultChildTable() *ChildTable {
 	chld := &ChildTable{
 		ParentTable:   "",
-		MultiKey:      false,
 		LocalColumn:   "",
 		ForeignColumn: "",
 
